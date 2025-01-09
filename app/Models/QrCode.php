@@ -123,4 +123,46 @@ class QrCode extends Model
     {
         return $this->hasMany(QrCodeScan::class);
     }
+
+    public function userAddons()
+    {
+        return $this->hasMany(UserAddon::class);
+    }
+
+    public function canBeScanned(): bool
+    {
+        $user = $this->user;
+        $monthlyScans = $this->scans()
+            ->whereMonth('scanned_at', now()->month)
+            ->whereYear('scanned_at', now()->year)
+            ->count();
+
+        return $monthlyScans < $user->getRemainingScans($this);
+    }
+
+    public function hasCustomization(): bool
+    {
+        return $this->user->hasCustomBranding();
+    }
+
+    public function getAvailableAnalytics(): array
+    {
+        $analytics = [
+            'basic' => [
+                'total_scans',
+                'scans_by_date',
+            ]
+        ];
+
+        if ($this->user->hasAdvancedAnalytics()) {
+            $analytics['advanced'] = [
+                'user_demographics',
+                'geofencing',
+                'engagement_trends',
+                'custom_reports'
+            ];
+        }
+
+        return $analytics;
+    }
 }

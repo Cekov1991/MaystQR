@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('short_url')->nullable();
             $table->text('destination_url')->nullable();
             $table->json('options')->nullable();
-            $table->string('qr_code_image')->nullable();
+            $table->text('qr_code_image')->nullable();
             $table->unsignedBigInteger('scan_count')->default(0);
             $table->timestamps();
             $table->softDeletes();

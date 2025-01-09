@@ -12,9 +12,12 @@ use App\Models\Publication;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\QrCodeRedirectController;
 
+
 Route::get('/q/{shortUrl}', [QrCodeRedirectController::class, 'redirect'])
     ->name('qr.redirect');
 
+Route::get('/', [WelcomeController::class, 'index'])
+    ->name('welcome');
 
 
 
