@@ -23,7 +23,6 @@ class ViewQrCode extends ViewRecord
     public function infolist(Infolist $infolist): Infolist
     {
         $record = $this->record;
-        $hasAdvancedAnalytics = $record->user->hasActiveAddon('advanced_analytics', $record);
 
         return $infolist->schema([
             Grid::make(2)->schema([
@@ -42,41 +41,7 @@ class ViewQrCode extends ViewRecord
                         ),
                         TextEntry::make('destination_url')->label('Redirects to')->url(fn($record) => $record->destination_url)->openUrlInNewTab()->copyable(),
                         TextEntry::make('scan_count')->label('Total Scans'),
-                        TextEntry::make('monthly_scans')
-                            ->label('Monthly Scans')
-                            ->state(function ($record) {
-                                $monthlyScans = $record
-                                    ->scans()
-                                    ->whereMonth('scanned_at', now()->month)
-                                    ->whereYear('scanned_at', now()->year)
-                                    ->count();
-                                $monthlyLimit = $record->user->monthly_scan_limit;
-                                return "{$monthlyScans} / {$monthlyLimit}";
-                            })
-                            ->color(
-                                fn($record) => $record
-                                    ->scans()
-                                    ->whereMonth('scanned_at', now()->month)
-                                    ->whereYear('scanned_at', now()->year)
-                                    ->count() >= $record->user->monthly_scan_limit
-                                    ? 'danger'
-                                    : 'success',
-                            ),
-                        TextEntry::make('upgrade_scans')
-                            ->label('')
-                            ->state('Upgrade Scan Limit')
-                            ->url(route('addons.purchase', ['addon' => 'monthly_scans', 'qr_code' => $record->id]))
-                            ->openUrlInNewTab()
-                            ->color('primary')
-                            ->weight(FontWeight::Bold)
-                            ->visible(
-                                fn($record) => $record
-                                    ->scans()
-                                    ->whereMonth('scanned_at', now()->month)
-                                    ->whereYear('scanned_at', now()->year)
-                                    ->count() >=
-                                    $record->user->monthly_scan_limit * 0.8, // Show upgrade option when 80% of limit is reached
-                            ),
+
                         TextEntry::make('created_at')->dateTime(),
                     ])
                     ->columnSpan(1),

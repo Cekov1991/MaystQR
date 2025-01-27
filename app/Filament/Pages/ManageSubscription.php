@@ -3,9 +3,12 @@
 namespace App\Filament\Pages;
 
 use App\Services\SubscriptionService;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\View;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -18,54 +21,90 @@ class ManageSubscription extends Page
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
     protected static ?string $navigationGroup = 'Account';
     protected static string $view = 'filament.pages.manage-subscription';
+    protected static ?string $title = 'Manage Subscription';
     protected static ?int $navigationSort = 3;
 
     public ?array $data = [];
+    public float $totalPrice = 0;
 
     public function mount(): void
     {
         $subscription = auth()->user()->subscription;
 
+        if (!$subscription) {
+            $subscription = auth()->user()->createDefaultSubscription();
+        }
+
         $this->form->fill([
-            'dynamic_qr_codes_limit' => $subscription?->dynamic_qr_codes_limit ?? 1,
-            'monthly_scan_limit' => $subscription?->monthly_scan_limit ?? 1000,
-            'has_advanced_analytics' => $subscription?->has_advanced_analytics ?? false,
-            'has_custom_branding' => $subscription?->has_custom_branding ?? false,
+            'monthly_scan_limit' => $subscription->monthly_scan_limit,
+            'has_advanced_analytics' => $subscription->has_advanced_analytics,
+            'has_custom_branding' => $subscription->has_custom_branding,
         ]);
+
+        $this->calculateTotalPrice();
     }
 
     public function form(Form $form): Form
     {
         return $form
+            ->statePath('data')
             ->schema([
-                Section::make('Subscription Features')
-                    ->description('Customize your subscription features')
-                    ->schema([
-                        TextInput::make('dynamic_qr_codes_limit')
-                            ->label('Dynamic QR Code Limit')
-                            ->numeric()
-                            ->minValue(1)
-                            ->required()
-                            ->helperText('Number of dynamic QR codes you can create'),
+                Grid::make(2)->schema([
+                    Section::make('Current Plan Features')
+                        ->description('Customize your subscription features')
+                        ->schema([
 
-                        TextInput::make('monthly_scan_limit')
-                            ->label('Monthly Scan Limit')
-                            ->numeric()
-                            ->minValue(1000)
-                            ->step(1000)
-                            ->required()
-                            ->helperText('Number of scans allowed per month'),
+                            TextInput::make('monthly_scan_limit')
+                                ->label('Monthly Scan Limit')
+                                ->numeric()
+                                ->minValue(1000)
+                                ->step(1000)
+                                ->required()
+                                ->reactive()
+                                ->afterStateUpdated(fn () => $this->calculateTotalPrice())
+                                ->helperText('First 1,000 scans are free, then $2/1000 scans'),
 
-                        Toggle::make('has_advanced_analytics')
-                            ->label('Advanced Analytics')
-                            ->helperText('Enable detailed analytics and reporting'),
+                            Toggle::make('has_advanced_analytics')
+                                ->label('Advanced Analytics')
+                                ->reactive()
+                                ->afterStateUpdated(fn () => $this->calculateTotalPrice())
+                                ->helperText('Enable detailed analytics ($20/month)'),
 
-                        Toggle::make('has_custom_branding')
-                            ->label('Custom Branding')
-                            ->helperText('Enable custom branding on your QR codes'),
-                    ])
-                    ->columns(2),
+                            Toggle::make('has_custom_branding')
+                                ->label('Custom Branding')
+                                ->reactive()
+                                ->afterStateUpdated(fn () => $this->calculateTotalPrice())
+                                ->helperText('Enable custom branding ($10/month)'),
+                        ]),
+
+                    Section::make('Subscription Summary')
+                        ->schema([
+                            View::make('filament.pages.partials.subscription-summary')
+                                ->viewData([
+                                    'totalPrice' => $this->totalPrice,
+                                ])
+                        ])
+                ]),
             ]);
+    }
+
+    public function calculateTotalPrice(): void
+    {
+        $data = $this->form->getState();
+        $this->totalPrice = 0;
+
+        // Calculate scans cost
+        if ($data['monthly_scan_limit'] > 1000) {
+            $this->totalPrice += ceil(($data['monthly_scan_limit'] - 1000) / 1000) * 2.00;
+        }
+
+        // Add feature costs
+        if ($data['has_advanced_analytics']) {
+            $this->totalPrice += 20.00;
+        }
+        if ($data['has_custom_branding']) {
+            $this->totalPrice += 10.00;
+        }
     }
 
     public function update(): void
@@ -76,14 +115,9 @@ class ManageSubscription extends Page
             $subscription = auth()->user()->subscription;
             $subscriptionService = app(SubscriptionService::class);
 
-            if (!$subscription) {
-                $subscription = $subscriptionService->createSubscription(auth()->user());
-            }
-
             foreach ($data as $key => $value) {
                 if ($subscription->$key !== $value) {
-                    $price = $this->calculateFeaturePrice($key, $value);
-                    $subscriptionService->addFeature($subscription, $key, $value, $price);
+                    $subscriptionService->addFeature($subscription, $key, $value, $this->calculateFeaturePrice($key, $value));
                 }
             }
 
@@ -103,12 +137,10 @@ class ManageSubscription extends Page
 
     private function calculateFeaturePrice(string $key, int|bool $value): float
     {
-        // Implement your pricing logic here
         return match($key) {
-            'dynamic_qr_codes_limit' => ($value - 1) * 5.00, // $5 per additional QR code
-            'monthly_scan_limit' => ceil(($value - 1000) / 1000) * 2.00, // $2 per 1000 additional scans
-            'has_advanced_analytics' => $value ? 20.00 : 0, // $20 for advanced analytics
-            'has_custom_branding' => $value ? 10.00 : 0, // $10 for custom branding
+            'monthly_scan_limit' => ceil(($value - 1000) / 1000) * 2.00,
+            'has_advanced_analytics' => $value ? 20.00 : 0,
+            'has_custom_branding' => $value ? 10.00 : 0,
             default => 0,
         };
     }

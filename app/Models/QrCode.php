@@ -17,6 +17,7 @@ class QrCode extends Model
         'options',
         'qr_code_image',
         'folder_id',
+        'user_id',
     ];
 
     protected $casts = [
@@ -29,8 +30,13 @@ class QrCode extends Model
         parent::boot();
 
         static::creating(function ($qrCode) {
-            $qrCode->short_url = static::generateUniqueShortUrl();
-            $qrCode->user_id = auth()->id();
+            if (!$qrCode->short_url) {
+                $qrCode->short_url = static::generateUniqueShortUrl();
+            }
+
+            if (!$qrCode->user_id) {
+                $qrCode->user_id = auth()->id();
+            }
 
             if (!$qrCode->type) {
                 $qrCode->type = 'static';

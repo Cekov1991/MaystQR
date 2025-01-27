@@ -9,12 +9,15 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Traits\HasSubscription;
+use App\Traits\HasQrCodes;
+use App\Traits\HasDynamicQrCodePricing;
 
 class User extends Authenticatable
 {
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasSubscription, HasQrCodes, HasDynamicQrCodePricing;
 
     /**
      * The attributes that are mass assignable.
@@ -50,11 +53,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function qrCodes()
-    {
-        return $this->hasMany(QrCode::class);
-    }
-
     public function folders()
     {
         return $this->hasMany(Folder::class);
@@ -80,12 +78,23 @@ class User extends Authenticatable
         return $this->subscription?->has_advanced_analytics ?? false;
     }
 
-    public function canCreateDynamicQrCode(): bool
+    public function paymentMethods()
     {
-        if (!$this->subscription) {
-            return $this->qrCodes()->where('type', 'dynamic')->count() < 1;
-        }
+        return $this->hasMany(PaymentMethod::class);
+    }
 
-        return $this->qrCodes()->where('type', 'dynamic')->count() < $this->subscription->dynamic_qr_codes_limit;
+    public function hasPaymentInformation(): bool
+    {
+        return $this->paymentMethods()->exists();
+    }
+
+    public function getDefaultPaymentMethod(): ?PaymentMethod
+    {
+        return $this->paymentMethods()->where('is_default', true)->first();
+    }
+
+    public function disconnectPaymentMethod(string $provider): void
+    {
+        $this->paymentMethods()->where('provider', $provider)->delete();
     }
 }
