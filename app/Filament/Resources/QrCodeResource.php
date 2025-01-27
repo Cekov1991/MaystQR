@@ -34,7 +34,7 @@ class QrCodeResource extends Resource
             ->schema([
                 Section::make('Basic Information')
                     ->schema([
-                        Grid::make(2)
+                        Grid::make(1)
                             ->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->required()
@@ -48,12 +48,7 @@ class QrCodeResource extends Resource
                                     ->required()
                                     ->disabled(fn ($record) => $record !== null)
                                     ->dehydrated(),
-                            ]),
-                        Forms\Components\Select::make('folder_id')
-                            ->relationship('folder', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->label('Folder'),
+                            ])
                     ]),
 
                 Section::make('URL Configuration')
@@ -140,9 +135,7 @@ class QrCodeResource extends Resource
                     ->options([
                         'static' => 'Static',
                         'dynamic' => 'Dynamic',
-                    ]),
-                Tables\Filters\SelectFilter::make('folder')
-                    ->relationship('folder', 'name'),
+                    ])
             ])
             ->actions([
                 TableAction::make('download')

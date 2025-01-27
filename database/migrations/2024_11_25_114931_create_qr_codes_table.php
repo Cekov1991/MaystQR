@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('id');
             $table->string('name');
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('folder_id')->nullable();
             $table->enum('type', ['static', 'dynamic']);
             $table->text('content');
             $table->string('short_url')->nullable();
@@ -28,7 +27,6 @@ return new class extends Migration
 
             // Foreign Keys
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('folder_id')->references('id')->on('folders')->onDelete('set null');
         });
     }
 

@@ -3,64 +3,44 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Subscription extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
         'user_id',
-        'paypal_subscription_id',
         'status',
-        'dynamic_qr_codes_limit',
-        'monthly_scan_limit',
-        'has_advanced_analytics',
-        'has_custom_branding',
+        'dynamic_qr_limit',
+        'scans_per_code',
         'current_price',
         'next_billing_date',
     ];
 
     protected $casts = [
-        'has_advanced_analytics' => 'boolean',
-        'has_custom_branding' => 'boolean',
-        'current_price' => 'decimal:2',
         'next_billing_date' => 'datetime',
+        'dynamic_qr_limit' => 'integer',
+        'scans_per_code' => 'integer',
+        'current_price' => 'float',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function features()
+    public function incrementDynamicQrLimit(int $amount = 5): void
     {
-        return $this->hasMany(SubscriptionFeature::class);
-    }
-
-    public function addFeature(string $featureKey, int|bool $value, float $price): SubscriptionFeature
-    {
-        $feature = new SubscriptionFeature([
-            'feature_key' => $featureKey,
-            'price' => $price,
-            'added_at' => now(),
+        $this->update([
+            'dynamic_qr_limit' => $this->dynamic_qr_limit + $amount,
+            'current_price' => $this->current_price + 5.00,
         ]);
-
-        if (is_bool($value)) {
-            $feature->enabled = $value;
-        } else {
-            $feature->quantity = $value;
-        }
-
-        $this->features()->save($feature);
-        $this->updateTotalPrice();
-
-        return $feature;
     }
 
-    public function updateTotalPrice(): void
+    public function incrementScansPerCode(int $amount = 1000): void
     {
-        $this->current_price = $this->features()->sum('price');
-        $this->save();
+        $this->update([
+            'scans_per_code' => $this->scans_per_code + $amount,
+            'current_price' => $this->current_price + 5.00,
+        ]);
     }
 }

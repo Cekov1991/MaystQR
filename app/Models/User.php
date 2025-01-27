@@ -9,15 +9,13 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Traits\HasSubscription;
-use App\Traits\HasQrCodes;
-use App\Traits\HasDynamicQrCodePricing;
+
 
 class User extends Authenticatable
 {
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasSubscription, HasQrCodes, HasDynamicQrCodePricing;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -53,14 +51,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function folders()
+    public function qrCodes()
     {
-        return $this->hasMany(Folder::class);
-    }
-
-    public function userAddons()
-    {
-        return $this->hasMany(UserAddon::class);
+        return $this->hasMany(QrCode::class);
     }
 
     public function subscription()
@@ -71,11 +64,6 @@ class User extends Authenticatable
     public function getRemainingScans(): int
     {
         return $this->subscription?->monthly_scan_limit ?? 1000; // Free tier limit
-    }
-
-    public function hasAdvancedAnalytics(): bool
-    {
-        return $this->subscription?->has_advanced_analytics ?? false;
     }
 
     public function paymentMethods()
