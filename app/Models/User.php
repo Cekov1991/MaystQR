@@ -3,12 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -61,77 +65,27 @@ class User extends Authenticatable
         return $this->hasMany(UserAddon::class);
     }
 
-    public function activeAddons()
+    public function subscription()
     {
-        return $this->userAddons()
-            ->where('status', 'active')
-            ->where(function ($query) {
-                $query->whereNull('expires_at')
-                    ->orWhere('expires_at', '>', now());
-            });
+        return $this->hasOne(Subscription::class)->where('status', 'active');
     }
 
-    public function hasActiveAddon(string $addonKey, ?QrCode $qrCode = null): bool
+    public function getRemainingScans(): int
     {
-        return $this->activeAddons()
-            ->whereHas('addon', fn($query) => $query->where('key', $addonKey))
-            ->when($qrCode, fn($query) => $query->where('qr_code_id', $qrCode->id))
-            ->exists();
-    }
-
-    public function canPurchaseAddon(Addon $addon, ?QrCode $qrCode = null): bool
-    {
-        // Check if addon is active
-        if (!$addon->is_active) {
-            return false;
-        }
-
-        // For QR code specific addons, ensure QR code is provided and belongs to user
-        if ($qrCode && $addon->type === 'scans') {
-            if ($qrCode->user_id !== $this->id) {
-                return false;
-            }
-        }
-
-        // Prevent duplicate purchases for same QR code
-        if ($qrCode && $this->hasActiveAddon($addon->key, $qrCode)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function getRemainingScans(?QrCode $qrCode = null): int
-    {
-        $baseLimit = $this->monthly_scan_limit;
-
-        if ($qrCode) {
-            // Add additional scans from active scan addons for this QR code
-            $additionalScans = $this->activeAddons()
-                ->whereHas('addon', fn($query) => $query->where('type', 'scans'))
-                ->where('qr_code_id', $qrCode->id)
-                ->sum(function ($userAddon) {
-                    return json_decode($userAddon->addon->features)[0] ?? 0;
-                });
-
-            return $baseLimit + $additionalScans;
-        }
-
-        return $baseLimit;
+        return $this->subscription?->monthly_scan_limit ?? 1000; // Free tier limit
     }
 
     public function hasAdvancedAnalytics(): bool
     {
-        return $this->hasActiveAddon('advanced_analytics');
+        return $this->subscription?->has_advanced_analytics ?? false;
     }
 
-    public function hasCustomBranding(): bool
+    public function canCreateDynamicQrCode(): bool
     {
-        return $this->hasActiveAddon('custom_branding');
-    }
+        if (!$this->subscription) {
+            return $this->qrCodes()->where('type', 'dynamic')->count() < 1;
+        }
 
-    public function hasAdditionalScans(): bool
-    {
-        return $this->hasActiveAddon('additional_scans_10k');
+        return $this->qrCodes()->where('type', 'dynamic')->count() < $this->subscription->dynamic_qr_codes_limit;
     }
 }

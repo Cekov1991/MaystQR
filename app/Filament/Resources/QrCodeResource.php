@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\RateLimiter;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\QrCodeResource\RelationManagers\ScansRelationManager;
+use Filament\Facades\Filament;
 
 class QrCodeResource extends Resource
 {

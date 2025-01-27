@@ -22,72 +22,81 @@ class ViewQrCode extends ViewRecord
 
     public function infolist(Infolist $infolist): Infolist
     {
-        return $infolist
-            ->schema([
-                Grid::make(2)
-                    ->schema([
-                        Section::make('QR Code')
-                            ->schema([
-                                ImageEntry::make('qr_code_image')
-                                    ->size(300)
-                                    ->alignCenter(),
-                                TextEntry::make('short_url')
-                                    ->label('Scan URL')
-                                    ->url(fn ($record) => route('qr.redirect', $record->short_url))
-                                    ->copyable()
-                                    ->copyMessage('URL copied')
-                                    ->copyMessageDuration(1500)
-                                    ->alignCenter(),
-                            ])
-                            ->columnSpan(1),
+        $record = $this->record;
+        $hasAdvancedAnalytics = $record->user->hasActiveAddon('advanced_analytics', $record);
 
-                        Section::make('Details')
-                            ->schema([
-                                TextEntry::make('name')
-                                    ->weight(FontWeight::Bold),
-                                TextEntry::make('type')
-                                    ->badge()
-                                    ->color(fn (string $state): string => match ($state) {
-                                        'dynamic' => 'success',
-                                        'static' => 'info',
-                                    }),
-                                TextEntry::make('destination_url')
-                                    ->label('Redirects to')
-                                    ->url(fn ($record) => $record->destination_url)
-                                    ->openUrlInNewTab()
-                                    ->copyable(),
-                                TextEntry::make('scan_count')
-                                    ->label('Total Scans'),
-                                TextEntry::make('created_at')
-                                    ->dateTime(),
-                            ])
-                            ->columnSpan(1),
-                    ]),
+        return $infolist->schema([
+            Grid::make(2)->schema([
+                Section::make('QR Code')
+                    ->schema([ImageEntry::make('qr_code_image')->size(300)->alignCenter(), TextEntry::make('short_url')->label('Scan URL')->url(fn($record) => route('qr.redirect', $record->short_url))->copyable()->copyMessage('URL copied')->copyMessageDuration(1500)->alignCenter()])
+                    ->columnSpan(1),
 
-                Section::make('Recent Scans')
+                Section::make('Details')
                     ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextEntry::make('scans_today')
-                                    ->label('Scans Today')
-                                    ->state(fn ($record) => $record->scans()
-                                        ->whereDate('scanned_at', today())
-                                        ->count()),
-                                TextEntry::make('scans_week')
-                                    ->label('Scans This Week')
-                                    ->state(fn ($record) => $record->scans()
-                                        ->whereBetween('scanned_at', [
-                                            now()->startOfWeek(),
-                                            now()->endOfWeek(),
-                                        ])->count()),
-                                TextEntry::make('unique_countries')
-                                    ->label('Countries')
-                                    ->state(fn ($record) => $record->scans()
-                                        ->distinct('country')
-                                        ->count('country')),
-                            ]),
-                    ]),
-            ]);
+                        TextEntry::make('name')->weight(FontWeight::Bold),
+                        TextEntry::make('type')->badge()->color(
+                            fn(string $state): string => match ($state) {
+                                'dynamic' => 'success',
+                                'static' => 'info',
+                            },
+                        ),
+                        TextEntry::make('destination_url')->label('Redirects to')->url(fn($record) => $record->destination_url)->openUrlInNewTab()->copyable(),
+                        TextEntry::make('scan_count')->label('Total Scans'),
+                        TextEntry::make('monthly_scans')
+                            ->label('Monthly Scans')
+                            ->state(function ($record) {
+                                $monthlyScans = $record
+                                    ->scans()
+                                    ->whereMonth('scanned_at', now()->month)
+                                    ->whereYear('scanned_at', now()->year)
+                                    ->count();
+                                $monthlyLimit = $record->user->monthly_scan_limit;
+                                return "{$monthlyScans} / {$monthlyLimit}";
+                            })
+                            ->color(
+                                fn($record) => $record
+                                    ->scans()
+                                    ->whereMonth('scanned_at', now()->month)
+                                    ->whereYear('scanned_at', now()->year)
+                                    ->count() >= $record->user->monthly_scan_limit
+                                    ? 'danger'
+                                    : 'success',
+                            ),
+                        TextEntry::make('upgrade_scans')
+                            ->label('')
+                            ->state('Upgrade Scan Limit')
+                            ->url(route('addons.purchase', ['addon' => 'monthly_scans', 'qr_code' => $record->id]))
+                            ->openUrlInNewTab()
+                            ->color('primary')
+                            ->weight(FontWeight::Bold)
+                            ->visible(
+                                fn($record) => $record
+                                    ->scans()
+                                    ->whereMonth('scanned_at', now()->month)
+                                    ->whereYear('scanned_at', now()->year)
+                                    ->count() >=
+                                    $record->user->monthly_scan_limit * 0.8, // Show upgrade option when 80% of limit is reached
+                            ),
+                        TextEntry::make('created_at')->dateTime(),
+                    ])
+                    ->columnSpan(1),
+            ]),
+
+            // Only show analytics if user has the addon
+
+            Section::make('Recent Scans')->schema([
+                Grid::make(3)->schema([
+                    TextEntry::make('scans_today')->label('Scans Today')->state(fn($record) => $record->scans()->whereDate('scanned_at', today())->count()),
+                    TextEntry::make('scans_week')->label('Scans This Week')->state(
+                        fn($record) => $record
+                            ->scans()
+                            ->whereBetween('scanned_at', [now()->startOfWeek(), now()->endOfWeek()])
+                            ->count(),
+                    ),
+                    TextEntry::make('unique_countries')->label('Countries')->state(fn($record) => $record->scans()->distinct('country')->count('country')),
+                ]),
+            ]),
+        ]);
     }
 
     protected function getFooterWidgets(): array
@@ -114,7 +123,7 @@ class ViewQrCode extends ViewRecord
                     $zipPath = storage_path("app/temp/{$record->name}-qr-codes.zip");
                     $zip = new ZipArchive();
 
-                    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+                    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
                         // Add original format
                         $originalPath = Storage::disk('public')->path($record->qr_code_image);
                         $originalFormat = $record->options['format'] ?? 'png';
@@ -123,7 +132,9 @@ class ViewQrCode extends ViewRecord
                         // Generate and add other formats
                         $formats = ['png', 'svg', 'eps'];
                         foreach ($formats as $format) {
-                            if ($format === $originalFormat) continue;
+                            if ($format === $originalFormat) {
+                                continue;
+                            }
 
                             $qrCode = QrCodeGenerator::format($format)
                                 ->size($record->options['size'] ?? 300)
@@ -138,7 +149,9 @@ class ViewQrCode extends ViewRecord
 
                         // Clean up temporary files
                         foreach ($formats as $format) {
-                            if ($format === $originalFormat) continue;
+                            if ($format === $originalFormat) {
+                                continue;
+                            }
                             @unlink(storage_path("app/temp/qr-{$record->name}.{$format}"));
                         }
 
@@ -150,13 +163,10 @@ class ViewQrCode extends ViewRecord
                 ->label('Download Original')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->action(function () {
-                    return response()->download(
-                        Storage::disk('public')->path($this->record->qr_code_image)
-                    );
+                    return response()->download(Storage::disk('public')->path($this->record->qr_code_image));
                 }),
 
-            Action::make('edit')
-                ->url(fn () => $this->getResource()::getUrl('edit', ['record' => $this->record])),
+            Action::make('edit')->url(fn() => $this->getResource()::getUrl('edit', ['record' => $this->record])),
         ];
     }
 }

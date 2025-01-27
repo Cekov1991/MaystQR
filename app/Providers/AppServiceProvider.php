@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use App\Services\IpGeolocationService;
 use Illuminate\Http\Client\Factory as Http;
+use App\Models\Subscription;
+use App\Observers\SubscriptionObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,5 +31,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::unguard();
+        Subscription::observe(SubscriptionObserver::class);
     }
 }

@@ -18,11 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-
             $table->string('paypal_customer_id')->nullable();
-            $table->integer('available_dynamic_qr_codes')->default(1);
-            $table->integer('monthly_scan_limit')->default(1000);
-
             $table->timestamps();
         });
 
