@@ -29,6 +29,7 @@ use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\EventImageResource;
 use App\Filament\Resources\PublicationResource;
 use App\Filament\Resources\UserResource;
+use App\Filament\Resources\SubscriptionPlanResource;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -66,8 +67,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->resources([
+                SubscriptionPlanResource::class,
             ]);
-
-
     }
 }
