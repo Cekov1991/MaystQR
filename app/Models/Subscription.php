@@ -28,6 +28,11 @@ class Subscription extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function subscriptionPlan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class);
+    }
+
     public function incrementDynamicQrLimit(int $amount = 5): void
     {
         $this->update([
@@ -42,5 +47,22 @@ class Subscription extends Model
             'scans_per_code' => $this->scans_per_code + $amount,
             'current_price' => $this->current_price + 5.00,
         ]);
+    }
+
+    public function cancel(): void
+    {
+        $this->update([
+            'status' => 'cancelled',
+        ]);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
     }
 }
