@@ -40,14 +40,79 @@ class QrCodeResource extends Resource
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\Select::make('type')
-                                    ->options([
-                                        'static' => 'Static QR Code',
-                                        'dynamic' => 'Dynamic QR Code (Premium)',
-                                    ])
+                                    ->options(function () {
+                                        $user = auth()->user();
+                                        $subscription = $user->subscription;
+
+                                        // Count user's dynamic QR codes
+                                        $dynamicQrCount = QrCode::where('user_id', $user->id)
+                                            ->where('type', 'dynamic')
+                                            ->count();
+
+                                        // Base options array
+                                        $options = [
+                                            'static' => 'Static QR Code',
+                                        ];
+
+                                        // Add dynamic option with appropriate suffix
+                                        if ($subscription) {
+                                            $remainingCodes = $subscription->dynamic_qr_limit - $dynamicQrCount;
+                                            $options['dynamic'] = "Dynamic QR Code ({$remainingCodes} remaining)";
+                                        } else {
+                                            $options['dynamic'] = 'Dynamic QR Code (Premium)';
+                                        }
+
+                                        return $options;
+                                    })
                                     ->default('static')
                                     ->required()
                                     ->disabled(fn ($record) => $record !== null)
-                                    ->dehydrated(),
+                                    ->dehydrated()
+                                    ->rules([
+                                        function () {
+                                            return function (string $attribute, $value, \Closure $fail) {
+                                                if ($value !== 'dynamic') {
+                                                    return;
+                                                }
+
+                                                $user = auth()->user();
+                                                $subscription = $user->subscription;
+
+                                                // Check if user has an active subscription
+                                                if (!$subscription) {
+                                                    $fail('You need an active subscription to create dynamic QR codes.');
+                                                    return;
+                                                }
+
+                                                // Check if user has reached their dynamic QR code limit
+                                                $dynamicQrCount = QrCode::where('user_id', $user->id)
+                                                    ->where('type', 'dynamic')
+                                                    ->count();
+
+                                                if ($dynamicQrCount >= $subscription->dynamic_qr_limit) {
+                                                    $fail("You have reached your limit of {$subscription->dynamic_qr_limit} dynamic QR codes.");
+                                                }
+                                            };
+                                        }
+                                    ])
+                                    ->helperText(function () {
+                                        $user = auth()->user();
+                                        $subscription = $user->subscription;
+
+                                        if (!$subscription) {
+                                            return 'Subscribe to create dynamic QR codes';
+                                        }
+
+                                        $dynamicQrCount = QrCode::where('user_id', $user->id)
+                                            ->where('type', 'dynamic')
+                                            ->count();
+
+                                        if ($dynamicQrCount >= $subscription->dynamic_qr_limit) {
+                                            return "You've reached your limit of {$subscription->dynamic_qr_limit} dynamic QR codes";
+                                        }
+
+                                        return null;
+                                    }),
                             ])
                     ]),
 
