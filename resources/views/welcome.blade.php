@@ -43,7 +43,7 @@
 
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li><a href="#hero" class="active">Dashboard</a></li>
+          <li><a href="/admin/register" class="active">Dashboard</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#features">Features</a></li>
           <li><a href="#pricing">Pricing</a></li>
@@ -52,7 +52,7 @@
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
 
-      <a class="btn-getstarted" href="index.html#about">Get Started</a>
+      <a class="btn-getstarted" href="/admin/register">Get Started</a>
 
     </div>
   </header>
@@ -83,7 +83,7 @@
               </p>
 
               <div class="hero-buttons">
-                <a href="#about" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a>
+                <a href="/admin/register" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a>
                 <!-- <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="btn btn-link mt-2 mt-sm-0 glightbox">
                   <i class="bi bi-play-circle me-1"></i>
                   Play Video
@@ -464,8 +464,8 @@
                 </li>
               </ul>
 
-              <a href="#" class="btn btn-primary">
-                Buy Now
+              <a href="/admin/register" class="btn btn-primary">
+                Get started
                 <i class="bi bi-arrow-right"></i>
               </a>
             </div>
@@ -504,8 +504,8 @@
                 </li>
               </ul>
 
-              <a href="#" class="btn btn-light">
-                Buy Now
+              <a href="/admin/register" class="btn btn-light">
+                Get started
                 <i class="bi bi-arrow-right"></i>
               </a>
             </div>
@@ -516,7 +516,7 @@
               <h3>Growth Plan</h3>
               <div class="price">
                 <span class="currency">$</span>
-                <span class="amount">15</span>
+                <span class="amount">10</span>
                 <span class="period">/ month</span>
               </div>
 
@@ -528,11 +528,11 @@
                 </li>
                 <li>
                   <i class="bi bi-check-circle-fill"></i>
-                  Up to 100 Dynamic QR Codes
+                  Up to 10 Dynamic QR Codes
                 </li>
                 <li>
                   <i class="bi bi-check-circle-fill"></i>
-                  50,000 scans per month
+                  5,000 scans per month
                 </li>
                 <li>
                   <i class="bi bi-check-circle-fill"></i>
@@ -544,14 +544,14 @@
                 </li>
               </ul>
 
-              <a href="#" class="btn btn-primary">
-                Buy Now
+              <a href="/admin/register" class="btn btn-primary">
+                Get started
                 <i class="bi bi-arrow-right"></i>
               </a>
             </div>
           </div>
 
-          <div class="col-lg-12" data-aos="fade-up" data-aos-delay="200">
+          {{-- <div class="col-lg-12" data-aos="fade-up" data-aos-delay="200">
             <div class="pricing-card">
               <h3>Add-on Features</h3>
 
@@ -570,7 +570,7 @@
                 </li>
               </ul>
             </div>
-          </div>
+          </div> --}}
         </div>
 
       </div>

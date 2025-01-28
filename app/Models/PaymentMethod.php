@@ -11,12 +11,10 @@ class PaymentMethod extends Model
         'provider',
         'provider_id',
         'email',
-        'is_default',
         'meta',
     ];
 
     protected $casts = [
-        'is_default' => 'boolean',
         'meta' => 'array',
     ];
 
@@ -25,9 +23,13 @@ class PaymentMethod extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function setAsDefault(): void
+    public static function boot()
     {
-        $this->user->paymentMethods()->update(['is_default' => false]);
-        $this->update(['is_default' => true]);
+        parent::boot();
+
+        static::creating(function ($paymentMethod) {
+            // Delete any existing payment methods for this user
+            static::where('user_id', $paymentMethod->user_id)->delete();
+        });
     }
 }

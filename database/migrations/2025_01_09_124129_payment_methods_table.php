@@ -12,9 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('provider'); // 'paypal', 'stripe', etc.
-            $table->string('provider_id'); // PayPal subscription ID or Stripe customer ID
+            $table->string('provider_id')->nullable(); // PayPal subscription ID or Stripe customer ID
             $table->string('email')->nullable(); // Customer's email with the provider
-            $table->boolean('is_default')->default(false);
             $table->json('meta')->nullable(); // For any additional provider-specific data
             $table->timestamps();
         });

@@ -71,18 +71,13 @@ class User extends Authenticatable
         return $this->hasMany(PaymentMethod::class);
     }
 
-    public function hasPaymentInformation(): bool
+    public function getPaymentMethod(): ?PaymentMethod
+    {
+        return $this->paymentMethods()->first();
+    }
+
+    public function hasPaymentMethod(): bool
     {
         return $this->paymentMethods()->exists();
-    }
-
-    public function getDefaultPaymentMethod(): ?PaymentMethod
-    {
-        return $this->paymentMethods()->where('is_default', true)->first();
-    }
-
-    public function disconnectPaymentMethod(string $provider): void
-    {
-        $this->paymentMethods()->where('provider', $provider)->delete();
     }
 }

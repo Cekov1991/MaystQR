@@ -16,5 +16,21 @@ class SubscriptionPlanSeeder extends Seeder
             'scans_per_code' => 1000,
             'is_active' => true,
         ]);
+
+        SubscriptionPlan::create([
+            'name' => 'Pro Plan',
+            'price' => 10.00,
+            'dynamic_qr_limit' => 10,
+            'scans_per_code' => 5000,
+            'is_active' => true,
+        ]);
+
+        SubscriptionPlan::create([
+            'name' => 'Enterprise Plan',
+            'price' => 20.00,
+            'dynamic_qr_limit' => 20,
+            'scans_per_code' => 10000,
+            'is_active' => true,
+        ]);
     }
 }
