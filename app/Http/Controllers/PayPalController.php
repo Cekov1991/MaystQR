@@ -25,11 +25,19 @@ class PayPalController extends Controller
 
     public function success(Request $request)
     {
+        // dd($request);
         try {
             $result = $this->paypalService->capturePayment($request->token);
-
-            // Handle successful payment
-            // Update subscription status, etc.
+            // dd($result);
+            // Get pending subscription
+            $subscription = $request->user()->pendingSubscription()->first();
+            // Update subscription status
+            $subscription->update([
+                'status' => 'active',
+                'payment_method' => 'paypal',
+                'order_id' => $result->id,
+                'payer_id' => $result->payer->payer_id,
+            ]);
 
             return redirect()->route('filament.admin.resources.subscriptions.index')
                 ->with('success', 'Payment processed successfully');
@@ -39,8 +47,11 @@ class PayPalController extends Controller
         }
     }
 
-    public function cancel()
+    public function cancel(Request $request)
     {
+        $subscription = $request->user()->subscription()->first();
+        $subscription->update(['status' => 'cancelled']);
+
         return redirect()->route('filament.admin.resources.subscriptions.index')
             ->with('info', 'Payment cancelled');
     }

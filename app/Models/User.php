@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $this->hasOne(Subscription::class)->where('status', 'active');
     }
 
+    public function pendingSubscription()
+    {
+        return $this->hasOne(Subscription::class)->where('status', 'pending');
+    }
+
     public function getRemainingScans(): int
     {
         return $this->subscription?->monthly_scan_limit ?? 1000; // Free tier limit

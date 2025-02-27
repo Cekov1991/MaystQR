@@ -88,7 +88,7 @@ class SubscriptionPlanResource extends Resource
                             ]);
 
                             // Redirect to PayPal checkout
-                            return redirect($order['links'][1]['href']);
+                            return redirect($order->links[1]->href);
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->danger()

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SubscriptionResource\Pages;
 use App\Models\Subscription;
+use App\Services\PayPalService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -59,8 +60,9 @@ class SubscriptionResource extends Resource
                     ->visible(fn (Subscription $record): bool =>
                         $record->status === 'active'
                     )
-                    ->action(function (Subscription $record): void {
+                    ->action(function (Subscription $record, PayPalService $paypalService): void {
                         $record->update(['status' => 'cancelled']);
+                        $paypalService->cancel($record->order_id);
                     })
                     ->modalHeading('Cancel Subscription')
                     ->modalDescription('Are you sure you want to cancel your subscription? You will continue to have access until the end of your billing period.')

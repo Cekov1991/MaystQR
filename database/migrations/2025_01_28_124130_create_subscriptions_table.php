@@ -16,6 +16,9 @@ return new class extends Migration
             $table->integer('dynamic_qr_limit')->default(5); // Copied from plan at subscription time
             $table->integer('scans_per_code')->default(1000); // Copied from plan at subscription time
             $table->float('current_price')->default(5.00); // Keeps track of the actual price paid
+            $table->string('payment_method')->nullable();
+            $table->string('order_id')->nullable();
+            $table->string('payer_id')->nullable();
             $table->timestamp('next_billing_date');
             $table->timestamps();
         });

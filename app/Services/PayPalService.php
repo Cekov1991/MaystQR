@@ -7,6 +7,7 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
+use PayPalCheckoutSdk\Orders\OrdersPatchRequest;
 
 class PayPalService
 {
@@ -21,7 +22,7 @@ class PayPalService
         $this->client = new PayPalHttpClient($environment);
     }
 
-    public function createSubscription(float $amount, string $planId): array
+    public function createSubscription(float $amount, string $planId): object
     {
         $request = new OrdersCreateRequest();
         $request->prefer('return=representation');
@@ -41,22 +42,48 @@ class PayPalService
         ];
 
         try {
-            return $this->client->execute($request)->result->toArray();
+            return $this->client->execute($request)->result;
         } catch (\Exception $e) {
             report($e);
             throw $e;
         }
     }
 
-    public function capturePayment(string $orderId): array
+    public function capturePayment(string $orderId): object
     {
         $request = new OrdersCaptureRequest($orderId);
 
         try {
-            return $this->client->execute($request)->result->toArray();
+            return $this->client->execute($request)->result;
+        } catch (\Exception $e) {
+            report($e);
+            throw $e;
+        }
+    }
+
+    public function cancel(string $orderId): object
+    {
+        //To Do. This is not working.
+        $request = new OrdersPatchRequest($orderId);
+        $request->body = [
+            [
+                'op' => 'replace',
+                'path' => '/intent',
+                'value' => 'AUTHORIZE'
+            ],
+            [
+                'op' => 'replace',
+                'path' => '/status',
+                'value' => 'VOIDED'
+            ]
+        ];
+
+        try {
+            return $this->client->execute($request)->result;
         } catch (\Exception $e) {
             report($e);
             throw $e;
         }
     }
 }
+
