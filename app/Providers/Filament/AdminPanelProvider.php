@@ -19,17 +19,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Navigation\NavigationBuilder;
-use Filament\Navigation\NavigationGroup;
-use Filament\Navigation\NavigationItem;
-use App\Filament\Resources\PageResource;
-use App\Filament\Resources\EventResource;
-use App\Filament\Resources\BoardMemberResource;
-use App\Filament\Resources\CategoryResource;
-use App\Filament\Resources\EventImageResource;
-use App\Filament\Resources\PublicationResource;
-use App\Filament\Resources\UserResource;
-use App\Filament\Resources\SubscriptionPlanResource;
+
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -67,9 +57,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->resources([
-                SubscriptionPlanResource::class,
             ]);
     }
 }

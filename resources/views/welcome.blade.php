@@ -473,7 +473,7 @@
           </div> -->
 
           <!-- Dynamic Subscription Plans -->
-          @foreach($subscriptionPlans as $index => $plan)
+          {{-- @foreach($subscriptionPlans as $index => $plan)
             <div class="col-lg-4" data-aos="fade-up" data-aos-delay="{{ 100 + ($index * 100) }}">
               <div class="pricing-card {{ $index === 0 ? 'popular' : '' }}">
                 @if($index === 0)
@@ -520,7 +520,7 @@
                 </a>
               </div>
             </div>
-          @endforeach
+          @endforeach --}}
 
         </div>
 

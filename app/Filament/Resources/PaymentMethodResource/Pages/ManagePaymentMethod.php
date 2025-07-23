@@ -36,7 +36,7 @@ class ManagePaymentMethod extends Page
         return $form
             ->schema([
                 Section::make('Payment Provider')
-                    ->description('Configure your payment method for subscriptions and purchases.')
+                    ->description('Configure your payment method for QR code extension purchases.')
                     ->schema([
                         Grid::make(2)
                             ->schema([
