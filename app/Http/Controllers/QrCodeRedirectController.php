@@ -10,13 +10,16 @@ use Illuminate\Support\Facades\DB;
 
 class QrCodeRedirectController extends Controller
 {
-
-
     public function redirect($shortUrl, IpGeolocationService $geolocation)
     {
         $qrCode = QrCode::where('short_url', $shortUrl)->firstOrFail();
 
-        // Increment scan count
+        // Check if QR code is expired (for dynamic QR codes)
+        if ($qrCode->isExpired()) {
+            return redirect()->route('qr.expired', $qrCode->short_url);
+        }
+
+        // Increment scan count and log the scan
         DB::transaction(function () use ($qrCode, $geolocation) {
             $qrCode->increment('scan_count');
 
