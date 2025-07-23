@@ -27,7 +27,10 @@ class ViewQrCode extends ViewRecord
         return $infolist->schema([
             Grid::make(2)->schema([
                 Section::make('QR Code')
-                    ->schema([ImageEntry::make('qr_code_image')->size(300)->alignCenter(), TextEntry::make('short_url')->label('Scan URL')->url(fn($record) => route('qr.redirect', $record->short_url))->copyable()->copyMessage('URL copied')->copyMessageDuration(1500)->alignCenter()])
+                    ->schema([
+                        ImageEntry::make('qr_code_image')->size(300)->alignCenter(),
+                        TextEntry::make('short_url')->label('Scan URL')->url(fn($record) => route('qr.redirect', $record->short_url))->copyable()->copyMessage('URL copied')->copyMessageDuration(1500)->alignCenter()
+                    ])
                     ->columnSpan(1),
 
                 Section::make('Details')
@@ -39,15 +42,68 @@ class ViewQrCode extends ViewRecord
                                 'static' => 'info',
                             },
                         ),
+                        TextEntry::make('status')
+                            ->state(function ($record) {
+                                if ($record->type === 'static') {
+                                    return 'Active';
+                                }
+
+                                if ($record->isExpired()) {
+                                    return 'Expired';
+                                }
+
+                                if ($record->isInTrial()) {
+                                    return 'Trial Period';
+                                }
+
+                                return 'Active';
+                            })
+                            ->badge()
+                            ->color(function ($record) {
+                                if ($record->type === 'static') {
+                                    return 'success';
+                                }
+
+                                if ($record->isExpired()) {
+                                    return 'danger';
+                                }
+
+                                if ($record->isInTrial()) {
+                                    return 'warning';
+                                }
+
+                                return 'success';
+                            }),
+                        TextEntry::make('expires_at')
+                            ->label('Expires At')
+                            ->dateTime()
+                            ->state(function ($record) {
+                                if ($record->type === 'static') {
+                                    return 'Never expires';
+                                }
+                                return $record->expires_at;
+                            })
+                            ->color(function ($record) {
+                                if ($record->type === 'static') {
+                                    return 'success';
+                                }
+
+                                if ($record->isExpired()) {
+                                    return 'danger';
+                                }
+
+                                if ($record->expires_at && $record->expires_at->diffInHours() < 24) {
+                                    return 'warning';
+                                }
+
+                                return 'primary';
+                            }),
                         TextEntry::make('destination_url')->label('Redirects to')->url(fn($record) => $record->destination_url)->openUrlInNewTab()->copyable(),
                         TextEntry::make('scan_count')->label('Total Scans'),
-
                         TextEntry::make('created_at')->dateTime(),
                     ])
                     ->columnSpan(1),
             ]),
-
-            // Only show analytics if user has the addon
 
             Section::make('Recent Scans')->schema([
                 Grid::make(3)->schema([
@@ -72,66 +128,79 @@ class ViewQrCode extends ViewRecord
             ]),
         ];
     }
+
     public function getFooterWidgetsColumns(): int
     {
-        return 1; // or 'full' depending on your Filament version
+        return 1;
     }
 
     protected function getHeaderActions(): array
     {
-        return [
-            Action::make('download_all_formats')
-                ->label('Download All Formats')
-                ->icon('heroicon-o-archive-box-arrow-down')
-                ->action(function () {
-                    $record = $this->record;
-                    $zipPath = storage_path("app/temp/{$record->name}-qr-codes.zip");
-                    $zip = new ZipArchive();
+        $actions = [];
 
-                    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-                        // Add original format
-                        $originalPath = Storage::disk('public')->path($record->qr_code_image);
-                        $originalFormat = $record->options['format'] ?? 'png';
-                        $zip->addFile($originalPath, "qr-{$record->name}.{$originalFormat}");
+        // Extend action for dynamic QR codes
+        if ($this->record->type === 'dynamic') {
+            $actions[] = Action::make('extend')
+                ->label('Extend QR Code')
+                ->icon('heroicon-o-clock')
+                ->color($this->record->isExpired() ? 'danger' : 'warning')
+                ->url(route('qr.expired', $this->record->short_url))
+                ->openUrlInNewTab();
+        }
 
-                        // Generate and add other formats
-                        $formats = ['png', 'svg', 'eps'];
-                        foreach ($formats as $format) {
-                            if ($format === $originalFormat) {
-                                continue;
-                            }
+        $actions[] = Action::make('download_all_formats')
+            ->label('Download All Formats')
+            ->icon('heroicon-o-archive-box-arrow-down')
+            ->action(function () {
+                $record = $this->record;
+                $zipPath = storage_path("app/temp/{$record->name}-qr-codes.zip");
+                $zip = new ZipArchive();
 
-                            $qrCode = QrCodeGenerator::format($format)
-                                ->size($record->options['size'] ?? 300)
-                                ->generate($record->content);
+                if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+                    // Add original format
+                    $originalPath = Storage::disk('public')->path($record->qr_code_image);
+                    $originalFormat = $record->options['format'] ?? 'png';
+                    $zip->addFile($originalPath, "qr-{$record->name}.{$originalFormat}");
 
-                            $tempPath = storage_path("app/temp/qr-{$record->name}.{$format}");
-                            file_put_contents($tempPath, $qrCode);
-                            $zip->addFile($tempPath, "qr-{$record->name}.{$format}");
+                    // Generate and add other formats
+                    $formats = ['png', 'svg', 'eps'];
+                    foreach ($formats as $format) {
+                        if ($format === $originalFormat) {
+                            continue;
                         }
 
-                        $zip->close();
+                        $qrCode = QrCodeGenerator::format($format)
+                            ->size($record->options['size'] ?? 300)
+                            ->generate($record->content);
 
-                        // Clean up temporary files
-                        foreach ($formats as $format) {
-                            if ($format === $originalFormat) {
-                                continue;
-                            }
-                            @unlink(storage_path("app/temp/qr-{$record->name}.{$format}"));
-                        }
-
-                        return response()->download($zipPath)->deleteFileAfterSend();
+                        $tempPath = storage_path("app/temp/qr-{$record->name}.{$format}");
+                        file_put_contents($tempPath, $qrCode);
+                        $zip->addFile($tempPath, "qr-{$record->name}.{$format}");
                     }
-                }),
 
-            Action::make('download_original')
-                ->label('Download Original')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->action(function () {
-                    return response()->download(Storage::disk('public')->path($this->record->qr_code_image));
-                }),
+                    $zip->close();
 
-            Action::make('edit')->url(fn() => $this->getResource()::getUrl('edit', ['record' => $this->record])),
-        ];
+                    // Clean up temporary files
+                    foreach ($formats as $format) {
+                        if ($format === $originalFormat) {
+                            continue;
+                        }
+                        @unlink(storage_path("app/temp/qr-{$record->name}.{$format}"));
+                    }
+
+                    return response()->download($zipPath)->deleteFileAfterSend();
+                }
+            });
+
+        $actions[] = Action::make('download_original')
+            ->label('Download Original')
+            ->icon('heroicon-o-arrow-down-tray')
+            ->action(function () {
+                return response()->download(Storage::disk('public')->path($this->record->qr_code_image));
+            });
+
+        $actions[] = Action::make('edit')->url(fn() => $this->getResource()::getUrl('edit', ['record' => $this->record]));
+
+        return $actions;
     }
 }

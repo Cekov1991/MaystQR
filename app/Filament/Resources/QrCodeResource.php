@@ -40,79 +40,15 @@ class QrCodeResource extends Resource
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\Select::make('type')
-                                    ->options(function () {
-                                        $user = auth()->user();
-                                        $subscription = $user->subscription;
-
-                                        // Count user's dynamic QR codes
-                                        $dynamicQrCount = QrCode::where('user_id', $user->id)
-                                            ->where('type', 'dynamic')
-                                            ->count();
-
-                                        // Base options array
-                                        $options = [
-                                            'static' => 'Static QR Code',
-                                        ];
-
-                                        // Add dynamic option with appropriate suffix
-                                        if ($subscription) {
-                                            $remainingCodes = $subscription->dynamic_qr_limit - $dynamicQrCount;
-                                            $options['dynamic'] = "Dynamic QR Code ({$remainingCodes} remaining)";
-                                        } else {
-                                            $options['dynamic'] = 'Dynamic QR Code (Premium)';
-                                        }
-
-                                        return $options;
-                                    })
+                                    ->options([
+                                        'static' => 'Static QR Code',
+                                        'dynamic' => 'Dynamic QR Code (24-hour trial)',
+                                    ])
                                     ->default('static')
                                     ->required()
                                     ->disabled(fn ($record) => $record !== null)
                                     ->dehydrated()
-                                    ->rules([
-                                        function () {
-                                            return function (string $attribute, $value, \Closure $fail) {
-                                                if ($value !== 'dynamic') {
-                                                    return;
-                                                }
-
-                                                $user = auth()->user();
-                                                $subscription = $user->subscription;
-
-                                                // Check if user has an active subscription
-                                                if (!$subscription) {
-                                                    $fail('You need an active subscription to create dynamic QR codes.');
-                                                    return;
-                                                }
-
-                                                // Check if user has reached their dynamic QR code limit
-                                                $dynamicQrCount = QrCode::where('user_id', $user->id)
-                                                    ->where('type', 'dynamic')
-                                                    ->count();
-
-                                                if ($dynamicQrCount >= $subscription->dynamic_qr_limit) {
-                                                    $fail("You have reached your limit of {$subscription->dynamic_qr_limit} dynamic QR codes.");
-                                                }
-                                            };
-                                        }
-                                    ])
-                                    ->helperText(function () {
-                                        $user = auth()->user();
-                                        $subscription = $user->subscription;
-
-                                        if (!$subscription) {
-                                            return 'Subscribe to create dynamic QR codes';
-                                        }
-
-                                        $dynamicQrCount = QrCode::where('user_id', $user->id)
-                                            ->where('type', 'dynamic')
-                                            ->count();
-
-                                        if ($dynamicQrCount >= $subscription->dynamic_qr_limit) {
-                                            return "You've reached your limit of {$subscription->dynamic_qr_limit} dynamic QR codes";
-                                        }
-
-                                        return null;
-                                    }),
+                                    ->helperText('Dynamic QR codes start with a 24-hour trial period. You can extend them by purchasing packages.'),
                             ])
                     ]),
 
@@ -185,6 +121,54 @@ class QrCodeResource extends Resource
                         'danger' => 'static',
                         'success' => 'dynamic',
                     ]),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->state(function (QrCode $record) {
+                        if ($record->type === 'static') {
+                            return 'Active';
+                        }
+
+                        if ($record->isExpired()) {
+                            return 'Expired';
+                        }
+
+                        if ($record->isInTrial()) {
+                            return 'Trial';
+                        }
+
+                        return 'Active';
+                    })
+                    ->colors([
+                        'success' => 'Active',
+                        'warning' => 'Trial',
+                        'danger' => 'Expired',
+                    ]),
+                Tables\Columns\TextColumn::make('expires_at')
+                    ->label('Expires')
+                    ->dateTime()
+                    ->sortable()
+                    ->state(function (QrCode $record) {
+                        if ($record->type === 'static') {
+                            return null;
+                        }
+                        return $record->expires_at;
+                    })
+                    ->placeholder('Never')
+                    ->color(function (QrCode $record) {
+                        if ($record->type === 'static') {
+                            return 'success';
+                        }
+
+                        if ($record->isExpired()) {
+                            return 'danger';
+                        }
+
+                        if ($record->expires_at && $record->expires_at->diffInHours() < 24) {
+                            return 'warning';
+                        }
+
+                        return 'primary';
+                    }),
                 Tables\Columns\TextColumn::make('short_url')
                     ->searchable()
                     ->copyable(),
@@ -193,16 +177,54 @@ class QrCodeResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
                     ->options([
                         'static' => 'Static',
                         'dynamic' => 'Dynamic',
+                    ]),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'active' => 'Active',
+                        'trial' => 'Trial',
+                        'expired' => 'Expired',
                     ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['value'] === 'active',
+                            fn (Builder $query): Builder => $query->where(function ($q) {
+                                $q->where('type', 'static')
+                                  ->orWhere(function ($q2) {
+                                      $q2->where('type', 'dynamic')
+                                         ->where('expires_at', '>', now());
+                                  });
+                            })
+                        )->when(
+                            $data['value'] === 'trial',
+                            fn (Builder $query): Builder => $query->where('type', 'dynamic')
+                                ->where('expires_at', '>', now())
+                                ->whereDoesntHave('packagePurchases', function ($q) {
+                                    $q->where('status', 'completed');
+                                })
+                        )->when(
+                            $data['value'] === 'expired',
+                            fn (Builder $query): Builder => $query->where('type', 'dynamic')
+                                ->where('expires_at', '<', now())
+                        );
+                    }),
             ])
             ->actions([
+                TableAction::make('extend')
+                    ->label('Extend')
+                    ->icon('heroicon-o-clock')
+                    ->color('warning')
+                    ->visible(fn (QrCode $record) => $record->type === 'dynamic')
+                    ->url(fn (QrCode $record) => route('qr.expired', $record->short_url))
+                    ->openUrlInNewTab(),
+
                 TableAction::make('download')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->tooltip('Download QR Code')
@@ -232,7 +254,8 @@ class QrCodeResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -250,5 +273,20 @@ class QrCodeResource extends Resource
             'view' => Pages\ViewQrCode::route('/{record}'),
             'edit' => Pages\EditQrCode::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $expiredCount = static::getModel()::where('user_id', auth()->id())
+            ->where('type', 'dynamic')
+            ->where('expires_at', '<', now())
+            ->count();
+
+        return $expiredCount > 0 ? (string) $expiredCount : null;
+    }
+
+    public static function getNavigationBadgeColor(): string
+    {
+        return 'danger';
     }
 }
