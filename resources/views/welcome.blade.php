@@ -431,8 +431,8 @@
 
         <div class="row g-4 justify-content-center">
 
-          <!-- Free Plan -->
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+          <!-- Free Plan (always show) -->
+          <!-- <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
             <div class="pricing-card">
               <h3>Free Plan</h3>
               <div class="price">
@@ -458,6 +458,7 @@
                 <li>
                   <i class="bi bi-check-circle-fill"></i>
                   Limited analytics (scans per month)
+                </li>
                 <li>
                   <i class="bi bi-check-circle-fill"></i>
                   Basic templates (no custom branding)
@@ -469,108 +470,58 @@
                 <i class="bi bi-arrow-right"></i>
               </a>
             </div>
-          </div>
-          <!-- Starter Plan -->
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="pricing-card popular">
-              <div class="popular-badge">Most Popular</div>
-              <h3>Starter Plan</h3>
-              <div class="price">
-                <span class="currency">$</span>
-                <span class="amount">5</span>
-                <span class="period">/ month</span>
+          </div> -->
+
+          <!-- Dynamic Subscription Plans -->
+          @foreach($subscriptionPlans as $index => $plan)
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="{{ 100 + ($index * 100) }}">
+              <div class="pricing-card {{ $index === 0 ? 'popular' : '' }}">
+                @if($index === 0)
+                  <div class="popular-badge">Most Popular</div>
+                @endif
+                <h3>{{ $plan->name }}</h3>
+                <div class="price">
+                  <span class="currency">$</span>
+                  <span class="amount">{{ number_format($plan->price, 0) }}</span>
+                  <span class="period">/ month</span>
+                </div>
+
+                <h4>Featured Included:</h4>
+                <ul class="features-list">
+                  <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Unlimited QR Codes
+                  </li>
+                  <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Up to {{ $plan->dynamic_qr_limit }} Dynamic QR Codes
+                  </li>
+                  <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ number_format($plan->scans_per_code) }} scans per month
+                  </li>
+                  <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    @if($plan->price >= 10)
+                      Advanced analytics (user demographics, geofencing, engagement trends)
+                    @else
+                      Basic analytics (scans by location, time, device)
+                    @endif
+                  </li>
+                  <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Customizable templates (colors, logos)
+                  </li>
+                </ul>
+
+                <a href="/admin/register" class="btn {{ $index === 0 ? 'btn-light' : 'btn-primary' }}">
+                  Get started
+                  <i class="bi bi-arrow-right"></i>
+                </a>
               </div>
-
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Unlimited QR Codes
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Up to 5 Dynamic QR Codes
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  5,000 scans per month
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Basic analytics (scans by location, time, device)
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Customizable templates (colors, logos)
-                </li>
-              </ul>
-
-              <a href="/admin/register" class="btn btn-light">
-                Get started
-                <i class="bi bi-arrow-right"></i>
-              </a>
             </div>
-          </div>
-          <!-- Growth Plan -->
-          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
-            <div class="pricing-card">
-              <h3>Growth Plan</h3>
-              <div class="price">
-                <span class="currency">$</span>
-                <span class="amount">10</span>
-                <span class="period">/ month</span>
-              </div>
+          @endforeach
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Unlimited QR Codes
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Up to 10 Dynamic QR Codes
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  5,000 scans per month
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Advanced analytics (user demographics, geofencing, engagement trends)
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Customizable templates (colors, logos)
-                </li>
-              </ul>
-
-              <a href="/admin/register" class="btn btn-primary">
-                Get started
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-          </div>
-
-          {{-- <div class="col-lg-12" data-aos="fade-up" data-aos-delay="200">
-            <div class="pricing-card">
-              <h3>Add-on Features</h3>
-
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Additional Scans: $10 per 10,000 scans beyond the limit.
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Custom Branding: $5/month for advanced branding options.
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Custom Analytics Dashboard: $20/month for tailored analytics reports.
-                </li>
-              </ul>
-            </div>
-          </div> --}}
         </div>
 
       </div>

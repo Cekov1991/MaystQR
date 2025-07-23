@@ -8,7 +8,11 @@ use App\Http\Controllers\PayPalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $subscriptionPlans = \App\Models\SubscriptionPlan::where('is_active', true)
+        ->orderBy('price')
+        ->get();
+    
+    return view('welcome', compact('subscriptionPlans'));
 });
 
 
