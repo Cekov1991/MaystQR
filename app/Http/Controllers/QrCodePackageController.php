@@ -46,6 +46,7 @@ class QrCodePackageController extends Controller
                 'amount_paid' => $package->price,
                 'extended_until' => $newExpirationDate,
                 'status' => 'pending',
+                'purchased_at' => now(),
             ]);
 
             // Create PayPal order
@@ -58,6 +59,7 @@ class QrCodePackageController extends Controller
             return redirect($order->links[1]->href);
 
         } catch (\Exception $e) {
+            dd($e);
             return back()->with('error', 'Unable to process purchase. Please try again.');
         }
     }

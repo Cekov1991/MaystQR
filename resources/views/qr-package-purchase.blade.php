@@ -136,7 +136,7 @@
 @push('styles')
 <style>
 .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
     min-height: 100vh;
 }
 
@@ -149,7 +149,7 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    /* background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); */
     border: none;
     border-radius: 8px;
     transition: all 0.3s;
