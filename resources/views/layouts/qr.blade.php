@@ -6,6 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>@yield('title', 'MaystQR - QR Code Management')</title>
     <meta name="description" content="@yield('description', 'Professional QR Code Solutions')">
+    <meta name="keywords" content="@yield('keywords', 'QR Code, Dynamic QR, Analytics, SaaS')">
 
     <!-- Favicons -->
     <link href="{{ asset('landing/assets/img/favicon.png') }}" rel="icon">
@@ -21,6 +22,9 @@
     <!-- Vendor CSS Files -->
     <link href="{{ asset('landing/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('landing/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('landing/assets/vendor/aos/aos.css') }}" rel="stylesheet">
+    <link href="{{ asset('landing/assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('landing/assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
 
     <!-- Main CSS File -->
     <link href="{{ asset('landing/assets/css/main.css') }}" rel="stylesheet">
@@ -28,67 +32,33 @@
     @stack('styles')
 </head>
 
-<body>
-    {{-- <header class="header d-flex align-items-center fixed-top">
-        <div class="container d-flex align-items-center justify-content-between">
-            <a href="{{ url('/') }}" class="logo d-flex align-items-center">
-                <h1 class="sitename">MaystQR</h1>
-            </a>
-
-            <nav class="navmenu">
-                <ul>
-                    @auth
-                        <li><a href="{{ route('filament.admin.pages.dashboard') }}">Dashboard</a></li>
-                        <li><a href="{{ route('filament.admin.resources.qr-codes.index') }}">My QR Codes</a></li>
-                    @else
-                        <li><a href="{{ route('login') }}">Login</a></li>
-                        <li><a href="{{ route('register') }}">Register</a></li>
-                    @endauth
-                </ul>
-            </nav>
-        </div>
-    </header> --}}
-
-    <header id="header" class="header d-flex align-items-center fixed-top">
-        <div
-            class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
-
-            <a href="{{ url('/') }}" class="logo d-flex align-items-center me-auto me-xl-0">
-                <!-- Uncomment the line below if you also wish to use an image logo -->
-                <!-- <img src="assets/img/logo.png" alt=""> -->
-                <h1 class="sitename">MaystQR</h1>
-            </a>
-
-            <nav id="navmenu" class="navmenu">
-                <ul>
-                    @auth
-                        <li><a href="{{ route('filament.admin.pages.dashboard') }}">Dashboard</a></li>
-                        <li><a href="{{ route('filament.admin.resources.qr-codes.index') }}">My QR Codes</a></li>
-                    @else
-                        <li><a href="{{ route('login') }}">Login</a></li>
-                        <li><a href="{{ route('register') }}">Register</a></li>
-                    @endauth
-                </ul>
-                <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-            </nav>
-
-            {{-- <a class="btn-getstarted" href="/admin/register">Get Started</a> --}}
-
-        </div>
-    </header>
+<body @yield('body_class')>
+    @yield('header')
 
     <main class="main">
         @yield('content')
     </main>
 
-    <footer class="footer">
-        <div class="container text-center">
-            <p>&copy; {{ date('Y') }} MaystQR. All rights reserved.</p>
-        </div>
-    </footer>
+    @hasSection('footer')
+        @yield('footer')
+    @else
+        <footer class="footer">
+            <div class="container text-center">
+                <p>&copy; {{ date('Y') }} MaystQR. All rights reserved.</p>
+            </div>
+        </footer>
+    @endif
 
     <!-- Vendor JS Files -->
     <script src="{{ asset('landing/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('landing/assets/vendor/php-email-form/validate.js') }}"></script>
+    <script src="{{ asset('landing/assets/vendor/aos/aos.js') }}"></script>
+    <script src="{{ asset('landing/assets/vendor/glightbox/js/glightbox.min.js') }}"></script>
+    <script src="{{ asset('landing/assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
+    <script src="{{ asset('landing/assets/vendor/purecounter/purecounter_vanilla.js') }}"></script>
+
+    <!-- Main JS File -->
+    <script src="{{ asset('landing/assets/js/main.js') }}"></script>
 
     @stack('scripts')
 </body>
