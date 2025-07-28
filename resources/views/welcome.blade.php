@@ -46,7 +46,6 @@
           <li><a href="/admin/register" class="active">Dashboard</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#features">Features</a></li>
-          <li><a href="#pricing">Pricing</a></li>
           <li><a href="#faq">FAQ</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -194,22 +193,22 @@
             <div class="info-wrapper">
               <div class="row gy-4">
                 <div class="col-lg-5">
-                  <div class="profile d-flex align-items-center gap-3">
+                  {{-- <div class="profile d-flex align-items-center gap-3">
                     <img src="{{ asset('landing/assets/img/avatar-1.webp') }}" alt="CEO Profile" class="profile-image">
                     <div>
                       <h4 class="profile-name">Stefan Cekov</h4>
                       <p class="profile-position">CEO &amp; Founder</p>
                     </div>
-                  </div>
+                  </div> --}}
                 </div>
                 <div class="col-lg-7">
-                  <div class="contact-info d-flex align-items-center gap-2">
+                  {{-- <div class="contact-info d-flex align-items-center gap-2">
                     <!-- <i class="bi bi-telephone-fill"></i> -->
                     <div>
                       <p class="contact-label">Passionate about simplifying digital tools, we’ve built a platform that grows with your business.</p>
                       <!-- <p class="contact-number">+123 456-789</p> -->
                     </div>
-                  </div>
+                  </div> --}}
                 </div>
               </div>
             </div>
@@ -419,114 +418,62 @@
     <!-- /Stats Section -->
 
     <!-- Pricing Section -->
-    <section id="pricing" class="pricing section light-background">
+    {{-- <section id="pricing" class="pricing section light-background">
 
-      <!-- Section Title -->
+
       <div class="container section-title" data-aos="fade-up">
         <h2>Pricing</h2>
         <p>Choose the plan that best suits your needs. All plans include a 7-day free trial.</p>
-      </div><!-- End Section Title -->
+      </div>
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
 
         <div class="row g-4 justify-content-center">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="pricing-card">
+                    <h3>Free Plan</h3>
+                    <div class="price">
+                    <span class="currency">$</span>
+                    <span class="amount">0</span>
+                    <span class="period">/ month</span>
+                    </div>
 
-          <!-- Free Plan (always show) -->
-          <!-- <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-            <div class="pricing-card">
-              <h3>Free Plan</h3>
-              <div class="price">
-                <span class="currency">$</span>
-                <span class="amount">0</span>
-                <span class="period">/ month</span>
-              </div>
+                    <h4>Featured Included:</h4>
+                    <ul class="features-list">
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        Unlimited QR Codes
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        1 dynamic QR codes
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        1,000 monthly scans
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        Limited analytics (scans per month)
+                    </li>
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        Basic templates (no custom branding)
+                    </li>
+                    </ul>
 
-              <h4>Featured Included:</h4>
-              <ul class="features-list">
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Unlimited QR Codes
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  1 dynamic QR codes
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  1,000 monthly scans
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Limited analytics (scans per month)
-                </li>
-                <li>
-                  <i class="bi bi-check-circle-fill"></i>
-                  Basic templates (no custom branding)
-                </li>
-              </ul>
-
-              <a href="/admin/register" class="btn btn-primary">
-                Get started
-                <i class="bi bi-arrow-right"></i>
-              </a>
-            </div>
-          </div> -->
-
-          <!-- Dynamic Subscription Plans -->
-          @foreach($subscriptionPlans as $index => $plan)
-            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="{{ 100 + ($index * 100) }}">
-              <div class="pricing-card {{ $index === 0 ? 'popular' : '' }}">
-                @if($index === 0)
-                  <div class="popular-badge">Most Popular</div>
-                @endif
-                <h3>{{ $plan->name }}</h3>
-                <div class="price">
-                  <span class="currency">$</span>
-                  <span class="amount">{{ number_format($plan->price, 0) }}</span>
-                  <span class="period">/ month</span>
+                    <a href="/admin/register" class="btn btn-primary">
+                    Get started
+                    <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
-
-                <h4>Featured Included:</h4>
-                <ul class="features-list">
-                  <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    Unlimited QR Codes
-                  </li>
-                  <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    Up to {{ $plan->dynamic_qr_limit }} Dynamic QR Codes
-                  </li>
-                  <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    {{ number_format($plan->scans_per_code) }} scans per month
-                  </li>
-                  <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    @if($plan->price >= 10)
-                      Advanced analytics (user demographics, geofencing, engagement trends)
-                    @else
-                      Basic analytics (scans by location, time, device)
-                    @endif
-                  </li>
-                  <li>
-                    <i class="bi bi-check-circle-fill"></i>
-                    Customizable templates (colors, logos)
-                  </li>
-                </ul>
-
-                <a href="/admin/register" class="btn {{ $index === 0 ? 'btn-light' : 'btn-primary' }}">
-                  Get started
-                  <i class="bi bi-arrow-right"></i>
-                </a>
-              </div>
             </div>
-          @endforeach
-
         </div>
 
       </div>
 
-    </section><!-- /Pricing Section -->
+    </section> --}}
+    <!-- /Pricing Section -->
 
     <!-- Faq Section -->
     <section class="faq-9 faq section light-background" id="faq">
@@ -559,36 +506,12 @@
                 <h3>Are there limits to the number of scans per month?</h3>
                 <div class="faq-content">
                   <p>
-                    Yes, each plan has a predefined scan limit:
-
-                    <strong>Starter Plan:</strong> 5,000 scans/month;
-
-                    <strong>Growth Plan:</strong> 50,000 scans/month;
-
-                    <strong>Business Plan:</strong> Unlimited scans;
-
-                    If you exceed your scan limit, you can purchase additional scans as an add-on.
+                    No, unlimited scans.
                   </p>
                 </div>
                 <i class="faq-toggle bi bi-chevron-right"></i>
               </div><!-- End Faq item-->
 
-              <div class="faq-item">
-                <h3>What happens if I exceed my scan limit?</h3>
-                <div class="faq-content">
-                  <p>You’ll be notified when you’re nearing your scan limit. Additional scans can be purchased in increments to ensure uninterrupted service.</p>
-                </div>
-                <i class="faq-toggle bi bi-chevron-right"></i>
-              </div><!-- End Faq item-->
-
-              <!-- <div class="faq-item">
-                <h3>Can I upgrade or downgrade my plan at any time?</h3>
-                <div class="faq-content">
-                  <p>Absolutely! You can upgrade, downgrade, or cancel your subscription anytime through your account dashboard.</p>
-                </div>
-                <i class="faq-toggle bi bi-chevron-right"></i>
-              </div> -->
-              <!-- End Faq item-->
 
               <div class="faq-item">
                 <h3>What kind of analytics do I get with dynamic QR codes?</h3>
@@ -598,8 +521,6 @@
                     <strong>Geolocation data</strong>,
                     <strong>Device and browser details</strong>,
                     <strong>Time and date of scans</strong>.
-
-                Advanced analytics are included in higher-tier plans.</p>
                 </div>
                 <i class="faq-toggle bi bi-chevron-right"></i>
               </div><!-- End Faq item-->

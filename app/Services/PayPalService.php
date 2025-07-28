@@ -49,6 +49,34 @@ class PayPalService
         }
     }
 
+    public function createPackagePurchase(float $amount, int $purchaseId): object
+    {
+        $request = new OrdersCreateRequest();
+        $request->prefer('return=representation');
+
+        $request->body = [
+            'intent' => 'CAPTURE',
+            'purchase_units' => [[
+                'amount' => [
+                    'currency_code' => 'USD',
+                    'value' => number_format($amount, 2, '.', '')
+                ],
+                'description' => "QR Code Extension Package - Purchase #{$purchaseId}"
+            ]],
+            'application_context' => [
+                'return_url' => route('qr.package.success'),
+                'cancel_url' => route('qr.package.cancel')
+            ]
+        ];
+
+        try {
+            return $this->client->execute($request)->result;
+        } catch (\Exception $e) {
+            report($e);
+            throw $e;
+        }
+    }
+
     public function capturePayment(string $orderId): object
     {
         $request = new OrdersCaptureRequest($orderId);

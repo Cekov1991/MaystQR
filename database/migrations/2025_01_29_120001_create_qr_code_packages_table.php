@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subscription_plans', function (Blueprint $table) {
+        Schema::create('qr_code_packages', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->float('price');
-            $table->integer('dynamic_qr_limit');
-            $table->integer('scans_per_code');
+            $table->string('name'); // e.g., "1 Month", "3 Months", etc.
+            $table->integer('duration_months'); // 1, 3, 6, 12
+            $table->decimal('price', 8, 2); // Package price
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscription_plans');
+        Schema::dropIfExists('qr_code_packages');
     }
 };

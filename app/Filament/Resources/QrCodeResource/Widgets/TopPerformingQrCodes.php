@@ -7,6 +7,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
+use Illuminate\Support\Facades\Auth;
 
 class TopPerformingQrCodes extends BaseWidget
 {
@@ -17,7 +18,7 @@ class TopPerformingQrCodes extends BaseWidget
     {
         return $table
             ->query(
-                QrCode::query()
+                QrCode::where('user_id', Auth::id())
                     ->withCount('scans')
                     ->orderByDesc('scans_count')
                     ->limit(5)

@@ -13,8 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
+        // Seed QR code packages
         $this->call([
-            SubscriptionPlanSeeder::class,
+            QrCodePackageSeeder::class,
         ]);
     }
 }

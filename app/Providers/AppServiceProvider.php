@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use App\Services\IpGeolocationService;
 use Illuminate\Http\Client\Factory as Http;
-use App\Models\Subscription;
 
 class AppServiceProvider extends ServiceProvider
 {

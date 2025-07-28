@@ -56,19 +56,9 @@ class User extends Authenticatable
         return $this->hasMany(QrCode::class);
     }
 
-    public function subscription()
+    public function qrCodePackagePurchases()
     {
-        return $this->hasOne(Subscription::class)->where('status', 'active');
-    }
-
-    public function pendingSubscription()
-    {
-        return $this->hasOne(Subscription::class)->where('status', 'pending');
-    }
-
-    public function getRemainingScans(): int
-    {
-        return $this->subscription?->monthly_scan_limit ?? 1000; // Free tier limit
+        return $this->hasMany(QrCodePackagePurchase::class);
     }
 
     public function paymentMethods()
@@ -84,5 +74,16 @@ class User extends Authenticatable
     public function hasPaymentMethod(): bool
     {
         return $this->paymentMethods()->exists();
+    }
+
+    // QR Code package related methods
+    public function getActiveQrCodes()
+    {
+        return $this->qrCodes()->active();
+    }
+
+    public function getExpiredQrCodes()
+    {
+        return $this->qrCodes()->expired();
     }
 }
