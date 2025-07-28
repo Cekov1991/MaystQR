@@ -6,6 +6,7 @@ use App\Models\QrCodeScan;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Auth;
 
 class RecentScans extends BaseWidget
 {
@@ -18,6 +19,9 @@ class RecentScans extends BaseWidget
         return $table
             ->query(
                 QrCodeScan::with('qrCode')
+                    ->whereHas('qrCode', function ($query) {
+                        $query->where('user_id', Auth::id());
+                    })
                     ->latest('scanned_at')
                     ->limit(10)
             )

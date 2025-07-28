@@ -5,6 +5,7 @@ namespace App\Filament\Resources\QrCodeResource\Widgets;
 use App\Models\QrCodeScan;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ScansByCountryChart extends ChartWidget
 {
@@ -19,7 +20,9 @@ class ScansByCountryChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = QrCodeScan::query()
+        $data = QrCodeScan::whereHas('qrCode', function ($query) {
+                $query->where('user_id', Auth::id());
+            })
             ->select('country', DB::raw('count(*) as count'))
             ->whereNotNull('country')
             ->groupBy('country')

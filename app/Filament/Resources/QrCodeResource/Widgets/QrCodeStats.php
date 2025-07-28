@@ -6,16 +6,23 @@ use App\Models\QrCodeScan;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class QrCodeStats extends BaseWidget
 {
     protected function getCards(): array
     {
+        $userId = Auth::id();
+
         return [
-            Stat::make('Total Scans', QrCodeScan::count())
+            Stat::make('Total Scans', QrCodeScan::whereHas('qrCode', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                })->count())
                 ->description('All time scans')
                 ->descriptionIcon('heroicon-m-qr-code')
-                ->chart(QrCodeScan::query()
+                ->chart(QrCodeScan::whereHas('qrCode', function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    })
                     ->selectRaw('DATE(scanned_at) as date, COUNT(*) as count')
                     ->groupBy('date')
                     ->orderBy('date')
@@ -24,7 +31,10 @@ class QrCodeStats extends BaseWidget
                     ->toArray()),
 
             Stat::make('Top Browsers',
-                QrCodeScan::select('browser', DB::raw('count(*) as count'))
+                QrCodeScan::whereHas('qrCode', function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    })
+                    ->select('browser', DB::raw('count(*) as count'))
                     ->whereNotNull('browser')
                     ->groupBy('browser')
                     ->orderByDesc('count')
@@ -34,7 +44,10 @@ class QrCodeStats extends BaseWidget
                 ->descriptionIcon('heroicon-m-globe-alt'),
 
             Stat::make('Top Countries',
-                QrCodeScan::select('country', DB::raw('count(*) as count'))
+                QrCodeScan::whereHas('qrCode', function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    })
+                    ->select('country', DB::raw('count(*) as count'))
                     ->whereNotNull('country')
                     ->groupBy('country')
                     ->orderByDesc('count')

@@ -18,6 +18,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Actions\Action as TableAction;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use App\Filament\Resources\QrCodeResource\RelationManagers\ScansRelationManager;
 use Filament\Facades\Filament;
@@ -241,7 +242,7 @@ class QrCodeResource extends Resource
                         }
 
                         // Add to rate limiter
-                        RateLimiter::hit('qr-downloads:'.auth()->id());
+                        RateLimiter::hit('qr-downloads:'.auth()->user()->id);
 
                         return response()->download(
                             Storage::disk('public')->path($record->qr_code_image)
@@ -255,7 +256,23 @@ class QrCodeResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+                        ->modifyQueryUsing(function (Builder $query) {
+                if (Auth::check()) {
+                    $query->where('user_id', Auth::id());
+                }
+            });
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (Auth::check()) {
+            $query->where('user_id', Auth::id());
+        }
+
+        return $query;
     }
 
     public static function getRelations(): array
@@ -277,7 +294,7 @@ class QrCodeResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $expiredCount = static::getModel()::where('user_id', auth()->id())
+        $expiredCount = static::getModel()::where('user_id', auth()->user()->id)
             ->where('type', 'dynamic')
             ->where('expires_at', '<', now())
             ->count();
