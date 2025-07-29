@@ -231,8 +231,8 @@ class QrCodeResource extends Resource
                     ->tooltip('Download QR Code')
                     ->action(function (QrCode $record) {
                         // Check rate limit
-                        if (RateLimiter::tooManyAttempts('qr-downloads:'.auth()->id(), 60)) {
-                            $seconds = RateLimiter::availableIn('qr-downloads:'.auth()->id());
+                        if (RateLimiter::tooManyAttempts('qr-downloads:'.Auth::id(), 60)) {
+                            $seconds = RateLimiter::availableIn('qr-downloads:'.Auth::id());
                             Notification::make()
                                 ->danger()
                                 ->title('Download limit reached')
@@ -242,10 +242,10 @@ class QrCodeResource extends Resource
                         }
 
                         // Add to rate limiter
-                        RateLimiter::hit('qr-downloads:'.auth()->user()->id);
+                        RateLimiter::hit('qr-downloads:'.Auth::id());
 
                         return response()->download(
-                            Storage::disk('public')->path($record->qr_code_image)
+                            Storage::disk('s3')->path($record->qr_code_image)
                         );
                     }),
                 Tables\Actions\ViewAction::make(),
@@ -294,7 +294,7 @@ class QrCodeResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $expiredCount = static::getModel()::where('user_id', auth()->user()->id)
+        $expiredCount = static::getModel()::where('user_id', Auth::id())
             ->where('type', 'dynamic')
             ->where('expires_at', '<', now())
             ->count();
