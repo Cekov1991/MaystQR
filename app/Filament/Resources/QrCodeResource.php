@@ -61,12 +61,12 @@ class QrCodeResource extends Resource
                             ->url()
                             ->maxLength(2048)
                             ->disabled(fn ($record) => $record?->type === 'static' && $record !== null)
-                            ->columnSpanFull()
-                        // Forms\Components\TextInput::make('content')
-                        //     ->required()
-                        //     ->maxLength(2048)
-                        //     ->label('QR Code Content')
-                        //     ->helperText('For static QRs, this will be the fixed content. For dynamic QRs, this can be updated.'),
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('content')
+                            ->required()
+                            ->maxLength(2048)
+                            ->label('QR Code Content')
+                            ->helperText('For static QRs, this will be the fixed content. For dynamic QRs, this can be updated.'),
                     ]),
 
                 Section::make('QR Code Appearance')

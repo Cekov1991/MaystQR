@@ -33,7 +33,7 @@ class ViewQrCode extends ViewRecord
                             ->label('Scan URL')
                             ->url(function ($record) {
                                 if ($record->type === 'static') {
-                                    return $record->destination_url;
+                                    return $record->content;
                                 }
                                 return route('qr.redirect', $record->short_url);
                             })
