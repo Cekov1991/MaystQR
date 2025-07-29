@@ -245,7 +245,7 @@ class QrCodeResource extends Resource
                         RateLimiter::hit('qr-downloads:'.Auth::id());
 
                         return response()->download(
-                            Storage::disk('s3')->path($record->qr_code_image)
+                            Storage::path($record->qr_code_image)
                         );
                     }),
                 Tables\Actions\ViewAction::make(),

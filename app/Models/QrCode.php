@@ -86,11 +86,11 @@ class QrCode extends Model
         $filename = 'qr-codes/' . uniqid() . '.' . $format;
 
         // Store the QR code
-        Storage::disk('s3')->put($filename, $qrCode);
+        Storage::put($filename, $qrCode);
 
         // Delete old image if exists
         if ($this->qr_code_image) {
-            Storage::disk('s3')->delete($this->qr_code_image);
+            Storage::delete($this->qr_code_image);
         }
 
         $this->qr_code_image = $filename;

@@ -158,7 +158,7 @@ class ViewQrCode extends ViewRecord
 
                 if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
                     // Add original format
-                    $originalPath = Storage::disk('s3')->path($record->qr_code_image);
+                    $originalPath = Storage::path($record->qr_code_image);
                     $originalFormat = $record->options['format'] ?? 'png';
                     $zip->addFile($originalPath, "qr-{$record->name}.{$originalFormat}");
 
@@ -196,7 +196,7 @@ class ViewQrCode extends ViewRecord
             ->label('Download Original')
             ->icon('heroicon-o-arrow-down-tray')
             ->action(function () {
-                return response()->download(Storage::disk('s3')->path($this->record->qr_code_image));
+                return response()->download(Storage::path($this->record->qr_code_image));
             });
 
         $actions[] = Action::make('edit')->url(fn() => $this->getResource()::getUrl('edit', ['record' => $this->record]));
