@@ -44,11 +44,15 @@ class QrCode extends Model
                 $qrCode->type = 'static';
             }
 
+
             // Set 24-hour trial period for dynamic QR codes
             if ($qrCode->type === 'dynamic' && !$qrCode->expires_at) {
                 $qrCode->expires_at = now()->addHours(24);
+                $qrCode->content = route('qr.redirect', $qrCode->short_url);
+            } else {
+                $qrCode->content = $qrCode->destination_url;
             }
-
+            //'WIFI:T:WPA2;S:HUAWEI-9A6m;P:C.stefan@23;;'
             // Generate QR code image
             $qrCode->generateQrCode();
         });

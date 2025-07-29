@@ -29,7 +29,18 @@ class ViewQrCode extends ViewRecord
                 Section::make('QR Code')
                     ->schema([
                         ImageEntry::make('qr_code_image')->size(300)->alignCenter(),
-                        TextEntry::make('short_url')->label('Scan URL')->url(fn($record) => route('qr.redirect', $record->short_url))->copyable()->copyMessage('URL copied')->copyMessageDuration(1500)->alignCenter()
+                        TextEntry::make('short_url')
+                            ->label('Scan URL')
+                            ->url(function ($record) {
+                                if ($record->type === 'static') {
+                                    return $record->destination_url;
+                                }
+                                return route('qr.redirect', $record->short_url);
+                            })
+                            ->copyable()
+                            ->copyMessage('URL copied')
+                            ->copyMessageDuration(1500)
+                            ->alignCenter()
                     ])
                     ->columnSpan(1),
 
@@ -76,12 +87,11 @@ class ViewQrCode extends ViewRecord
                             }),
                         TextEntry::make('expires_at')
                             ->label('Expires At')
-                            ->dateTime()
-                            ->state(function ($record) {
+                            ->formatStateUsing(function ($record) {
                                 if ($record->type === 'static') {
                                     return 'Never expires';
                                 }
-                                return $record->expires_at;
+                                return $record->expires_at?->format('M j, Y g:i A') ?? 'Not set';
                             })
                             ->color(function ($record) {
                                 if ($record->type === 'static') {
@@ -99,29 +109,38 @@ class ViewQrCode extends ViewRecord
                                 return 'primary';
                             }),
                         TextEntry::make('destination_url')->label('Redirects to')->url(fn($record) => $record->destination_url)->openUrlInNewTab()->copyable(),
-                        TextEntry::make('scan_count')->label('Total Scans'),
+                        TextEntry::make('scan_count')
+                            ->label('Total Scans')
+                            ->visible(fn($record) => $record->type !== 'static'),
                         TextEntry::make('created_at')->dateTime(),
                     ])
                     ->columnSpan(1),
             ]),
 
-            Section::make('Recent Scans')->schema([
-                Grid::make(3)->schema([
-                    TextEntry::make('scans_today')->label('Scans Today')->state(fn($record) => $record->scans()->whereDate('scanned_at', today())->count()),
-                    TextEntry::make('scans_week')->label('Scans This Week')->state(
-                        fn($record) => $record
-                            ->scans()
-                            ->whereBetween('scanned_at', [now()->startOfWeek(), now()->endOfWeek()])
-                            ->count(),
-                    ),
-                    TextEntry::make('unique_countries')->label('Countries')->state(fn($record) => $record->scans()->distinct('country')->count('country')),
-                ]),
-            ]),
+            Section::make('Recent Scans')
+                ->schema([
+                    Grid::make(3)->schema([
+                        TextEntry::make('scans_today')->label('Scans Today')->state(fn($record) => $record->scans()->whereDate('scanned_at', today())->count()),
+                        TextEntry::make('scans_week')->label('Scans This Week')->state(
+                            fn($record) => $record
+                                ->scans()
+                                ->whereBetween('scanned_at', [now()->startOfWeek(), now()->endOfWeek()])
+                                ->count(),
+                        ),
+                        TextEntry::make('unique_countries')->label('Countries')->state(fn($record) => $record->scans()->distinct('country')->count('country')),
+                    ]),
+                ])
+                ->visible(fn($record) => $record->type !== 'static'),
         ]);
     }
 
     protected function getFooterWidgets(): array
     {
+        // Only show analytics chart for dynamic QR codes
+        if ($this->record->type === 'static') {
+            return [];
+        }
+
         return [
             QrCodeScanChart::make([
                 'record' => $this->record,
