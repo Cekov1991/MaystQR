@@ -51,6 +51,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
+
     public function qrCodes()
     {
         return $this->hasMany(QrCode::class);
