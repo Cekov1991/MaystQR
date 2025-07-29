@@ -27,8 +27,7 @@ class QrCodeRedirectController extends Controller
             $agent = new Agent();
 
             // Get location information (requires geoip package)
-            //Dont forget to use real ip address request()->ip()
-            $location = $geolocation->locate('46.217.223.14');
+            $location = $geolocation->locate(request()->ip());
 
             // Log the scan
             $qrCode->scans()->create([
