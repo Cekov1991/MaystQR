@@ -35,7 +35,7 @@ class QrCodeResource extends Resource
             ->schema([
                 Section::make('Basic Information')
                     ->schema([
-                        Grid::make(1)
+                        Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->required()
@@ -53,21 +53,177 @@ class QrCodeResource extends Resource
                             ])
                     ]),
 
-                Section::make('URL Configuration')
+                Section::make('QR Code Type')
                     ->schema([
-                        Forms\Components\TextInput::make('destination_url')
-                            ->label('Destination URL')
+                        Forms\Components\Select::make('qr_content_type')
+                            ->label('QR Code Type')
+                            ->options(QrCode::QR_CONTENT_TYPES)
+                            ->default('website')
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(fn (Forms\Set $set) => $set('qr_content_data', [])),
+                    ]),
+
+                // Dynamic sections based on QR type
+                Section::make('Website Configuration')
+                    ->schema([
+                        Forms\Components\TextInput::make('qr_content_data.url')
+                            ->label('Website URL')
                             ->required()
                             ->url()
-                            ->maxLength(2048)
-                            ->disabled(fn ($record) => $record?->type === 'static' && $record !== null)
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('content')
+                            ->placeholder('https://example.com'),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'website'),
+
+                Section::make('Wi-Fi Configuration')
+                    ->schema([
+                        Forms\Components\TextInput::make('qr_content_data.ssid')
+                            ->label('Network Name (SSID)')
+                            ->required(),
+                        Forms\Components\Select::make('qr_content_data.security')
+                            ->label('Security Type')
+                            ->options([
+                                'WPA' => 'WPA/WPA2',
+                                'WEP' => 'WEP',
+                                'nopass' => 'No Security',
+                            ])
+                            ->default('WPA')
+                            ->required(),
+                        Forms\Components\TextInput::make('qr_content_data.password')
+                            ->label('Password')
+                            ->password()
+                            ->visible(fn (Forms\Get $get): bool => $get('qr_content_data.security') !== 'nopass'),
+                        Forms\Components\Toggle::make('qr_content_data.hidden')
+                            ->label('Hidden Network')
+                            ->default(false),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'wifi'),
+
+                Section::make('Email Configuration')
+                    ->schema([
+                        Forms\Components\TextInput::make('qr_content_data.email')
+                            ->label('Email Address')
+                            ->email()
+                            ->required(),
+                        Forms\Components\TextInput::make('qr_content_data.subject')
+                            ->label('Subject')
+                            ->placeholder('Optional'),
+                        Forms\Components\Textarea::make('qr_content_data.body')
+                            ->label('Email Body')
+                            ->placeholder('Optional'),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'email'),
+
+                Section::make('WhatsApp Configuration')
+                    ->schema([
+                        Forms\Components\TextInput::make('qr_content_data.phone')
+                            ->label('Phone Number')
                             ->required()
-                            ->maxLength(2048)
-                            ->label('QR Code Content')
-                            ->helperText('For static QRs, this will be the fixed content. For dynamic QRs, this can be updated.'),
-                    ]),
+                            ->placeholder('1234567890 (include country code, no + or spaces)'),
+                        Forms\Components\Textarea::make('qr_content_data.message')
+                            ->label('Pre-filled Message')
+                            ->placeholder('Optional'),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'whatsapp'),
+
+                Section::make('Contact (vCard) Configuration')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('qr_content_data.first_name')
+                                    ->label('First Name')
+                                    ->required(),
+                                Forms\Components\TextInput::make('qr_content_data.last_name')
+                                    ->label('Last Name')
+                                    ->required(),
+                                Forms\Components\TextInput::make('qr_content_data.organization')
+                                    ->label('Organization'),
+                                Forms\Components\TextInput::make('qr_content_data.title')
+                                    ->label('Job Title'),
+                                Forms\Components\TextInput::make('qr_content_data.phone')
+                                    ->label('Phone Number')
+                                    ->tel(),
+                                Forms\Components\TextInput::make('qr_content_data.email')
+                                    ->label('Email')
+                                    ->email(),
+                            ]),
+                        Forms\Components\TextInput::make('qr_content_data.website')
+                            ->label('Website')
+                            ->url()
+                            ->columnSpanFull(),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'vcard'),
+
+                Section::make('SMS Configuration')
+                    ->schema([
+                        Forms\Components\TextInput::make('qr_content_data.phone')
+                            ->label('Phone Number')
+                            ->required()
+                            ->placeholder('+1234567890'),
+                        Forms\Components\Textarea::make('qr_content_data.message')
+                            ->label('Pre-filled Message')
+                            ->placeholder('Optional'),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'sms'),
+
+                Section::make('Phone Call Configuration')
+                    ->schema([
+                        Forms\Components\TextInput::make('qr_content_data.phone')
+                            ->label('Phone Number')
+                            ->required()
+                            ->placeholder('+1234567890'),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'phone'),
+
+                Section::make('Text Configuration')
+                    ->schema([
+                        Forms\Components\Textarea::make('qr_content_data.text')
+                            ->label('Text Content')
+                            ->required()
+                            ->placeholder('Enter the text to display'),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'text'),
+
+                Section::make('Calendar Event Configuration')
+                    ->schema([
+                        Forms\Components\TextInput::make('qr_content_data.summary')
+                            ->label('Event Title')
+                            ->required(),
+                        Grid::make(2)
+                            ->schema([
+                                Forms\Components\DateTimePicker::make('qr_content_data.start_date')
+                                    ->label('Start Date & Time')
+                                    ->required()
+                                    ->format('Ymd\THis\Z'),
+                                Forms\Components\DateTimePicker::make('qr_content_data.end_date')
+                                    ->label('End Date & Time')
+                                    ->required()
+                                    ->format('Ymd\THis\Z'),
+                            ]),
+                        Forms\Components\TextInput::make('qr_content_data.location')
+                            ->label('Location'),
+                        Forms\Components\Textarea::make('qr_content_data.description')
+                            ->label('Description'),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'calendar'),
+
+                Section::make('Location Configuration')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('qr_content_data.latitude')
+                                    ->label('Latitude')
+                                    ->required()
+                                    ->numeric()
+                                    ->placeholder('37.7749'),
+                                Forms\Components\TextInput::make('qr_content_data.longitude')
+                                    ->label('Longitude')
+                                    ->required()
+                                    ->numeric()
+                                    ->placeholder('-122.4194'),
+                            ]),
+                    ])
+                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'location'),
 
                 Section::make('QR Code Appearance')
                     ->schema([
@@ -117,6 +273,24 @@ class QrCodeResource extends Resource
                     ->square(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
+                Tables\Columns\BadgeColumn::make('qr_content_type')
+                    ->label('Type')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        QrCode::QR_CONTENT_TYPES[$state] => $state,
+                        default => ucfirst($state),
+                    })
+                    ->colors([
+                        'primary' => 'website',
+                        'success' => 'wifi',
+                        'warning' => 'email',
+                        'info' => 'whatsapp',
+                        'secondary' => 'vcard',
+                        'danger' => 'sms',
+                        'gray' => 'phone',
+                        'indigo' => 'text',
+                        'pink' => 'calendar',
+                        'emerald' => 'location',
+                    ]),
                 Tables\Columns\BadgeColumn::make('type')
                     ->colors([
                         'danger' => 'static',
@@ -148,31 +322,7 @@ class QrCodeResource extends Resource
                     ->label('Expires')
                     ->dateTime()
                     ->sortable()
-                    ->state(function (QrCode $record) {
-                        if ($record->type === 'static') {
-                            return null;
-                        }
-                        return $record->expires_at;
-                    })
-                    ->placeholder('Never')
-                    ->color(function (QrCode $record) {
-                        if ($record->type === 'static') {
-                            return 'success';
-                        }
-
-                        if ($record->isExpired()) {
-                            return 'danger';
-                        }
-
-                        if ($record->expires_at && $record->expires_at->diffInHours() < 24) {
-                            return 'warning';
-                        }
-
-                        return 'primary';
-                    }),
-                Tables\Columns\TextColumn::make('short_url')
-                    ->searchable()
-                    ->copyable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('scan_count')
                     ->label('Scans')
                     ->sortable(),
@@ -182,72 +332,16 @@ class QrCodeResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('qr_content_type')
+                    ->label('QR Content Type')
+                    ->options(QrCode::QR_CONTENT_TYPES),
                 Tables\Filters\SelectFilter::make('type')
                     ->options([
                         'static' => 'Static',
                         'dynamic' => 'Dynamic',
                     ]),
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'active' => 'Active',
-                        'trial' => 'Trial',
-                        'expired' => 'Expired',
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['value'] === 'active',
-                            fn (Builder $query): Builder => $query->where(function ($q) {
-                                $q->where('type', 'static')
-                                  ->orWhere(function ($q2) {
-                                      $q2->where('type', 'dynamic')
-                                         ->where('expires_at', '>', now());
-                                  });
-                            })
-                        )->when(
-                            $data['value'] === 'trial',
-                            fn (Builder $query): Builder => $query->where('type', 'dynamic')
-                                ->where('expires_at', '>', now())
-                                ->whereDoesntHave('packagePurchases', function ($q) {
-                                    $q->where('status', 'completed');
-                                })
-                        )->when(
-                            $data['value'] === 'expired',
-                            fn (Builder $query): Builder => $query->where('type', 'dynamic')
-                                ->where('expires_at', '<', now())
-                        );
-                    }),
             ])
             ->actions([
-                TableAction::make('extend')
-                    ->label('Extend')
-                    ->icon('heroicon-o-clock')
-                    ->color('warning')
-                    ->visible(fn (QrCode $record) => $record->type === 'dynamic')
-                    ->url(fn (QrCode $record) => route('qr.expired', $record->short_url))
-                    ->openUrlInNewTab(),
-
-                TableAction::make('download')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->tooltip('Download QR Code')
-                    ->action(function (QrCode $record) {
-                        // Check rate limit
-                        if (RateLimiter::tooManyAttempts('qr-downloads:'.Auth::id(), 60)) {
-                            $seconds = RateLimiter::availableIn('qr-downloads:'.Auth::id());
-                            Notification::make()
-                                ->danger()
-                                ->title('Download limit reached')
-                                ->body("Please try again in {$seconds} seconds.")
-                                ->send();
-                            return;
-                        }
-
-                        // Add to rate limiter
-                        RateLimiter::hit('qr-downloads:'.Auth::id());
-
-                        return response()->download(
-                            Storage::path($record->qr_code_image)
-                        );
-                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
@@ -256,10 +350,9 @@ class QrCodeResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc')
-                        ->modifyQueryUsing(function (Builder $query) {
+            ->modifyQueryUsing(function (Builder $query) {
                 if (Auth::check()) {
-                    $query->where('user_id', Auth::id());
+                    return $query->where('user_id', Auth::id());
                 }
             });
     }

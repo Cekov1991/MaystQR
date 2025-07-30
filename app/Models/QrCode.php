@@ -9,9 +9,24 @@ use Carbon\Carbon;
 
 class QrCode extends Model
 {
+    const QR_CONTENT_TYPES = [
+        'website' => '🌐 Website',
+        'wifi' => '📶 Wi-Fi Network',
+        'email' => '📧 Email',
+        'whatsapp' => '💬 WhatsApp',
+        'vcard' => '👤 Contact (vCard)',
+        'sms' => '💬 SMS',
+        'phone' => '📞 Phone Call',
+        'calendar' => '📅 Calendar Event',
+        // 'text' => '📄 Plain Text',
+        // 'location' => '📍 Location',
+    ];
+
     protected $fillable = [
         'name',
         'type',
+        'qr_content_type',
+        'qr_content_data',
         'content',
         'short_url',
         'destination_url',
@@ -23,6 +38,7 @@ class QrCode extends Model
 
     protected $casts = [
         'options' => 'array',
+        'qr_content_data' => 'array',
         'scan_count' => 'integer',
         'expires_at' => 'datetime',
     ];
@@ -44,12 +60,20 @@ class QrCode extends Model
                 $qrCode->type = 'static';
             }
 
+            if (!$qrCode->qr_content_type) {
+                $qrCode->qr_content_type = 'website';
+            }
+
+            // Generate content based on QR type
+            $qrCode->content = $qrCode->generateContentFromType();
 
             // Set 24-hour trial period for dynamic QR codes
             if ($qrCode->type === 'dynamic' && !$qrCode->expires_at) {
                 $qrCode->expires_at = now()->addHours(24);
+                // For dynamic QRs, content should point to redirect route
                 $qrCode->content = route('qr.redirect', $qrCode->short_url);
             }
+
             // Generate QR code image
             $qrCode->generateQrCode();
         });
@@ -59,11 +83,147 @@ class QrCode extends Model
                 throw new \Exception('Cannot update destination URL for static QR codes.');
             }
 
+            // Regenerate content if qr_content_type or qr_content_data changed
+            if ($qrCode->isDirty(['qr_content_type', 'qr_content_data']) && $qrCode->type === 'static') {
+                $qrCode->content = $qrCode->generateContentFromType();
+            }
+
             // Regenerate QR code if content or options changed
-            if ($qrCode->isDirty(['content', 'options'])) {
+            if ($qrCode->isDirty(['content', 'options', 'qr_content_type', 'qr_content_data'])) {
                 $qrCode->generateQrCode();
             }
         });
+    }
+
+    protected function generateContentFromType(): string
+    {
+        $data = $this->qr_content_data ?? [];
+
+        return match ($this->qr_content_type) {
+            'wifi' => $this->generateWifiContent($data),
+            'email' => $this->generateEmailContent($data),
+            'whatsapp' => $this->generateWhatsAppContent($data),
+            'vcard' => $this->generateVCardContent($data),
+            'sms' => $this->generateSmsContent($data),
+            'phone' => $this->generatePhoneContent($data),
+            'text' => $this->generateTextContent($data),
+            'calendar' => $this->generateCalendarContent($data),
+            'location' => $this->generateLocationContent($data),
+            'website' => $this->generateWebsiteContent($data),
+            default => $this->destination_url ?? '',
+        };
+    }
+
+    protected function generateWifiContent(array $data): string
+    {
+        $security = $data['security'] ?? 'WPA2';
+        $ssid = $data['ssid'] ?? '';
+        $password = $data['password'] ?? '';
+        $hidden = ($data['hidden'] ?? false) ? 'true' : 'false';
+
+        return "WIFI:T:{$security};S:{$ssid};P:{$password};H:{$hidden};;";
+    }
+
+    protected function generateEmailContent(array $data): string
+    {
+        $email = $data['email'] ?? '';
+        $subject = $data['subject'] ?? '';
+        $body = $data['body'] ?? '';
+
+        $params = [];
+        if ($subject) $params[] = 'subject=' . urlencode($subject);
+        if ($body) $params[] = 'body=' . urlencode($body);
+
+        $queryString = $params ? '?' . implode('&', $params) : '';
+
+        return "mailto:{$email}{$queryString}";
+    }
+
+    protected function generateWhatsAppContent(array $data): string
+    {
+        $phone = $data['phone'] ?? '';
+        $message = $data['message'] ?? '';
+
+        $queryString = $message ? '?text=' . urlencode($message) : '';
+
+        return "https://wa.me/{$phone}{$queryString}";
+    }
+
+    protected function generateVCardContent(array $data): string
+    {
+        $firstName = $data['first_name'] ?? '';
+        $lastName = $data['last_name'] ?? '';
+        $organization = $data['organization'] ?? '';
+        $title = $data['title'] ?? '';
+        $phone = $data['phone'] ?? '';
+        $email = $data['email'] ?? '';
+        $website = $data['website'] ?? '';
+
+        $vcard = "BEGIN:VCARD\n";
+        $vcard .= "VERSION:3.0\n";
+        $vcard .= "N:{$lastName};{$firstName};;;\n";
+        $vcard .= "FN:{$firstName} {$lastName}\n";
+        if ($organization) $vcard .= "ORG:{$organization}\n";
+        if ($title) $vcard .= "TITLE:{$title}\n";
+        if ($phone) $vcard .= "TEL:{$phone}\n";
+        if ($email) $vcard .= "EMAIL:{$email}\n";
+        if ($website) $vcard .= "URL:{$website}\n";
+        $vcard .= "END:VCARD";
+
+        return $vcard;
+    }
+
+    protected function generateSmsContent(array $data): string
+    {
+        $phone = $data['phone'] ?? '';
+        $message = $data['message'] ?? '';
+
+        $queryString = $message ? '?body=' . urlencode($message) : '';
+
+        return "sms:{$phone}{$queryString}";
+    }
+
+    protected function generatePhoneContent(array $data): string
+    {
+        $phone = $data['phone'] ?? '';
+        return "tel:{$phone}";
+    }
+
+    protected function generateTextContent(array $data): string
+    {
+        return $data['text'] ?? '';
+    }
+
+    protected function generateCalendarContent(array $data): string
+    {
+        $summary = $data['summary'] ?? '';
+        $startDate = $data['start_date'] ?? '';
+        $endDate = $data['end_date'] ?? '';
+        $location = $data['location'] ?? '';
+        $description = $data['description'] ?? '';
+
+        $event = "BEGIN:VEVENT\n";
+        $event .= "SUMMARY:{$summary}\n";
+        if ($startDate) $event .= "DTSTART:{$startDate}\n";
+        if ($endDate) $event .= "DTEND:{$endDate}\n";
+        if ($location) $event .= "LOCATION:{$location}\n";
+        if ($description) $event .= "DESCRIPTION:{$description}\n";
+        $event .= "END:VEVENT";
+
+        return $event;
+    }
+
+    protected function generateLocationContent(array $data): string
+    {
+        $latitude = $data['latitude'] ?? '';
+        $longitude = $data['longitude'] ?? '';
+
+        return "geo:{$latitude},{$longitude}";
+    }
+
+    protected function generateWebsiteContent(array $data): string
+    {
+        return $data['url'] ?? $this->destination_url ?? '';
     }
 
     protected function generateQrCode(): void
