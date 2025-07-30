@@ -79,20 +79,40 @@ class QrCode extends Model
         });
 
         static::updating(function ($qrCode) {
-            if ($qrCode->type === 'static' && $qrCode->isDirty('destination_url')) {
-                throw new \Exception('Cannot update destination URL for static QR codes.');
+            // Static QR codes should be completely immutable
+            if ($qrCode->type === 'static') {
+                throw new \Exception('Static QR codes cannot be updated after creation to preserve printed codes.');
             }
 
-            // Regenerate content if qr_content_type or qr_content_data changed
-            if ($qrCode->isDirty(['qr_content_type', 'qr_content_data']) && $qrCode->type === 'static') {
-                $qrCode->content = $qrCode->generateContentFromType();
-            }
+            // Dynamic QR codes: allow content updates but never regenerate the QR code itself
+            if ($qrCode->type === 'dynamic') {
+                // Allow updating destination_url and qr_content_data
+                // But prevent changes that would regenerate the QR code image
+                if ($qrCode->isDirty(['content', 'options', 'qr_code_path', 'qr_code_image'])) {
+                    throw new \Exception('QR code image cannot be changed after creation to preserve printed codes.');
+                }
 
-            // Regenerate QR code if content or options changed
-            if ($qrCode->isDirty(['content', 'options', 'qr_content_type', 'qr_content_data'])) {
-                $qrCode->generateQrCode();
+                // Content updates are fine for dynamic codes since they go through your backend
+                // No need to regenerate anything - just update the database
             }
         });
+    }
+
+    public function getFormatedContentAttribute(): string
+    {
+        return match ($this->qr_content_type) {
+            'wifi' => $this->generateWifiContent($this->qr_content_data),
+            'email' => $this->generateEmailContent($this->qr_content_data),
+            'whatsapp' => $this->generateWhatsAppContent($this->qr_content_data),
+            'vcard' => $this->generateVCardContent($this->qr_content_data),
+            'sms' => $this->generateSmsContent($this->qr_content_data),
+            'phone' => $this->generatePhoneContent($this->qr_content_data),
+            'text' => $this->generateTextContent($this->qr_content_data),
+            'calendar' => $this->generateCalendarContent($this->qr_content_data),
+            'location' => $this->generateLocationContent($this->qr_content_data),
+            'website' => $this->generateWebsiteContent($this->qr_content_data),
+            default => $this->destination_url ?? '',
+        };
     }
 
     protected function generateContentFromType(): string

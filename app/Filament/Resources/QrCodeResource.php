@@ -61,10 +61,12 @@ class QrCodeResource extends Resource
                             ->default('website')
                             ->required()
                             ->live()
-                            ->afterStateUpdated(fn (Forms\Set $set) => $set('qr_content_data', [])),
-                    ]),
+                            ->afterStateUpdated(fn (Forms\Set $set) => $set('qr_content_data', []))
+                            ->disabled(fn ($record) => $record?->type === 'static'),
+                    ])
+                    ->visible(fn ($record) => $record?->type !== 'static'),
 
-                // Dynamic sections based on QR type
+                // All content sections - only visible/enabled for dynamic QR codes or new records
                 Section::make('Website Configuration')
                     ->schema([
                         Forms\Components\TextInput::make('qr_content_data.url')
@@ -73,7 +75,10 @@ class QrCodeResource extends Resource
                             ->url()
                             ->placeholder('https://example.com'),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'website'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'website' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('Wi-Fi Configuration')
                     ->schema([
@@ -97,7 +102,10 @@ class QrCodeResource extends Resource
                             ->label('Hidden Network')
                             ->default(false),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'wifi'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'wifi' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('Email Configuration')
                     ->schema([
@@ -112,7 +120,10 @@ class QrCodeResource extends Resource
                             ->label('Email Body')
                             ->placeholder('Optional'),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'email'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'email' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('WhatsApp Configuration')
                     ->schema([
@@ -124,7 +135,10 @@ class QrCodeResource extends Resource
                             ->label('Pre-filled Message')
                             ->placeholder('Optional'),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'whatsapp'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'whatsapp' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('Contact (vCard) Configuration')
                     ->schema([
@@ -152,7 +166,10 @@ class QrCodeResource extends Resource
                             ->url()
                             ->columnSpanFull(),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'vcard'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'vcard' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('SMS Configuration')
                     ->schema([
@@ -164,7 +181,10 @@ class QrCodeResource extends Resource
                             ->label('Pre-filled Message')
                             ->placeholder('Optional'),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'sms'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'sms' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('Phone Call Configuration')
                     ->schema([
@@ -173,7 +193,10 @@ class QrCodeResource extends Resource
                             ->required()
                             ->placeholder('+1234567890'),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'phone'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'phone' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('Text Configuration')
                     ->schema([
@@ -182,7 +205,10 @@ class QrCodeResource extends Resource
                             ->required()
                             ->placeholder('Enter the text to display'),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'text'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'text' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('Calendar Event Configuration')
                     ->schema([
@@ -205,7 +231,10 @@ class QrCodeResource extends Resource
                         Forms\Components\Textarea::make('qr_content_data.description')
                             ->label('Description'),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'calendar'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'calendar' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
                 Section::make('Location Configuration')
                     ->schema([
@@ -223,8 +252,12 @@ class QrCodeResource extends Resource
                                     ->placeholder('-122.4194'),
                             ]),
                     ])
-                    ->visible(fn (Forms\Get $get): bool => $get('qr_content_type') === 'location'),
+                    ->visible(fn (Forms\Get $get, $record): bool =>
+                        $get('qr_content_type') === 'location' &&
+                        ($record === null || $record->type === 'dynamic')
+                    ),
 
+                // QR Code appearance - only for new records (both types can customize during creation)
                 Section::make('QR Code Appearance')
                     ->schema([
                         Grid::make(2)
@@ -260,7 +293,32 @@ class QrCodeResource extends Resource
                                     ->minValue(100)
                                     ->maxValue(2000),
                             ]),
-                    ]),
+                    ])
+                    ->visible(fn ($record) => $record === null)
+                    ->description('QR code appearance cannot be changed after creation to preserve printed codes.'),
+
+                // Show current settings as read-only for existing records
+                Section::make('Current QR Code Settings')
+                    ->schema([
+                        Forms\Components\Placeholder::make('qr_type_display')
+                            ->label('QR Code Type')
+                            ->content(fn ($record) => $record ? QrCode::QR_CONTENT_TYPES[$record->qr_content_type] ?? ucfirst($record->qr_content_type) : ''),
+                        Forms\Components\Placeholder::make('format_display')
+                            ->label('Format')
+                            ->content(fn ($record) => $record ? strtoupper($record->options['format'] ?? 'PNG') : ''),
+                        Forms\Components\Placeholder::make('color_display')
+                            ->label('Color')
+                            ->content(fn ($record) => $record ? ($record->options['color'] ?? '#000000') : ''),
+                        Forms\Components\Placeholder::make('size_display')
+                            ->label('Size')
+                            ->content(fn ($record) => $record ? ($record->options['size'] ?? '300') . 'px' : ''),
+                    ])
+                    ->visible(fn ($record) => $record !== null)
+                    ->description(fn ($record) =>
+                        $record?->type === 'static'
+                            ? 'Static QR codes cannot be modified after creation to preserve printed codes.'
+                            : 'QR code appearance cannot be changed after creation to preserve printed codes.'
+                    ),
             ]);
     }
 

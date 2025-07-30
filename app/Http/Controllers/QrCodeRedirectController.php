@@ -26,8 +26,7 @@ class QrCodeRedirectController extends Controller
             // Get device information
             $agent = new Agent();
 
-            // Get location information (requires geoip package)
-            //Dont forget to use real ip address request()->ip()
+            // Get location information
             $location = $geolocation->locate(config('app.env') === 'local' ? '46.217.223.14' : request()->ip());
 
             // Log the scan
@@ -44,6 +43,25 @@ class QrCodeRedirectController extends Controller
             ]);
         });
 
-        return redirect()->away($qrCode->destination_url);
+        // Handle different content types
+        return match ($qrCode->qr_content_type) {
+            'website' => redirect()->away($qrCode->qr_content_data['url'] ?? $qrCode->destination_url),
+            'wifi' => view('qr.wifi', compact('qrCode')),
+            'email' => view('qr.email', compact('qrCode')),
+            'whatsapp' => view('qr.whatsapp', compact('qrCode')),
+            'vcard' => view('qr.vcard', compact('qrCode')),
+            'sms' => view('qr.sms', compact('qrCode')),
+            'phone' => view('qr.phone', compact('qrCode')),
+            'text' => view('qr.text', compact('qrCode')),
+            'calendar' => view('qr.calendar', compact('qrCode')),
+            'location' => view('qr.location', compact('qrCode')),
+            default => redirect()->away($qrCode->destination_url),
+        };
+    }
+
+    public function expired($shortUrl)
+    {
+        $qrCode = QrCode::where('short_url', $shortUrl)->firstOrFail();
+        return view('qr.expired', compact('qrCode'));
     }
 }
