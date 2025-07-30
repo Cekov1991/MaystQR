@@ -18,7 +18,7 @@
 
         <nav id="navmenu" class="navmenu">
             <ul>
-                <li><a href="/admin/register" class="active">Dashboard</a></li>
+                <li><a href="{{route('filament.admin.pages.dashboard')}}" class="active">Dashboard</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#features">Features</a></li>
                 <li><a href="#faq">FAQ</a></li>
@@ -26,7 +26,7 @@
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
 
-        <a class="btn-getstarted" href="/admin/register">Get Started</a>
+        <a class="btn-getstarted" href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.codes.create')}}">Get Started</a>
 
     </div>
 </header>
@@ -55,7 +55,7 @@
                         </p>
 
                         <div class="hero-buttons">
-                            <a href="/admin/register" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a>
+                            <a href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.codes.create')}}" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a>
                         </div>
                     </div>
                 </div>
@@ -173,7 +173,7 @@
             <div class="row content justify-content-center align-items-center position-relative">
                 <div class="col-lg-8 mx-auto text-center">
                     <h2 class="display-4 mb-4">Start Growing with Mayst QR Codes Today!</h2>
-                    <a href="#" class="btn btn-cta">Get Started</a>
+                    <a href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.codes.create')}}" class="btn btn-cta">Get Started</a>
                 </div>
 
                 <!-- Abstract Background Elements -->

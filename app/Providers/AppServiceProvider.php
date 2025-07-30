@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use App\Services\IpGeolocationService;
 use Illuminate\Http\Client\Factory as Http;
+use Illuminate\Support\Facades\Event;
+use Filament\Events\Auth\Registered;
+use Illuminate\Support\Facades\Session;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,5 +32,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::unguard();
+
+        // Listen for Filament registration events
+        Event::listen(Registered::class, function (Registered $event) {
+
+            if (Session::has('pending_qr_code')) {
+                Session::put('redirect_to_qr_creation', true);
+            }
+        });
     }
 }
