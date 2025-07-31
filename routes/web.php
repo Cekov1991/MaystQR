@@ -6,13 +6,12 @@ use App\Http\Controllers\QrCodeRedirectController;
 use App\Http\Controllers\QrCodeExpiredController;
 use App\Http\Controllers\QrCodePackageController;
 use App\Http\Controllers\PayPalController;
-
+use App\Models\QrCodePackage;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-
-
-    return view('welcome');
+    $packages = QrCodePackage::active()->orderBy('duration_months')->get();
+    return view('welcome', compact('packages'));
 });
 
 // QR Code routes
