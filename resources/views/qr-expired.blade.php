@@ -4,8 +4,8 @@
 @section('description', 'This QR code has expired. Extend it to continue using.')
 
 @section('content')
-<section class="hero d-flex align-items-center" style="padding-top: 120px; min-height: 100vh;">
-    <div class="container">
+<section class="hero d-flex align-items-center" style="padding-top: 20px; min-height: 100vh;">
+    <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-lg-8 col-md-10">
                 <div class="card shadow-lg border-0">
@@ -16,21 +16,21 @@
                         </div>
 
                         <!-- Main Message -->
-                        <h1 class="h2 text-danger mb-3">QR Code Expired</h1>
+                        <h1 class="h4 text-danger mb-3">QR Code {{ $qrCode->name }} Expired</h1>
                         <p class="text-muted mb-4">
                             This QR code expired on
                             <strong>{{ $qrCode->expires_at->format('M j, Y \a\t g:i A') }}</strong>
                         </p>
 
-                        @if($qrCode->isInTrial())
+                        {{-- @if($qrCode->isInTrial())
                             <div class="alert alert-info mb-4">
                                 <i class="bi bi-info-circle me-2"></i>
                                 This QR code was in its 24-hour trial period.
                             </div>
-                        @endif
+                        @endif --}}
 
                         <!-- QR Code Info -->
-                        <div class="row mb-4">
+                        {{-- <div class="row mb-4">
                             <div class="col-md-6 mx-auto">
                                 <div class="bg-light p-3 rounded">
                                     <h5 class="mb-2">{{ $qrCode->name }}</h5>
@@ -39,7 +39,7 @@
                                     </small>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         @auth
                             @if($qrCode->user_id === auth()->id())
@@ -60,22 +60,41 @@
                                                                value="{{ $package->id }}"
                                                                id="package_{{ $package->id }}"
                                                                class="form-check-input d-none"
-                                                               {{ $loop->first ? 'checked' : '' }}>
+                                                               {{ $package->id == 2 ? 'checked' : '' }}>
 
                                                         <label for="package_{{ $package->id }}"
-                                                               class="card h-100 package-card {{ $loop->first ? 'border-primary' : 'border-light' }}"
-                                                               style="cursor: pointer; transition: all 0.3s;">
-                                                            <div class="card-body text-center">
-                                                                <h5 class="card-title text-primary">
-                                                                    {{ $package->duration_text }}
-                                                                </h5>
-                                                                <div class="price mb-2">
-                                                                    <span class="h3 text-success">{{ $package->formatted_price }}</span>
+                                                               class="pricing-card h-100 {{ $package->id == 2 ? 'selected' : '' }}"
+                                                               style="cursor: pointer;">
+                                                            @if($package->id == 2)
+                                                                <div class="popular-badge">Most Popular</div>
+                                                            @endif
+                                                            <div class="text-center">
+                                                                <h3>{{ $package->duration_text }}</h3>
+                                                                <div class="price">
+                                                                    <span class="currency">${{ $package->price }}</span>
+                                                                    <span class="amount"></span>
+                                                                    <span class="period">one-time</span>
                                                                 </div>
-                                                                <small class="text-muted">
-                                                                    Valid for {{ $package->duration_months }}
-                                                                    {{ $package->duration_months === 1 ? 'month' : 'months' }}
-                                                                </small>
+
+                                                                <h4>Extension Includes:</h4>
+                                                                <ul class="features-list">
+                                                                    <li>
+                                                                        <i class="bi bi-check-circle-fill"></i>
+                                                                        {{ $package->duration_months }} {{ $package->duration_months === 1 ? 'month' : 'months' }} extension
+                                                                    </li>
+                                                                    <li>
+                                                                        <i class="bi bi-check-circle-fill"></i>
+                                                                        Continue existing analytics
+                                                                    </li>
+                                                                    <li>
+                                                                        <i class="bi bi-check-circle-fill"></i>
+                                                                        No downtime during extension
+                                                                    </li>
+                                                                    <li>
+                                                                        <i class="bi bi-check-circle-fill"></i>
+                                                                        Instant activation
+                                                                    </li>
+                                                                </ul>
                                                             </div>
                                                         </label>
                                                     </div>
@@ -143,15 +162,150 @@
 
 @push('styles')
 <style>
-.package-card:hover {
-    border-color: #0d6efd !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+/* Pricing Card Styles - Consistent with Landing Page */
+.pricing-card {
+    height: 100%;
+    padding: 2rem;
+    background: var(--surface-color, #ffffff);
+    border: 2px solid #dee2e6;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    display: block;
+    text-decoration: none;
+    color: inherit;
 }
 
-.package-option input[type="radio"]:checked + label {
-    border-color: #0d6efd !important;
+.pricing-card:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: inherit;
+}
+
+.pricing-card.selected {
+    border-color: var(--accent-color, #007bff);
     background-color: #f8f9ff;
+}
+
+/* Popular Card Styling */
+.pricing-card.popular {
+    background: var(--accent-color, #007bff);
+    color: var(--contrast-color, #ffffff);
+    border-color: var(--accent-color, #007bff);
+}
+
+.pricing-card.popular h3,
+.pricing-card.popular h4 {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular .price .currency,
+.pricing-card.popular .price .amount,
+.pricing-card.popular .price .period {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular .features-list li {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular .features-list li i {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular.selected {
+    background: var(--accent-color, #007bff);
+    border-color: #ffffff;
+    box-shadow: 0 0 0 3px var(--accent-color, #007bff);
+}
+
+.pricing-card .popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--contrast-color, #ffffff);
+    color: var(--accent-color, #007bff);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+}
+
+.pricing-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--heading-color, #333);
+}
+
+.pricing-card .price {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.pricing-card .price .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    vertical-align: top;
+    line-height: 1;
+    color: var(--accent-color, #007bff);
+}
+
+.pricing-card .price .amount {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent-color, #007bff);
+}
+
+.pricing-card .price .period {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.pricing-card h4 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+    color: var(--heading-color, #333);
+}
+
+.pricing-card .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    text-align: left;
+}
+
+.pricing-card .features-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.pricing-card .features-list li i {
+    color: var(--accent-color, #007bff);
+    margin-right: 0.75rem;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Override the old package card styles */
+.package-option input[type="radio"]:checked + label {
+    border-color: var(--accent-color, #007bff) !important;
+    background-color: #f8f9ff;
+}
+
+.package-option input[type="radio"]:checked + label.popular {
+    background: var(--accent-color, #007bff) !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 0 0 3px var(--accent-color, #007bff);
 }
 
 .extension-section {
@@ -161,12 +315,19 @@
 }
 
 .hero {
-    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
     min-height: 100vh;
 }
 
 .card {
     border-radius: 15px;
+}
+
+/* CSS Variables for consistency */
+:root {
+    --accent-color: #007bff;
+    --heading-color: #333;
+    --surface-color: #ffffff;
+    --contrast-color: #ffffff;
 }
 </style>
 @endpush
@@ -176,20 +337,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Handle package selection
     const packageInputs = document.querySelectorAll('input[name="package_id"]');
-    const packageCards = document.querySelectorAll('.package-card');
+    const packageCards = document.querySelectorAll('.pricing-card');
 
     packageInputs.forEach((input, index) => {
         input.addEventListener('change', function() {
             // Reset all cards
             packageCards.forEach(card => {
-                card.classList.remove('border-primary');
-                card.classList.add('border-light');
+                card.classList.remove('selected');
             });
 
             // Highlight selected card
             if (this.checked) {
-                packageCards[index].classList.remove('border-light');
-                packageCards[index].classList.add('border-primary');
+                packageCards[index].classList.add('selected');
             }
         });
     });

@@ -21,6 +21,7 @@
                 <li><a href="{{route('filament.admin.pages.dashboard')}}" class="active">Dashboard</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#features">Features</a></li>
+                <li><a href="#pricing">Pricing</a></li>
                 <li><a href="#faq">FAQ</a></li>
             </ul>
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -167,6 +168,123 @@
         </div>
     </section><!-- /Features Cards Section -->
 
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing section">
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <!-- Section Header -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="mb-4">Simple, Transparent Pricing</h2>
+                    <p class="lead mb-5">
+                        Start for free and scale as you grow. Our flexible pricing model ensures you only pay for what you need.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Business Model Explanation -->
+            <div class="row justify-content-center mb-5">
+                <div class="col-lg-10">
+                    <div class="card border-0 shadow-sm bg-light">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h4 class="text-primary mb-2">💡 How Our Pricing Works</h4>
+                                    <p class="mb-2">
+                                        <strong>Static QR Codes:</strong> Create unlimited static QR codes completely free - forever! Perfect for simple redirects, contact info, and basic use cases.
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Dynamic QR Codes:</strong> Each dynamic QR code comes with a <span class="text-success fw-bold">24-hour free trial</span>. After the trial, simply purchase an affordable extension package to keep your QR code active. You only pay for the dynamic features you actually use!
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="text-success">
+                                        <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
+                                        <p class="mt-2 mb-0"><small>Pay only for what you use</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Cards -->
+            <div class="row justify-content-center">
+                <!-- Dynamic Extension Packages -->
+                @foreach($packages as $package)
+                    <div class="col-lg-4 mt-4" data-aos="fade-up" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
+                        <div class="pricing-card {{ $package->id == 2 ? 'popular' : '' }}">
+                            @if($package->id == 2)
+                                <div class="popular-badge">Most Popular</div>
+                            @endif
+                            <h3>{{ $package->name }} Extension</h3>
+                            <div class="price">
+                                <span class="currency">$</span>
+                                <span class="amount">{{ $package->price }}</span>
+                                <span class="period">/ QR code</span>
+                            </div>
+
+                            <h4>Extension Includes:</h4>
+                            <ul class="features-list">
+                                <li>
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    {{ $package->duration_text }} extension per QR code
+                                </li>
+                                <li>
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Unlimited scans & updates
+                                </li>
+                                <li>
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Real-time analytics
+                                </li>
+                                <li>
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Custom branding options
+                                </li>
+                                <li>
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Advanced analytics dashboard
+                                </li>
+                            </ul>
+
+                            <a href="{{ route('filament.public.resources.codes.create') }}" class="btn {{ $package->id == 2 ? 'btn-light' : 'btn-primary' }}">
+                                Get Started
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- Value Proposition -->
+            <div class="row justify-content-center mt-5">
+                <div class="col-lg-8 text-center">
+                    <div class="value-proposition">
+                        <h4 class="text-primary mb-3">Why This Model Benefits You</h4>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <i class="bi bi-piggy-bank text-success mb-2" style="font-size: 2rem;"></i>
+                                <h6>Cost Effective</h6>
+                                <p class="small">Only pay for advanced features when you need them</p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <i class="bi bi-clock text-success mb-2" style="font-size: 2rem;"></i>
+                                <h6>Risk-Free Trial</h6>
+                                <p class="small">24 hours to test all dynamic features before committing</p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <i class="bi bi-graph-up text-success mb-2" style="font-size: 2rem;"></i>
+                                <h6>Scale as You Grow</h6>
+                                <p class="small">Start small and add more dynamic QR codes as needed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section><!-- /Pricing Section -->
+
     <!-- Call To Action Section -->
     <section id="call-to-action" class="call-to-action section">
         <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -236,7 +354,7 @@
                         <div class="faq-item faq-active">
                             <h3>What are the benefits of using dynamic QR codes over static ones?</h3>
                             <div class="faq-content">
-                                <p>Dynamic QR codes allow you to update the content without reprinting, provide detailed scan analytics, and offer features like password protection and custom branding.</p>
+                                <p>Dynamic QR codes allow you to update the content without reprinting, provide detailed scan analytics, and custom branding.</p>
                             </div>
                             <i class="faq-toggle bi bi-chevron-right"></i>
                         </div><!-- End Faq item-->
@@ -293,3 +411,180 @@
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 </footer>
 @endsection
+
+@push('styles')
+<style>
+/* Pricing Card Styles - Consistent with Landing Page */
+.pricing-card {
+    height: 100%;
+    padding: 2rem;
+    background: var(--surface-color, #ffffff);
+    border: 2px solid #dee2e6;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.pricing-card:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Popular Card Styling */
+.pricing-card.popular {
+    background: var(--accent-color, #007bff);
+    color: var(--contrast-color, #ffffff);
+    border-color: var(--accent-color, #007bff);
+}
+
+.pricing-card.popular h3,
+.pricing-card.popular h4 {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular .price .currency,
+.pricing-card.popular .price .amount,
+.pricing-card.popular .price .period {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular .features-list li {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular .features-list li i {
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card.popular .btn-light {
+    background: var(--contrast-color, #ffffff);
+    color: var(--accent-color, #007bff);
+    border: none;
+}
+
+.pricing-card.popular .btn-light:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
+}
+
+.pricing-card .popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--contrast-color, #ffffff);
+    color: var(--accent-color, #007bff);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+}
+
+.pricing-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--heading-color, #333);
+}
+
+.pricing-card .price {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.pricing-card .price .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    vertical-align: top;
+    line-height: 1;
+    color: var(--accent-color, #007bff);
+}
+
+.pricing-card .price .amount {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent-color, #007bff);
+}
+
+.pricing-card .price .period {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.pricing-card h4 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+    color: var(--heading-color, #333);
+}
+
+.pricing-card .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    text-align: left;
+}
+
+.pricing-card .features-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.pricing-card .features-list li i {
+    color: var(--accent-color, #007bff);
+    margin-right: 0.75rem;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.pricing-card .btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    border-radius: 50px;
+    text-decoration: none;
+}
+
+.pricing-card .btn.btn-primary {
+    background: var(--accent-color, #007bff);
+    border: none;
+    color: var(--contrast-color, #ffffff);
+}
+
+.pricing-card .btn.btn-primary:hover {
+    background: rgba(0, 123, 255, 0.85);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: white;
+}
+
+.value-proposition {
+    background: rgba(0, 123, 255, 0.05);
+    padding: 2rem;
+    border-radius: 1rem;
+}
+
+/* CSS Variables for consistency */
+:root {
+    --accent-color: #007bff;
+    --heading-color: #333;
+    --surface-color: #ffffff;
+    --contrast-color: #ffffff;
+}
+</style>
+@endpush
