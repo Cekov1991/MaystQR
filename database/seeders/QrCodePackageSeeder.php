@@ -19,21 +19,21 @@ class QrCodePackageSeeder extends Seeder
         QrCodePackage::create([
             'name' => '3 Months',
             'duration_months' => 3,
-            'price' => 7.99,
+            'price' => 4.99,
             'is_active' => true,
         ]);
 
         QrCodePackage::create([
             'name' => '6 Months',
             'duration_months' => 6,
-            'price' => 14.99,
+            'price' => 9.99,
             'is_active' => true,
         ]);
 
         QrCodePackage::create([
             'name' => '12 Months',
             'duration_months' => 12,
-            'price' => 24.99,
+            'price' => 17.99,
             'is_active' => true,
         ]);
     }

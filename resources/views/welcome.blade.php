@@ -13,7 +13,7 @@
         <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
             <!-- Uncomment the line below if you also wish to use an image logo -->
             <!-- <img src="assets/img/logo.png" alt=""> -->
-            <h1 class="sitename">MaystQR</h1>
+            <h1 class="sitename">{{ config('app.name') }}</h1>
         </a>
 
         <nav id="navmenu" class="navmenu">
@@ -27,7 +27,7 @@
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
 
-        <a class="btn-getstarted" href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.codes.create')}}">Get Started</a>
+        <a class="btn-getstarted" href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.qrcodes.create')}}">Get Started</a>
 
     </div>
 </header>
@@ -56,7 +56,7 @@
                         </p>
 
                         <div class="hero-buttons">
-                            <a href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.codes.create')}}" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a>
+                            <a href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.qrcodes.create')}}" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a>
                         </div>
                     </div>
                 </div>
@@ -242,13 +242,9 @@
                                     <i class="bi bi-check-circle-fill"></i>
                                     Custom branding options
                                 </li>
-                                <li>
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    Advanced analytics dashboard
-                                </li>
                             </ul>
 
-                            <a href="{{ route('filament.public.resources.codes.create') }}" class="btn {{ $package->id == 2 ? 'btn-light' : 'btn-primary' }}">
+                            <a href="{{ route('filament.public.resources.qrcodes.create') }}" class="btn {{ $package->id == 2 ? 'btn-light' : 'btn-primary' }}">
                                 Get Started
                                 <i class="bi bi-arrow-right"></i>
                             </a>
@@ -291,7 +287,7 @@
             <div class="row content justify-content-center align-items-center position-relative">
                 <div class="col-lg-8 mx-auto text-center">
                     <h2 class="display-4 mb-4">Start Growing with Mayst QR Codes Today!</h2>
-                    <a href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.codes.create')}}" class="btn btn-cta">Get Started</a>
+                    <a href="{{Auth::check() ? route('filament.admin.pages.dashboard') : route('filament.public.resources.qrcodes.create')}}" class="btn btn-cta">Get Started</a>
                 </div>
 
                 <!-- Abstract Background Elements -->
@@ -397,7 +393,7 @@
 @section('footer')
 <footer id="footer" class="footer">
     <div class="container copyright text-center mt-4">
-        <p>© <span>Copyright</span> <strong class="px-1 sitename">MaystQR</strong> <span>All Rights Reserved</span></p>
+        <p>© <span>Copyright</span> <strong class="px-1 sitename">{{ config('app.name') }}</strong> <span>All Rights Reserved</span></p>
         <div class="credits">
             <!-- All the links in the footer should remain intact. -->
             <!-- You can delete the links only if you've purchased the pro version. -->
