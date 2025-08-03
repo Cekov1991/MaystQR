@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'qr_code_trial_days' => env('QR_CODE_TRIAL_DAYS', 7),
+
 ];

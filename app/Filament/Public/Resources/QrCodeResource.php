@@ -37,13 +37,13 @@ class QrCodeResource extends Resource
                                 Forms\Components\Select::make('type')
                                     ->options([
                                         'static' => 'Static QR Code',
-                                        'dynamic' => 'Dynamic QR Code (24-hour trial)',
+                                        'dynamic' => 'Dynamic QR Code (' . config('app.qr_code_trial_days') . ' days trial)',
                                     ])
                                     ->default('static')
                                     ->required()
                                     ->disabled(fn($record) => $record !== null)
                                     ->dehydrated()
-                                    ->helperText('Dynamic QR codes start with a 24-hour trial period. You can extend them by purchasing packages.'),
+                                    ->helperText('Dynamic QR codes start with a ' . config('app.qr_code_trial_days') . ' days trial period. You can extend them by purchasing packages.'),
                             ])
                     ]),
 

@@ -25,7 +25,7 @@
                         {{-- @if($qrCode->isInTrial())
                             <div class="alert alert-info mb-4">
                                 <i class="bi bi-info-circle me-2"></i>
-                                This QR code was in its 24-hour trial period.
+                                This QR code was in its {{config('app.qr_code_trial_days')}} trial period.
                             </div>
                         @endif --}}
 

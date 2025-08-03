@@ -67,9 +67,9 @@ class QrCode extends Model
             // Generate content based on QR type
             $qrCode->content = $qrCode->generateContentFromType();
 
-            // Set 24-hour trial period for dynamic QR codes
+            // Set trial period for dynamic QR codes
             if ($qrCode->type === 'dynamic' && !$qrCode->expires_at) {
-                $qrCode->expires_at = now()->addHours(24);
+                $qrCode->expires_at = now()->addDays(config('app.qr_code_trial_days'));
                 // For dynamic QRs, content should point to redirect route
                 $qrCode->content = route('qr.redirect', $qrCode->short_url);
             }

@@ -193,7 +193,7 @@
                                         <strong>Static QR Codes:</strong> Create unlimited static QR codes completely free - forever! Perfect for simple redirects, contact info, and basic use cases.
                                     </p>
                                     <p class="mb-0">
-                                        <strong>Dynamic QR Codes:</strong> Each dynamic QR code comes with a <span class="text-success fw-bold">24-hour free trial</span>. After the trial, simply purchase an affordable extension package to keep your QR code active. You only pay for the dynamic features you actually use!
+                                        <strong>Dynamic QR Codes:</strong> Each dynamic QR code comes with a <span class="text-success fw-bold">{{ config('app.qr_code_trial_days') }} days free trial</span>. After the trial, simply purchase an affordable extension package to keep your QR code active. You only pay for the dynamic features you actually use!
                                     </p>
                                 </div>
                                 <div class="col-md-4 text-center">
@@ -267,7 +267,7 @@
                             <div class="col-md-4 mb-3">
                                 <i class="bi bi-clock text-success mb-2" style="font-size: 2rem;"></i>
                                 <h6>Risk-Free Trial</h6>
-                                <p class="small">24 hours to test all dynamic features before committing</p>
+                                <p class="small">{{ config('app.qr_code_trial_days') }} days to test all dynamic features before committing</p>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <i class="bi bi-graph-up text-success mb-2" style="font-size: 2rem;"></i>
