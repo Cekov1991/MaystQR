@@ -28,19 +28,7 @@ class ViewQrCode extends ViewRecord
             Grid::make(2)->schema([
                 Section::make('QR Code')
                     ->schema([
-                        ImageEntry::make('qr_code_image')->size(300)->alignCenter(),
-                        TextEntry::make('short_url')
-                            ->label('Scan URL')
-                            ->url(function ($record) {
-                                if ($record->type === 'static') {
-                                    return $record->content;
-                                }
-                                return route('qr.redirect', $record->short_url);
-                            })
-                            ->copyable()
-                            ->copyMessage('URL copied')
-                            ->copyMessageDuration(1500)
-                            ->alignCenter()
+                        ImageEntry::make('qr_code_image')->size(300)->alignCenter()
                     ])
                     ->columnSpan(1),
 
@@ -53,6 +41,7 @@ class ViewQrCode extends ViewRecord
                                 'static' => 'info',
                             },
                         ),
+                        TextEntry::make('qr_content_type')->badge(),
                         TextEntry::make('status')
                             ->state(function ($record) {
                                 if ($record->type === 'static') {
@@ -88,9 +77,6 @@ class ViewQrCode extends ViewRecord
                         TextEntry::make('expires_at')
                             ->label('Expires At')
                             ->formatStateUsing(function ($record) {
-                                if ($record->type === 'static') {
-                                    return 'Never expires';
-                                }
                                 return $record->expires_at?->format('M j, Y g:i A') ?? 'Not set';
                             })
                             ->color(function ($record) {
@@ -107,8 +93,9 @@ class ViewQrCode extends ViewRecord
                                 }
 
                                 return 'primary';
-                            }),
-                        TextEntry::make('destination_url')->label('Redirects to')->url(fn($record) => $record->destination_url)->openUrlInNewTab()->copyable(),
+                            })
+                            ->visible(fn($record) => $record->type !== 'static'),
+
                         TextEntry::make('scan_count')
                             ->label('Total Scans')
                             ->visible(fn($record) => $record->type !== 'static'),
