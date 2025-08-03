@@ -96,6 +96,12 @@ class QrCode extends Model
                 // No need to regenerate anything - just update the database
             }
         });
+
+        static::deleting(function ($qrCode) {
+            if ($qrCode->qr_code_image) {
+                Storage::delete($qrCode->qr_code_image);
+            }
+        });
     }
 
     public function getFormatedContentAttribute(): string
