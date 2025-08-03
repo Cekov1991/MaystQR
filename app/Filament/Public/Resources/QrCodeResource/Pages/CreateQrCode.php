@@ -50,7 +50,7 @@ class CreateQrCode extends CreateRecord
             'name' => $data['name'],
             'qr_content_type' => $data['qr_content_type'],
             'qr_content_data' => $data['qr_content_data'] ?? [],
-            'type' => 'static' // Public QR codes are static by default
+            'type' => $data['type'] ?? 'static'
         ]);
 
         // Store a message for after login
