@@ -97,11 +97,6 @@ class QrCode extends Model
             }
         });
 
-        static::deleting(function ($qrCode) {
-            if ($qrCode->qr_code_image) {
-                Storage::delete($qrCode->qr_code_image);
-            }
-        });
     }
 
     public function getFormatedContentAttribute(): string
