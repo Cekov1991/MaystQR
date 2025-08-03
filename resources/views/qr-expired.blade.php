@@ -1,6 +1,6 @@
 @extends('layouts.qr')
 
-@section('title', 'QR Code Expired - MaystQR')
+@section('title', 'QR Code Expired - ' . config('app.name'))
 @section('description', 'This QR code has expired. Extend it to continue using.')
 
 @section('content')

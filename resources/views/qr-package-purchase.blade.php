@@ -1,6 +1,6 @@
 @extends('layouts.qr')
 
-@section('title', 'Purchase QR Code Extension - MaystQR')
+@section('title', 'Purchase QR Code Extension - ' . config('app.name'))
 @section('description', 'Extend your QR code validity with our affordable packages.')
 
 @section('content')

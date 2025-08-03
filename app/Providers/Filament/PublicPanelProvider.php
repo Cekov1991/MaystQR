@@ -21,7 +21,7 @@ class PublicPanelProvider extends PanelProvider
     {
         return $panel
             ->id('public')
-            ->path('qr')
+            ->path('free')
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -41,7 +41,7 @@ class PublicPanelProvider extends PanelProvider
             // No auth middleware - public access
             ->login(false)
             ->registration(false)
-            ->brandName('MaystQR')
+            ->brandName(config('app.name'))
             ->favicon(asset('favicon.ico'));
     }
 }

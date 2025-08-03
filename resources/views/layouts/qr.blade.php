@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>@yield('title', 'MaystQR - QR Code Management')</title>
+    <title>@yield('title', config('app.name') . ' - QR Code Management')</title>
     <meta name="description" content="@yield('description', 'Professional QR Code Solutions')">
     <meta name="keywords" content="@yield('keywords', 'QR Code, Dynamic QR, Analytics, SaaS')">
 
@@ -44,7 +44,7 @@
     @else
         <footer class="footer">
             <div class="container text-center">
-                <p>&copy; {{ date('Y') }} MaystQR. All rights reserved.</p>
+                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
             </div>
         </footer>
     @endif

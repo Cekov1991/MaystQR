@@ -14,8 +14,8 @@ class QrCodeResource extends Resource
 {
     protected static ?string $model = QrCode::class;
     protected static ?string $navigationIcon = 'heroicon-m-qr-code';
-    protected static ?string $navigationLabel = 'Create QR Code';
-    protected static ?string $slug = 'codes';
+    protected static ?string $navigationLabel = 'QR Codes';
+    protected static ?string $slug = 'qrcodes';
 
     // Redirect navigation directly to create page
     public static function getNavigationUrl(): string
