@@ -11,7 +11,9 @@
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "league/flysystem-aws-s3-v3": "^3.29",
+        "paddlehq/paddle-php-sdk": "^1.10",
         "paypal/paypal-checkout-sdk": "^1.0",
+        "php-http/guzzle7-adapter": "^1.1",
         "simplesoftwareio/simple-qrcode": "^4.2"
     },
     "require-dev": {
