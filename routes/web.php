@@ -57,6 +57,11 @@ Route::middleware(['auth'])->group(function () {
         ->name('qr.package.cancel');
 });
 
+// Fastlane routes
+Route::get('/fastlane', [App\Http\Controllers\FastlaneController::class, 'index'])->name('fastlane.checkout');
+Route::post('/fastlane/transaction', [App\Http\Controllers\FastlaneController::class, 'createTransaction'])->name('fastlane.transaction');
+Route::get('/fastlane/client-token', [App\Http\Controllers\FastlaneController::class, 'getClientToken'])->name('fastlane.token');
+
 require __DIR__.'/auth.php';
 
 

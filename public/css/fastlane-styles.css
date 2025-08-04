@@ -1,0 +1,80 @@
+/* Basic styling for Fastlane checkout */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+section.active {
+    border-color: #0070ba;
+    background-color: #f8f9fa;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.edit-button {
+    background: none;
+    border: none;
+    color: #0070ba;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.submit-button {
+    background-color: #0070ba;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.submit-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input.input-invalid {
+    border-color: #d93025;
+}
+
+.email-input-with-watermark {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.summary {
+    color: #666;
+    margin-bottom: 10px;
+    white-space: pre-line;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 30px 0;
+}
