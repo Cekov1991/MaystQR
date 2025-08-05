@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('qr_code_packages', function (Blueprint $table) {
             $table->id();
+            $table->string('paddle_price_id')->nullable();
             $table->string('name'); // e.g., "1 Month", "3 Months", etc.
             $table->integer('duration_months'); // 1, 3, 6, 12
             $table->decimal('price', 8, 2); // Package price

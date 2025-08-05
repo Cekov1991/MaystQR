@@ -39,10 +39,10 @@ return [
         'key' => env('IP_GEOLOCATION_API_KEY'),
     ],
 
-    'paypal' => [
-        'client_id' => env('PAYPAL_CLIENT_ID'),
-        'secret' => env('PAYPAL_SECRET'),
-        'mode' => env('PAYPAL_MODE', 'sandbox'), // or 'live' for production
+    'paddle' => [
+        'api_key' => env('PADDLE_API_KEY'),
+        'environment' => env('PADDLE_ENVIRONMENT', 'sandbox'), // 'sandbox' or 'production'
+        'webhook_secret' => env('PADDLE_WEBHOOK_SECRET'),
     ],
 
 ];

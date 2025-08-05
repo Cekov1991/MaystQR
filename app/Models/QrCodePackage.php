@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class QrCodePackage extends Model
 {
     protected $fillable = [
+        'paddle_price_id',
         'name',
         'duration_months',
         'price',
@@ -34,7 +35,7 @@ class QrCodePackage extends Model
     // Helper methods
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->price, 2);
+        return '€' . number_format($this->price, 2);
     }
 
     public function getDurationTextAttribute(): string

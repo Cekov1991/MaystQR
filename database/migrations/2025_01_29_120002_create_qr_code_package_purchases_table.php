@@ -16,11 +16,11 @@ return new class extends Migration
             $table->foreignId('qr_code_id')->constrained()->cascadeOnDelete();
             $table->foreignId('qr_code_package_id')->constrained();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('transaction_id')->nullable();
             $table->decimal('amount_paid', 8, 2);
             $table->timestamp('purchased_at');
             $table->timestamp('extended_until'); // The new expiration date after purchase
             $table->string('payment_method')->nullable();
-            $table->string('transaction_id')->nullable();
             $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
             $table->timestamps();
         });

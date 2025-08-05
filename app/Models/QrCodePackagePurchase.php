@@ -14,7 +14,6 @@ class QrCodePackagePurchase extends Model
         'purchased_at',
         'extended_until',
         'payment_method',
-        'transaction_id',
         'status',
     ];
 
