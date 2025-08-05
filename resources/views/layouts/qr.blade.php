@@ -42,10 +42,72 @@
     @hasSection('footer')
         @yield('footer')
     @else
-        <footer class="footer">
-            <div class="container text-center">
-                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+        <footer id="footer" class="footer mt-5">
+            <div class="container footer-top">
+                <div class="row gy-4">
+                    <!-- Company Information -->
+                    <div class="col-lg-4 col-md-6 footer-about">
+                        <a href="/" class="logo d-flex align-items-center">
+                            <span class="sitename">{{ config('app.name') }}</span>
+                        </a>
+                        <div class="footer-contact pt-3">
+                            <p>Create dynamic QR codes with powerful analytics and easy management. Perfect for businesses of all sizes.</p>
+                            <p><strong>Email:</strong> <span>mayst.impact@gmail.com</span></p>
+                            <p><strong>Address:</strong> <span>Vladimir Komarov 25/4-16, Skopje, North Macedonia</span></p>
+                        </div>
+                        {{-- <div class="social-links d-flex mt-3">
+                            <a href="#" class="d-flex align-items-center justify-content-center"><i class="bi bi-twitter-x"></i></a>
+                            <a href="#" class="d-flex align-items-center justify-content-center"><i class="bi bi-facebook"></i></a>
+                            <a href="#" class="d-flex align-items-center justify-content-center"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="d-flex align-items-center justify-content-center"><i class="bi bi-linkedin"></i></a>
+                        </div> --}}
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="col-lg-2 col-md-3 footer-links">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href="{{route('welcome')}}">Home</a></li>
+                            <li><a href="{{route('welcome')}}/#about">About</a></li>
+                            <li><a href="{{route('welcome')}}/#features">Features</a></li>
+                            <li><a href="{{route('welcome')}}/#pricing">Pricing</a></li>
+                            <li><a href="{{route('welcome')}}/#faq">FAQ</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="col-lg-2 col-md-3 footer-links">
+                        <h4>Services</h4>
+                        <ul>
+                            <li><a href="{{ route('filament.public.resources.qrcodes.create') }}">Create QR Code</a></li>
+                            <li><a href="{{ route('filament.admin.pages.dashboard') }}">Dashboard</a></li>
+                            <li><a href="#">QR Analytics</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Legal & Support -->
+                    <div class="col-lg-2 col-md-3 footer-links">
+                        <h4>Legal & Support</h4>
+                        <ul>
+                            <li><a href="{{ url('/terms-and-conditions') }}">Terms & Conditions</a></li>
+                            <li><a href="{{ url('/privacy-policy') }}">Privacy Policy</a></li>
+                            <li><a href="{{ url('/refund-policy') }}">Refund Policy</a></li>
+                            <li><a href="mailto:mayst.impact@gmail.com">Contact Support</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
+            {{-- @dd(request()->cookie()) --}}
+
+            <div class="container copyright text-center mt-4">
+                <p>© <span>Copyright</span> <strong class="px-1 sitename">{{ config('app.name') }}</strong> <span>All Rights Reserved</span></p>
+                <div class="credits">
+                    <small class="text-muted">Powered by <a href="https://maystimpact.mk">Mayst Impact</a></small>
+                </div>
+            </div>
+
+            <!-- Scroll Top -->
+            <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
         </footer>
     @endif
 
@@ -61,6 +123,22 @@
     <script src="{{ asset('landing/assets/js/main.js') }}"></script>
 
     @stack('scripts')
+
+    @if (!request()->cookie('cookie_consent'))
+        <div id="cookie-banner"
+            style="position: fixed; bottom: 0; left: 0; right: 0; background: #222; color: #fff; padding: 15px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; z-index: 9999;">
+            <span>
+                We use essential cookies for site functionality and Google Analytics to improve your experience.
+                See our <a href="{{ url('/privacy-policy') }}" style="color: #4da3ff;">Privacy Policy</a>.
+            </span>
+            <div>
+                <a href="{{route('cookies.accept')}}"
+                    style="background: #4caf50; color: white; border: none; padding: 8px 12px; margin-right: 5px; cursor: pointer;">Accept</button>
+                <a href="{{route('cookies.reject')}}"
+                    style="background: #f44336; color: white; border: none; padding: 8px 12px; cursor: pointer;">Decline</button>
+            </div>
+        </div>
+    @endif
 </body>
 
 </html>
