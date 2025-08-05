@@ -133,9 +133,9 @@
             </span>
             <div>
                 <a href="{{route('cookies.accept')}}"
-                    style="background: #4caf50; color: white; border: none; padding: 8px 12px; margin-right: 5px; cursor: pointer;">Accept</button>
+                    style="background: #4caf50; color: white; border: none; padding: 8px 12px; margin-right: 5px; cursor: pointer;">Accept</a>
                 <a href="{{route('cookies.reject')}}"
-                    style="background: #f44336; color: white; border: none; padding: 8px 12px; cursor: pointer;">Decline</button>
+                    style="background: #f44336; color: white; border: none; padding: 8px 12px; cursor: pointer;">Decline</a>
             </div>
         </div>
     @endif
