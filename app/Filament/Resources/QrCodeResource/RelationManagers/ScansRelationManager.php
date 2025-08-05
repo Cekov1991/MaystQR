@@ -9,6 +9,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn\TextColumnSize;
+use Illuminate\Database\Eloquent\Model;
 
 class ScansRelationManager extends RelationManager
 {
@@ -56,25 +57,25 @@ class ScansRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('device')
-                    ->options(fn () => $this->getRelationship()
+                    ->options(fn() => $this->getRelationship()
                         ->distinct()
                         ->pluck('device', 'device')
                         ->toArray()),
 
                 Tables\Filters\SelectFilter::make('os')
-                    ->options(fn () => $this->getRelationship()
+                    ->options(fn() => $this->getRelationship()
                         ->distinct()
                         ->pluck('os', 'os')
                         ->toArray()),
 
                 Tables\Filters\SelectFilter::make('browser')
-                    ->options(fn () => $this->getRelationship()
+                    ->options(fn() => $this->getRelationship()
                         ->distinct()
                         ->pluck('browser', 'browser')
                         ->toArray()),
 
                 Tables\Filters\SelectFilter::make('country')
-                    ->options(fn () => $this->getRelationship()
+                    ->options(fn() => $this->getRelationship()
                         ->distinct()
                         ->pluck('country', 'country')
                         ->toArray()),
@@ -108,5 +109,10 @@ class ScansRelationManager extends RelationManager
     public function isReadOnly(): bool
     {
         return true; // Scans cannot be modified
+    }
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return $ownerRecord->type === 'dynamic';
     }
 }
