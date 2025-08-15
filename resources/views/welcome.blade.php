@@ -65,7 +65,7 @@
                     <div class="hero-image" data-aos="zoom-out" data-aos-delay="300">
                         <img src="{{ asset('landing/assets/img/illustration-1.webp') }}" alt="Hero Image" class="img-fluid">
 
-                        <div class="customers-badge">
+                        {{-- <div class="customers-badge">
                             <div class="customer-avatars">
                                 <img src="{{ asset('landing/assets/img/avatar-1.webp') }}" alt="Customer 1" class="avatar">
                                 <img src="{{ asset('landing/assets/img/avatar-2.webp') }}" alt="Customer 2" class="avatar">
@@ -75,7 +75,7 @@
                                 <span class="avatar more">12+</span>
                             </div>
                             <p class="mb-0 mt-2">12,000+ happy customers</p>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
@@ -119,10 +119,10 @@
                             <img src="{{ asset('landing/assets/img/about-5.webp') }}" alt="Business Meeting" class="img-fluid main-image rounded-4">
                             <img src="{{ asset('landing/assets/img/about-2.webp') }}" alt="Team Discussion" class="img-fluid small-image rounded-4">
                         </div>
-                        <div class="experience-badge floating">
+                        {{-- <div class="experience-badge floating">
                             <h3>15+ <span>Years</span></h3>
                             <p>Of experience in business service</p>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
