@@ -1,7 +1,7 @@
 @extends('layouts.qr')
 
-@section('title', 'Affordable & Powerful Dynamic QR Code Solutions for Your Business')
-@section('description', 'Affordable & Powerful Dynamic QR Code Solutions for Your Business')
+@section('title', 'Free & Powerful Dynamic QR Code Solutions for Your Business')
+@section('description', 'Free & Powerful Dynamic QR Code Solutions for Your Business')
 @section('keywords', 'QR Code, Dynamic QR, Analytics, SaaS, Editable QR Codes, Trackable QR Codes, QR Code Subscription Plans, Custom QR Code Branding')
 
 @section('body_class', 'class="index-page"')
@@ -21,7 +21,9 @@
                 <li><a href="{{route('filament.admin.pages.dashboard')}}" class="active">Dashboard</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#features">Features</a></li>
-                <li><a href="#pricing">Pricing</a></li>
+                @if(!config('app.free_dynamic_qr_codes'))
+                    <li><a href="#pricing">Pricing</a></li>
+                @endif
                 <li><a href="#faq">FAQ</a></li>
             </ul>
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -42,13 +44,13 @@
                     <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
                         <div class="company-badge mb-4">
                             <i class="bi bi-gear-fill me-2"></i>
-                            Dynamic QR Code Generator: Affordable & Powerful Solutions
+                            Dynamic QR Code Generator: Free & Powerful Solutions
                         </div>
 
                         <h1 class="mb-4">
                             Track, Analyze,<br>
                             and Update Your QR Codes in Real-Time <br>
-                            <span class="accent-text">Without Breaking the Bank</span>
+                            <span class="accent-text">For Free</span>
                         </h1>
 
                         <p class="mb-4 mb-md-5">
@@ -89,14 +91,14 @@
                 <div class="col-xl-5" data-aos="fade-up" data-aos-delay="200">
                     <span class="about-meta">MORE ABOUT US</span>
                     <h2 class="about-title">Empowering Businesses with Mayst QR Code Solutions</h2>
-                    <p class="about-description">Our platform helps small businesses, marketers, and event organizers create and manage dynamic QR codes effortlessly. With powerful analytics, seamless integrations, and unbeatable pricing, we're redefining how businesses connect with their audiences.</p>
+                    <p class="about-description">Our platform helps small businesses, marketers, and event organizers create and manage dynamic QR codes effortlessly.</p>
 
                     <div class="row feature-list-wrapper">
                         <div class="col-md-6">
                             <ul class="feature-list">
                                 <li><i class="bi bi-check-circle-fill"></i> Easy-to-Use Dashboard</li>
                                 <li><i class="bi bi-check-circle-fill"></i> Real-Time Analytics & Insights</li>
-                                <li><i class="bi bi-check-circle-fill"></i> Cost-Effective Plans</li>
+                                <li><i class="bi bi-check-circle-fill"></i> Custom Branding Options</li>
                             </ul>
                         </div>
                     </div>
@@ -161,7 +163,7 @@
                     <div class="feature-box red">
                         <i class="bi bi-shield-check"></i>
                         <h4>Cost-Effective Plans</h4>
-                        <p>Affordable solutions for individuals, SMBs, and enterprises.</p>
+                        <p>Free solutions for individuals, SMBs, and enterprises.</p>
                     </div>
                 </div><!-- End Feature Box-->
             </div>
@@ -169,9 +171,10 @@
     </section><!-- /Features Cards Section -->
 
     <!-- Pricing Section -->
+    @if(!config('app.free_dynamic_qr_codes'))
     <section id="pricing" class="pricing section">
         <div class="container" data-aos="fade-up" data-aos-delay="100">
-            <!-- Section Header -->
+
             <div class="row justify-content-center">
                 <div class="col-lg-8 text-center">
                     <h2 class="mb-4">Simple, Transparent Pricing</h2>
@@ -181,7 +184,6 @@
                 </div>
             </div>
 
-            <!-- Business Model Explanation -->
             <div class="row justify-content-center mb-5">
                 <div class="col-lg-10">
                     <div class="card border-0 shadow-sm bg-light">
@@ -208,9 +210,9 @@
                 </div>
             </div>
 
-            <!-- Pricing Cards -->
-            <div class="row justify-content-center">
-                <!-- Dynamic Extension Packages -->
+
+        <div class="row justify-content-center">
+
                 @foreach($packages as $package)
                     <div class="col-lg-4 mt-4" data-aos="fade-up" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
                         <div class="pricing-card {{ $package->id == 2 ? 'popular' : '' }}">
@@ -253,7 +255,7 @@
                 @endforeach
             </div>
 
-            <!-- Value Proposition -->
+
             <div class="row justify-content-center mt-5">
                 <div class="col-lg-8 text-center">
                     <div class="value-proposition">
@@ -279,7 +281,9 @@
                 </div>
             </div>
         </div>
-    </section><!-- /Pricing Section -->
+    </section>
+    @endif
+
 
     <!-- Call To Action Section -->
     <section id="call-to-action" class="call-to-action section">

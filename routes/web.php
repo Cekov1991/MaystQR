@@ -43,24 +43,25 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // QR Code Package Purchase routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/qr/{qrCode}/package/{package}', [QrCodePackageController::class, 'show'])
-        ->name('qr.package.purchase');
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/qr/{qrCode}/package/{package}', [QrCodePackageController::class, 'show'])
+//         ->name('qr.package.purchase');
 
-    Route::post('/qr/{qrCode}/package/{package}/buy', [QrCodePackageController::class, 'purchase'])
-        ->name('qr.package.buy');
+//     Route::post('/qr/{qrCode}/package/{package}/buy', [QrCodePackageController::class, 'purchase'])
+//         ->name('qr.package.buy');
 
-    Route::get('/qr/package/success', [QrCodePackageController::class, 'success'])
-        ->name('qr.package.success');
+//     Route::get('/qr/package/success', [QrCodePackageController::class, 'success'])
+//         ->name('qr.package.success');
 
-    Route::get('/qr/package/cancel', [QrCodePackageController::class, 'cancel'])
-        ->name('qr.package.cancel');
-});
+//     Route::get('/qr/package/cancel', [QrCodePackageController::class, 'cancel'])
+//         ->name('qr.package.cancel');
+// });
 
 Route::view('terms-and-conditions', 'terms-and-conditions');
 
 Route::view('privacy-policy', 'privacy-policy');
-Route::view('refund-policy', 'refund-policy');
+
+// Route::view('refund-policy', 'refund-policy');
 
 Route::get('cookies/accept', function() {
     return redirect()->back()->cookie('cookie_consent', 'accepted', 525600); // in minutes (1 year)

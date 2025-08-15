@@ -325,8 +325,11 @@ class QrCode extends Model
         if ($this->type === 'static') {
             return false; // Static QR codes never expire
         }
-
-        return $this->expires_at && $this->expires_at->isPast();
+        if (config('app.free_dynamic_qr_codes')) {
+            return false;
+        } else {
+            return $this->expires_at && $this->expires_at->isPast();
+        }
     }
 
     public function isActive(): bool
@@ -341,7 +344,11 @@ class QrCode extends Model
         }
 
         // Check if this QR code has never been extended (no successful package purchases)
-        return !$this->packagePurchases()->where('status', 'completed')->exists();
+        if (config('app.free_dynamic_qr_codes')) {
+            return false;
+        } else {
+            return !$this->packagePurchases()->where('status', 'completed')->exists();
+        }
     }
 
     public function getTimeUntilExpiry(): ?Carbon
@@ -350,7 +357,8 @@ class QrCode extends Model
             return null;
         }
 
-        return $this->expires_at->isPast() ? null : $this->expires_at;
+        return null;
+        // return $this->expires_at->isPast() ? null : $this->expires_at;
     }
 
     public function extendValidity(int $months): void
@@ -365,8 +373,12 @@ class QrCode extends Model
     public function canBeScanned(): bool
     {
         // Check if QR code is expired (for dynamic QR codes)
-        if ($this->isExpired()) {
-            return false;
+        if (config('app.free_dynamic_qr_codes')) {
+            return true;
+        } else {
+            if ($this->isExpired()) {
+                return false;
+            }
         }
 
         return true;

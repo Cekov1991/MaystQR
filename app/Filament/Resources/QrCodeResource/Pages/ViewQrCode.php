@@ -151,6 +151,7 @@ class ViewQrCode extends ViewRecord
                 ->icon('heroicon-o-clock')
                 ->color($this->record->isExpired() ? 'danger' : 'warning')
                 ->url(route('qr.expired', $this->record->short_url))
+                ->visible(fn() => !config('app.free_dynamic_qr_codes'))
                 ->openUrlInNewTab();
         }
 

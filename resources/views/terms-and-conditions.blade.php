@@ -24,7 +24,9 @@
                     <li><a href="{{ route('filament.admin.pages.dashboard') }}" class="active">Dashboard</a></li>
                     <li><a href="{{route('welcome')}}#about">About</a></li>
                     <li><a href="{{route('welcome')}}#features">Features</a></li>
-                    <li><a href="{{route('welcome')}}#pricing">Pricing</a></li>
+                    @if(!config('app.free_dynamic_qr_codes'))
+                        <li><a href="{{route('welcome')}}#pricing">Pricing</a></li>
+                    @endif
                     <li><a href="{{route('welcome')}}#faq">FAQ</a></li>
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>

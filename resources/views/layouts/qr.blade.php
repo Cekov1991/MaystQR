@@ -70,7 +70,9 @@
                             <li><a href="{{route('welcome')}}">Home</a></li>
                             <li><a href="{{route('welcome')}}/#about">About</a></li>
                             <li><a href="{{route('welcome')}}/#features">Features</a></li>
-                            <li><a href="{{route('welcome')}}/#pricing">Pricing</a></li>
+                            @if(!config('app.free_dynamic_qr_codes'))
+                                <li><a href="{{route('welcome')}}/#pricing">Pricing</a></li>
+                            @endif
                             <li><a href="{{route('welcome')}}/#faq">FAQ</a></li>
                         </ul>
                     </div>
@@ -91,7 +93,7 @@
                         <ul>
                             <li><a href="{{ url('/terms-and-conditions') }}">Terms & Conditions</a></li>
                             <li><a href="{{ url('/privacy-policy') }}">Privacy Policy</a></li>
-                            <li><a href="{{ url('/refund-policy') }}">Refund Policy</a></li>
+                            {{-- <li><a href="{{ url('/refund-policy') }}">Refund Policy</a></li> --}}
                             <li><a href="mailto:mayst.impact@gmail.com">Contact Support</a></li>
                         </ul>
                     </div>
