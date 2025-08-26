@@ -95,8 +95,8 @@
                                     <input class="form-check-input" type="checkbox" id="terms" required>
                                     <label class="form-check-label text-muted" for="terms">
                                         I agree to the
-                                        <a href="#" class="text-primary">Terms of Service</a> and
-                                        <a href="#" class="text-primary">Privacy Policy</a>
+                                        <a href="{{ url('/terms-and-conditions') }}" class="text-primary" target="_blank">Terms of Service</a> and
+                                        <a href="{{ url('/privacy-policy') }}" class="text-primary" target="_blank">Privacy Policy</a>
                                     </label>
                                 </div>
                             </div>

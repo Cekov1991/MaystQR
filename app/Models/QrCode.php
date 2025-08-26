@@ -22,6 +22,27 @@ class QrCode extends Model
         // 'location' => '📍 Location',
     ];
 
+    const PROHIBITED_DOMAINS = [
+        // URL shorteners (to prevent redirect chains)
+        'bit.ly', 'tinyurl.com', 'short.link', 'ow.ly', 't.co', 'goo.gl',
+        'tiny.cc', 'is.gd', 'buff.ly', 'rebrand.ly', 'shorturl.at',
+        
+        // Known malicious/suspicious patterns
+        'free-stuff', 'click-here', 'urgent-action',
+        
+        // Add more as needed
+    ];
+
+    const PROHIBITED_KEYWORDS = [
+        'phishing', 'scam', 'malware', 'virus', 'hack',
+        'free-money', 'click-here-now', 'urgent-action',
+        'download-now', 'claim-prize', 'congratulations-winner'
+    ];
+
+    const PROHIBITED_EXTENSIONS = [
+        '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs'
+    ];
+
     protected $fillable = [
         'name',
         'type',
@@ -301,6 +322,79 @@ class QrCode extends Model
         } while (static::where('short_url', $shortUrl)->exists());
 
         return $shortUrl;
+    }
+
+    public static function validateUrl($url): array
+    {
+        if (empty($url)) {
+            return [
+                'valid' => false,
+                'message' => 'Please enter a valid URL.'
+            ];
+        }
+        
+        // Parse the URL
+        $parsedUrl = parse_url($url);
+        if (!$parsedUrl || !isset($parsedUrl['host'])) {
+            return [
+                'valid' => false,
+                'message' => 'Invalid URL format. Please enter a complete URL (e.g., https://example.com)'
+            ];
+        }
+        
+        $domain = strtolower($parsedUrl['host']);
+        $fullUrl = strtolower($url);
+        
+        // Must use HTTPS for external websites (except localhost for development)
+        if (!str_starts_with($url, 'https://') && !str_starts_with($url, 'http://localhost') && !str_starts_with($url, 'http://127.0.0.1')) {
+            return [
+                'valid' => false,
+                'message' => 'For security reasons, only HTTPS URLs are allowed. Please use https:// instead of http://'
+            ];
+        }
+        
+        // Check against prohibited domains
+        foreach (self::PROHIBITED_DOMAINS as $prohibitedDomain) {
+            if (str_contains($domain, strtolower($prohibitedDomain))) {
+                return [
+                    'valid' => false,
+                    'message' => "URL shortening services like '{$prohibitedDomain}' are not allowed. Please use the direct URL to your content."
+                ];
+            }
+        }
+        
+        // Check URL for prohibited keywords
+        foreach (self::PROHIBITED_KEYWORDS as $keyword) {
+            if (str_contains($fullUrl, $keyword)) {
+                return [
+                    'valid' => false,
+                    'message' => "URLs containing '{$keyword}' are not permitted for security reasons. Please use a different URL."
+                ];
+            }
+        }
+        
+        // Check for prohibited file extensions
+        foreach (self::PROHIBITED_EXTENSIONS as $extension) {
+            if (str_contains($fullUrl, $extension)) {
+                return [
+                    'valid' => false,
+                    'message' => "Executable files ({$extension}) are not allowed for security reasons. Please link to a webpage instead."
+                ];
+            }
+        }
+        
+        // Block IP addresses (except localhost)
+        if (preg_match('/^https?:\/\/\d+\.\d+\.\d+\.\d+/', $url) && !str_starts_with($url, 'http://127.0.0.1') && !str_starts_with($url, 'http://localhost')) {
+            return [
+                'valid' => false,
+                'message' => 'Direct IP addresses are not allowed for security reasons. Please use a proper domain name.'
+            ];
+        }
+        
+        return [
+            'valid' => true,
+            'message' => 'URL is valid'
+        ];
     }
 
     // Relationships
