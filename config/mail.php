@@ -94,6 +94,16 @@ return [
                 'postmark',
             ],
         ],
+        
+        'brevo' => [
+            'transport' => 'smtp',
+            'host' => 'smtp-relay.brevo.com',
+            'port' => 587,
+            'encryption' => 'tls',
+            'username' => env('BREVO_USERNAME'),
+            'password' => env('BREVO_PASSWORD'),
+            'timeout' => null,
+        ],
 
     ],
 
