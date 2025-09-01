@@ -73,6 +73,7 @@ class QrCodeResource extends Resource
                             ->label('Website URL')
                             ->required()
                             ->url()
+                            ->rules([new \App\Rules\ValidQrUrl()])
                             ->placeholder('https://example.com'),
                     ])
                     ->visible(
