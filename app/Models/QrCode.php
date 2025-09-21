@@ -374,8 +374,9 @@ class QrCode extends Model
         }
         
         // Check for prohibited file extensions
+        $path = $parsedUrl['path'] ?? '';
         foreach (self::PROHIBITED_EXTENSIONS as $extension) {
-            if (str_contains($fullUrl, $extension)) {
+            if (str_ends_with(strtolower($path), strtolower($extension))) {
                 return [
                     'valid' => false,
                     'message' => "Executable files ({$extension}) are not allowed for security reasons. Please link to a webpage instead."
