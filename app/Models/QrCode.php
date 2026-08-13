@@ -44,7 +44,7 @@ class QrCode extends Model
     ];
 
     const PROHIBITED_EXTENSIONS = [
-        '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs',
+        '.exe', '.bat', '.cmd', '.pif', '.scr', '.vbs',
     ];
 
     protected $fillable = [
