@@ -24,9 +24,6 @@
                     <li><a href="{{ route('filament.admin.pages.dashboard') }}" class="active">Dashboard</a></li>
                     <li><a href="{{route('welcome')}}#about">About</a></li>
                     <li><a href="{{route('welcome')}}#features">Features</a></li>
-                    @if(!config('app.free_dynamic_qr_codes'))
-                        <li><a href="{{route('welcome')}}#pricing">Pricing</a></li>
-                    @endif
                     <li><a href="{{route('welcome')}}#faq">FAQ</a></li>
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -97,24 +94,42 @@
                             </div>
 
                             <div class="mb-5">
-                                <h2 class="h3 mb-3">5. Payments & Pricing</h2>
+                                <h2 class="h3 mb-3">5. Trial, Subscription & Payments</h2>
                                 <ul class="list-unstyled ms-3">
-                                    <li class="mb-2">• All prices are listed in [Currency] and are subject to change at
-                                        our discretion.</li>
-                                    <li class="mb-2">• Payment is required before extending the validity of a QR code.
-                                    </li>
-                                    <li class="mb-2">• We do not provide refunds unless required by law, except in cases
-                                        of service malfunction that cannot be resolved.</li>
+                                    <li class="mb-2">• New accounts include a {{ config('subscription.trial_days') }}-day
+                                        free trial. No payment details are required to start it.</li>
+                                    <li class="mb-2">• After the trial, keeping dynamic QR codes active requires a
+                                        subscription costing
+                                        ${{ rtrim(rtrim(number_format((float) config('subscription.price'), 2), '0'), '.') }}
+                                        per year. Prices are in {{ config('subscription.currency') }} and include any
+                                        applicable VAT or sales tax.</li>
+                                    <li class="mb-2">• The subscription renews automatically each year until cancelled.
+                                        You may cancel at any time from your account, and you keep access until the end
+                                        of the period you have already paid for.</li>
+                                    <li class="mb-2">• Payments are processed by AgentaOS, which acts as merchant of
+                                        record and issues your invoice and receipt.</li>
+                                    <li class="mb-2">• Prices may change, but never for a period you have already paid
+                                        for. We will give notice before a changed price applies to a renewal.</li>
+                                    <li class="mb-2">• Refunds are covered by our
+                                        <a href="{{ url('/refund-policy') }}">Refund Policy</a>.</li>
                                 </ul>
                             </div>
 
                             <div class="mb-5">
                                 <h2 class="h3 mb-3">6. QR Code Validity & Data</h2>
                                 <ul class="list-unstyled ms-3">
-                                    <li class="mb-2">• Free dynamic QR codes are valid for 7 days from creation.</li>
-                                    <li class="mb-2">• Paid extensions add validity based on the selected plan.</li>
-                                    <li class="mb-2">• After expiration, a QR code will become inactive and will not
-                                        redirect to the linked content until extended.</li>
+                                    <li class="mb-2">• Static QR codes are free, unlimited in time, and continue to work
+                                        permanently. They encode their destination directly, so they do not depend on
+                                        our service being available.</li>
+                                    <li class="mb-2">• Dynamic QR codes resolve through our servers, and do so only
+                                        while your trial or subscription is active.</li>
+                                    <li class="mb-2">• If your subscription lapses, your dynamic QR codes stop
+                                        redirecting and anyone scanning them sees a notice that the code is not active.
+                                        Your codes, their destinations, and your analytics are retained and resume
+                                        working when you subscribe again.</li>
+                                    <li class="mb-2">• An account may hold up to
+                                        {{ config('subscription.quotas.dynamic') }} dynamic and
+                                        {{ config('subscription.quotas.static') }} static QR codes.</li>
                                     <li class="mb-2">• You are responsible for the content linked via your QR codes.</li>
                                 </ul>
                             </div>
