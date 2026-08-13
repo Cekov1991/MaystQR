@@ -2,13 +2,9 @@
 
 namespace App\Filament\Resources\QrCodeResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Illuminate\Database\Eloquent\Model;
 
 class ScansRelationManager extends RelationManager
@@ -46,10 +42,6 @@ class ScansRelationManager extends RelationManager
                     ->searchable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('city')
-                    ->searchable()
-                    ->toggleable(),
-
                 Tables\Columns\TextColumn::make('ip_address')
                     ->searchable()
                     ->toggleable()
@@ -57,25 +49,25 @@ class ScansRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('device')
-                    ->options(fn() => $this->getRelationship()
+                    ->options(fn () => $this->getRelationship()
                         ->distinct()
                         ->pluck('device', 'device')
                         ->toArray()),
 
                 Tables\Filters\SelectFilter::make('os')
-                    ->options(fn() => $this->getRelationship()
+                    ->options(fn () => $this->getRelationship()
                         ->distinct()
                         ->pluck('os', 'os')
                         ->toArray()),
 
                 Tables\Filters\SelectFilter::make('browser')
-                    ->options(fn() => $this->getRelationship()
+                    ->options(fn () => $this->getRelationship()
                         ->distinct()
                         ->pluck('browser', 'browser')
                         ->toArray()),
 
                 Tables\Filters\SelectFilter::make('country')
-                    ->options(fn() => $this->getRelationship()
+                    ->options(fn () => $this->getRelationship()
                         ->distinct()
                         ->pluck('country', 'country')
                         ->toArray()),

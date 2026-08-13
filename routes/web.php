@@ -18,7 +18,11 @@ Route::post('/qr/instant', [InstantQrController::class, 'generate'])
 Route::view('/landing-page', 'welcome')->name('landing');
 
 // QR Code routes
+// Scans are public and a popular code is legitimately hit by many people, so the
+// ceiling is per-IP and generous. It exists to stop one client looping a URL,
+// which writes a scan row every time.
 Route::get('/q/{shortUrl}', [QrCodeRedirectController::class, 'redirect'])
+    ->middleware('throttle:60,1')
     ->name('qr.redirect');
 
 Route::get('/dashboard', function () {

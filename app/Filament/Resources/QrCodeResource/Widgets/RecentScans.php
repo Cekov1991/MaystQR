@@ -3,15 +3,17 @@
 namespace App\Filament\Resources\QrCodeResource\Widgets;
 
 use App\Models\QrCodeScan;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Auth;
 
 class RecentScans extends BaseWidget
 {
     protected static ?int $sort = 3;
+
     protected int|string|array $columnSpan = 'full';
+
     protected static ?string $heading = 'Recent Scans';
 
     public function table(Table $table): Table
@@ -35,8 +37,6 @@ class RecentScans extends BaseWidget
                     ->label('OS')
                     ->searchable(),
                 TextColumn::make('country')
-                    ->searchable(),
-                TextColumn::make('city')
                     ->searchable(),
                 TextColumn::make('scanned_at')
                     ->dateTime()
