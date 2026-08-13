@@ -3,9 +3,12 @@
 namespace Tests\Feature\Subscription;
 
 use App\Models\User;
+use App\Notifications\BillingAlert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class CheckoutTest extends TestCase
@@ -109,6 +112,69 @@ class CheckoutTest extends TestCase
 
         $this->assertDatabaseCount('subscriptions', 0);
         $this->assertTrue($user->fresh()->isTrialing());
+
+        // A rejected request will be rejected again. Since no call carries an
+        // idempotency key, a pointless retry is also a duplicate-object risk.
+        Http::assertSentCount(1);
+    }
+
+    public function test_a_server_error_is_retried_and_can_still_succeed(): void
+    {
+        Http::fakeSequence()
+            ->push(['message' => 'upstream unavailable'], 503)
+            ->push([
+                'session_id' => 'sess_xyz',
+                'currency' => 'USD',
+                'checkoutUrl' => 'https://app.agentaos.ai/pay/sess_xyz',
+            ], 201);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/billing/subscribe')
+            ->assertRedirect('https://app.agentaos.ai/pay/sess_xyz');
+
+        Http::assertSentCount(2);
+        $this->assertDatabaseHas('subscriptions', ['checkout_session_id' => 'sess_xyz']);
+    }
+
+    public function test_rate_limiting_is_retried(): void
+    {
+        Http::fakeSequence()
+            ->push(['message' => 'too many requests'], 429)
+            ->push([
+                'session_id' => 'sess_xyz',
+                'currency' => 'USD',
+                'checkoutUrl' => 'https://app.agentaos.ai/pay/sess_xyz',
+            ], 201);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/billing/subscribe')
+            ->assertRedirect('https://app.agentaos.ai/pay/sess_xyz');
+
+        Http::assertSentCount(2);
+    }
+
+    public function test_an_unreachable_agentaos_apologises_instead_of_erroring(): void
+    {
+        Notification::fake();
+        config()->set('subscription.alert_email', 'ops@easyqr.test');
+
+        Http::fake(function (): void {
+            throw new ConnectionException('cURL error 28: Operation timed out');
+        });
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/billing/subscribe')
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseCount('subscriptions', 0);
+        Notification::assertSentOnDemand(BillingAlert::class);
     }
 
     public function test_checkout_is_refused_when_no_payment_link_is_configured(): void

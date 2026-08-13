@@ -4,9 +4,12 @@ namespace App\Services\AgentaOS;
 
 use App\Models\User;
 use Generator;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Throwable;
 
 /**
  * Thin wrapper over the AgentaOS REST API.
@@ -122,12 +125,24 @@ class AgentaOsClient
     }
 
     /**
+     * Every failure leaves here as an AgentaOsException, including the ones
+     * that never reached AgentaOS. Callers alert, release or apologise in their
+     * catch blocks, and an unreachable host deserves that same handling — not
+     * an escaped ConnectionException and a 500.
+     *
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     private function send(string $method, string $uri, array $payload = []): array
     {
-        $response = $this->request()->{$method}($uri, $payload);
+        try {
+            $response = $this->request()->{$method}($uri, $payload);
+        } catch (ConnectionException $exception) {
+            throw new AgentaOsException(
+                sprintf('%s %s could not reach AgentaOS: %s', strtoupper($method), $uri, $exception->getMessage()),
+                previous: $exception,
+            );
+        }
 
         if ($response->failed()) {
             throw $this->exceptionFrom($response, $method, $uri);
@@ -143,8 +158,35 @@ class AgentaOsClient
             ->acceptJson()
             ->asJson()
             ->timeout(15)
-            // 429 and 5xx are worth retrying; a 400 never is.
-            ->retry(2, 300, fn ($exception, $request) => true, throw: false);
+            ->retry(2, 300, $this->isWorthRetrying(), throw: false);
+    }
+
+    /**
+     * A lost connection or a 429/5xx may succeed on a second attempt. A 4xx is
+     * a rejected request that will be rejected again, and retrying it only
+     * spends another call against the 60-per-60s rate limit.
+     *
+     * Retrying matters here because none of these calls carry an idempotency
+     * key, so a retry of a create that already landed server-side produces a
+     * second object. Keeping the predicate narrow keeps that window small.
+     *
+     * @return callable(Throwable, PendingRequest): bool
+     */
+    private function isWorthRetrying(): callable
+    {
+        return function (Throwable $exception): bool {
+            if ($exception instanceof ConnectionException) {
+                return true;
+            }
+
+            if (! $exception instanceof RequestException) {
+                return false;
+            }
+
+            $status = $exception->response->status();
+
+            return $status === 429 || $status >= 500;
+        };
     }
 
     private function exceptionFrom(Response $response, string $method, string $uri): AgentaOsException
