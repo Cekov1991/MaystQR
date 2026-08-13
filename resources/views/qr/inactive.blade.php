@@ -1,81 +1,73 @@
-@extends('layouts.qr')
+@extends('layouts.site')
 
-@section('title', 'QR Code Not Active')
+@section('title', 'This QR code is not active')
 @section('description', 'This QR code is not currently active.')
+@section('robots', 'noindex, nofollow')
 
 @section('content')
-<section class="hero d-flex align-items-center" style="padding-top: 120px; min-height: 100vh;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-7 col-md-9">
-                <div class="card shadow-lg border-0">
-                    <div class="card-body text-center p-5">
 
-                        @if ($viewerIsOwner)
-                            {{-- The owner scanned their own code: give them the fix. --}}
-                            <div class="mb-4">
-                                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
-                            </div>
+    <div class="eq-scan">
 
-                            <h1 class="h3 mb-3">Your subscription is inactive</h1>
+        @if ($viewerIsOwner)
+            {{-- The owner scanned their own code: give them the fix. --}}
+            <div class="eq-scan-head">
+                <p class="eq-scan-eyebrow">Subscription inactive</p>
+                <h1 class="eq-scan-title">Your codes have stopped resolving</h1>
+                <p class="eq-scan-note">
+                    “{{ $qrCode->name }}” and your other dynamic QR codes show this page instead of
+                    their destination until you reactivate.
+                </p>
+            </div>
 
-                            <p class="text-muted mb-4">
-                                “{{ $qrCode->name }}” and your other dynamic QR codes stop working
-                                when scanned until you reactivate.
-                            </p>
-
-                            <div class="bg-light rounded p-4 mb-4">
-                                <div class="row text-center">
-                                    <div class="col-6 border-end">
-                                        <div class="h4 mb-0">{{ $offlineCodeCount }}</div>
-                                        <small class="text-muted">
-                                            {{ \Illuminate\Support\Str::plural('dynamic code', $offlineCodeCount) }} offline
-                                        </small>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="h4 mb-0">{{ $missedScanCount }}</div>
-                                        <small class="text-muted">
-                                            {{ \Illuminate\Support\Str::plural('scan', $missedScanCount) }} missed on this code
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <a href="{{ route('filament.admin.pages.billing') }}" class="btn btn-primary btn-lg px-4">
-                                Reactivate my subscription
-                            </a>
-
-                            <p class="text-muted mt-4 mb-0">
-                                <small>Your static QR codes are unaffected and keep working.</small>
-                            </p>
-                        @else
-                            {{-- A stranger with a phone. No owner identity, no destination,
-                                 no analytics — nothing they could not have known already. --}}
-                            <div class="mb-4">
-                                <i class="bi bi-qr-code text-secondary" style="font-size: 4rem;"></i>
-                            </div>
-
-                            <h1 class="h3 mb-3">This QR code isn’t active right now</h1>
-
-                            <p class="text-muted mb-4">
-                                The code you scanned is not currently in service.
-                                If you were expecting to reach something specific,
-                                please contact whoever shared this code with you.
-                            </p>
-
-                            <hr class="my-4">
-
-                            <p class="text-muted mb-3"><small>Made with {{ config('app.name') }}</small></p>
-
-                            <a href="{{ route('welcome') }}" class="btn btn-outline-primary">
-                                Create your own QR code
-                            </a>
-                        @endif
-
+            <div class="eq-card">
+                <div class="eq-stats">
+                    <div class="eq-stat">
+                        <div class="eq-stat-figure">{{ $offlineCodeCount }}</div>
+                        <div class="eq-stat-label">
+                            {{ \Illuminate\Support\Str::plural('dynamic code', $offlineCodeCount) }} offline
+                        </div>
+                    </div>
+                    <div class="eq-stat">
+                        <div class="eq-stat-figure">{{ $missedScanCount }}</div>
+                        <div class="eq-stat-label">
+                            {{ \Illuminate\Support\Str::plural('scan', $missedScanCount) }} missed on this code
+                        </div>
                     </div>
                 </div>
+
+                <div class="eq-scan-actions">
+                    <a href="{{ route('filament.admin.pages.billing') }}" class="eq-btn eq-btn-primary">
+                        Reactivate my subscription
+                    </a>
+                </div>
+
+                <p class="eq-scan-note" style="margin-top:20px;text-align:center">
+                    Your static QR codes are unaffected and keep working.
+                </p>
             </div>
-        </div>
+        @else
+            {{-- A stranger with a phone. No owner identity, no destination,
+                 no analytics — nothing they could not have known already. --}}
+            <div class="eq-scan-head">
+                <h1 class="eq-scan-title">This code isn’t active right now</h1>
+                <p class="eq-scan-note">
+                    It isn’t currently in service. If you were expecting to reach something specific,
+                    contact whoever shared the code with you.
+                </p>
+            </div>
+
+            <div class="eq-card">
+                <p class="eq-scan-note" style="text-align:center;margin-bottom:20px">
+                    Need QR codes of your own?
+                </p>
+                <div class="eq-scan-actions">
+                    <a href="{{ route('welcome') }}" class="eq-btn eq-btn-primary">
+                        Create one free with {{ config('app.name') }}
+                    </a>
+                </div>
+            </div>
+        @endif
+
     </div>
-</section>
+
 @endsection

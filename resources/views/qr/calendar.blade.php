@@ -1,88 +1,77 @@
-@extends('layouts.qr')
+@extends('layouts.site')
 
-@section('title', 'Calendar Event - {{ $qrCode->name }}')
-@section('description', 'Add calendar event')
+@section('title', 'Event — ' . $qrCode->name)
+@section('description', 'Calendar event details')
+@section('robots', 'noindex, nofollow')
 
 @section('content')
-<section class="hero d-flex align-items-center" style="padding-top: 120px; min-height: 100vh;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 col-md-10">
-                <div class="card shadow-lg border-0">
-                    <div class="card-body text-center p-5">
-                        <!-- Calendar Icon -->
-                        <div class="mb-4">
-                            <i class="bi bi-calendar-event text-primary" style="font-size: 4rem;"></i>
-                        </div>
 
-                        <!-- Main Message -->
-                        <h1 class="h2 text-primary mb-3">Calendar Event</h1>
-                        <h3 class="h4 mb-4">{{ $qrCode->qr_content_data['summary'] }}</h3>
+    @php
+        $data = $qrCode->qr_content_data;
+        $summary = data_get($data, 'summary');
+        $startDate = data_get($data, 'start_date');
+        $endDate = data_get($data, 'end_date');
+        $location = data_get($data, 'location');
+        $description = data_get($data, 'description');
 
-                        <!-- Event Details -->
-                        <div class="row mb-4">
-                            <div class="col-md-8 mx-auto">
-                                <div class="bg-light p-4 rounded">
-                                    <div class="row text-start mb-2">
-                                        <div class="col-sm-3"><strong>Event:</strong></div>
-                                        <div class="col-sm-9">{{ $qrCode->qr_content_data['summary'] }}</div>
-                                    </div>
-                                    @if(!empty($qrCode->qr_content_data['start_date']))
-                                        <div class="row text-start mb-2">
-                                            <div class="col-sm-3"><strong>Start:</strong></div>
-                                            <div class="col-sm-9">{{ \Carbon\Carbon::parse($qrCode->qr_content_data['start_date'])->format('M j, Y g:i A') }}</div>
-                                        </div>
-                                    @endif
-                                    @if(!empty($qrCode->qr_content_data['end_date']))
-                                        <div class="row text-start mb-2">
-                                            <div class="col-sm-3"><strong>End:</strong></div>
-                                            <div class="col-sm-9">{{ \Carbon\Carbon::parse($qrCode->qr_content_data['end_date'])->format('M j, Y g:i A') }}</div>
-                                        </div>
-                                    @endif
-                                    @if(!empty($qrCode->qr_content_data['location']))
-                                        <div class="row text-start mb-2">
-                                            <div class="col-sm-3"><strong>Location:</strong></div>
-                                            <div class="col-sm-9">{{ $qrCode->qr_content_data['location'] }}</div>
-                                        </div>
-                                    @endif
-                                    @if(!empty($qrCode->qr_content_data['description']))
-                                        <div class="row text-start">
-                                            <div class="col-sm-3"><strong>Description:</strong></div>
-                                            <div class="col-sm-9">
-                                                <div class="border p-2 rounded bg-white">
-                                                    {{ $qrCode->qr_content_data['description'] }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
+        $start = $startDate ? \Carbon\Carbon::parse($startDate) : null;
+        $end = $endDate ? \Carbon\Carbon::parse($endDate) : null;
 
-                        <!-- Action Button -->
-                        <div class="mt-4">
-                            <a href="{{ $qrCode->formated_content }}" class="btn btn-primary btn-lg">
-                                <i class="bi bi-calendar-plus me-2"></i>Add to Calendar
-                            </a>
-                        </div>
+        $googleUrl = 'https://calendar.google.com/calendar/render?' . http_build_query(array_filter([
+            'action' => 'TEMPLATE',
+            'text' => $summary,
+            'dates' => $start && $end ? $start->format('Ymd\THis\Z') . '/' . $end->format('Ymd\THis\Z') : null,
+            'details' => $description,
+            'location' => $location,
+        ]));
 
-                        <!-- Calendar App Buttons -->
-                        <div class="mt-3">
-                            <div class="btn-group" role="group">
-                                <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ urlencode($qrCode->qr_content_data['summary']) }}&dates={{ \Carbon\Carbon::parse($qrCode->qr_content_data['start_date'])->format('Ymd\THis\Z') }}/{{ \Carbon\Carbon::parse($qrCode->qr_content_data['end_date'])->format('Ymd\THis\Z') }}&details={{ urlencode($qrCode->qr_content_data['description'] ?? '') }}&location={{ urlencode($qrCode->qr_content_data['location'] ?? '') }}"
-                                   target="_blank" class="btn btn-outline-primary">
-                                    <i class="bi bi-google me-2"></i>Google Calendar
-                                </a>
-                                <a href="https://outlook.live.com/calendar/0/deeplink/compose?subject={{ urlencode($qrCode->qr_content_data['summary']) }}&startdt={{ \Carbon\Carbon::parse($qrCode->qr_content_data['start_date'])->toISOString() }}&enddt={{ \Carbon\Carbon::parse($qrCode->qr_content_data['end_date'])->toISOString() }}&body={{ urlencode($qrCode->qr_content_data['description'] ?? '') }}&location={{ urlencode($qrCode->qr_content_data['location'] ?? '') }}"
-                                   target="_blank" class="btn btn-outline-info">
-                                    <i class="bi bi-microsoft me-2"></i>Outlook
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        $outlookUrl = 'https://outlook.live.com/calendar/0/deeplink/compose?' . http_build_query(array_filter([
+            'subject' => $summary,
+            'startdt' => $start?->toISOString(),
+            'enddt' => $end?->toISOString(),
+            'body' => $description,
+            'location' => $location,
+        ]));
+    @endphp
+
+    <div class="eq-scan">
+        <div class="eq-scan-head">
+            <p class="eq-scan-eyebrow">Event</p>
+            <h1 class="eq-scan-title">{{ $summary }}</h1>
+            <p class="eq-scan-note">Add it to your calendar so you don’t lose the details.</p>
+        </div>
+
+        <div class="eq-card">
+            <ul class="eq-details">
+                @if ($start)
+                    <li>
+                        <span class="eq-detail-label">Starts</span>
+                        <span class="eq-detail-value">{{ $start->format('D, M j Y · g:i A') }}</span>
+                    </li>
+                @endif
+                @if ($end)
+                    <li>
+                        <span class="eq-detail-label">Ends</span>
+                        <span class="eq-detail-value">{{ $end->format('D, M j Y · g:i A') }}</span>
+                    </li>
+                @endif
+                @if ($location)
+                    <li>
+                        <span class="eq-detail-label">Where</span>
+                        <span class="eq-detail-value">{{ $location }}</span>
+                    </li>
+                @endif
+            </ul>
+
+            @if ($description)
+                <p class="eq-scan-message eq-muted" style="margin-bottom:24px">{{ $description }}</p>
+            @endif
+
+            <div class="eq-scan-actions">
+                <a href="{{ $googleUrl }}" target="_blank" rel="noopener" class="eq-btn eq-btn-primary">Add to Google Calendar</a>
+                <a href="{{ $outlookUrl }}" target="_blank" rel="noopener" class="eq-btn eq-btn-outline">Add to Outlook</a>
             </div>
         </div>
     </div>
-</section>
+
 @endsection

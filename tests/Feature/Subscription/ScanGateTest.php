@@ -99,7 +99,7 @@ class ScanGateTest extends TestCase
         $this->actingAs($user)
             ->get("/q/{$qrCode->short_url}")
             ->assertOk()
-            ->assertSee('Your subscription is inactive')
+            ->assertSee('Subscription inactive')
             ->assertSee('Reactivate my subscription');
     }
 

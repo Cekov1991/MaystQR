@@ -11,18 +11,36 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Breeze entry points
+|--------------------------------------------------------------------------
+|
+| The product lives in the Filament panel, which has its own login,
+| registration, password reset and email verification. The Breeze pages are a
+| second front door in a different design, and Laravel sends unauthenticated
+| users to route('login') — so a guest could be shown either one depending on
+| how they arrived.
+|
+| These three now redirect into the panel. The names are kept because the
+| framework resolves route('login') and route('register') by name, and the
+| POST handlers below stay so nothing that already works breaks. Retiring the
+| scaffold outright is a job for after launch.
+|
+*/
+
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
+    Route::get('register', fn () => redirect()->route('filament.admin.auth.register'))
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+    Route::get('login', fn () => redirect()->route('filament.admin.auth.login'))
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+    Route::get('forgot-password', fn () => redirect()->route('filament.admin.auth.password-reset.request'))
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])

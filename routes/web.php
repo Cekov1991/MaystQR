@@ -25,9 +25,14 @@ Route::get('/q/{shortUrl}', [QrCodeRedirectController::class, 'redirect'])
     ->middleware('throttle:60,1')
     ->name('qr.redirect');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+/**
+ * The Breeze dashboard was the untouched scaffold placeholder. The product is
+ * the Filament panel, so this redirects there. It keeps its name because
+ * Breeze's login and registration controllers still send users to
+ * route('dashboard'), and the panel gates access itself.
+ */
+Route::get('/dashboard', fn () => redirect()->route('filament.admin.pages.dashboard'))
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
