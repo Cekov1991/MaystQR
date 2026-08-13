@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\BillingInterval;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\BillingAlerts;
@@ -73,7 +74,7 @@ class GrantSubscriptionEntitlement implements ShouldQueue
 
         // Provisional: one billing interval from now. The follow-up job
         // replaces this with the period end AgentaOS actually recorded.
-        $user->grantEntitlementThrough(now()->addYear());
+        $user->grantEntitlementThrough(BillingInterval::configured()->endFrom(now()));
 
         ResolveAgentaOsSubscription::dispatch($subscription);
     }

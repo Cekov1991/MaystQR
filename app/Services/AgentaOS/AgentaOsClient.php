@@ -2,6 +2,7 @@
 
 namespace App\Services\AgentaOS;
 
+use App\Enums\BillingInterval;
 use App\Models\User;
 use Generator;
 use Illuminate\Http\Client\ConnectionException;
@@ -42,7 +43,7 @@ class AgentaOsClient
             'name' => $name,
             'description' => $description,
             'type' => 'subscription',
-            'billingInterval' => config('subscription.billing_interval'),
+            'billingInterval' => BillingInterval::configured()->value,
         ]);
     }
 

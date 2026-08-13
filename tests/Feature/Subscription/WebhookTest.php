@@ -236,6 +236,30 @@ class WebhookTest extends TestCase
         ]);
     }
 
+    /**
+     * The interval is declared once, in config. The grant job used to hardcode
+     * `addYear()` beside it, so changing the config would have billed one period
+     * and granted another — silently, and in the customer's favour.
+     *
+     * No remote subscription matches here, so the resolve job cannot overwrite
+     * the provisional clock and it is the provisional clock being asserted.
+     */
+    public function test_the_provisional_grant_follows_the_configured_interval(): void
+    {
+        config()->set('subscription.billing_interval', 'month');
+        config()->set('subscription.grace_days', 7);
+
+        $user = User::factory()->create();
+
+        [$payload, $signature] = $this->sign($this->completionEvent($user->id));
+        $this->postWebhook($payload, $signature)->assertNoContent();
+
+        $this->assertTrue(
+            $user->fresh()->entitled_until->isSameDay(now()->addMonth()->addDays(7)),
+            'A monthly interval must not grant a year of entitlement.',
+        );
+    }
+
     public function test_a_redelivered_event_grants_entitlement_only_once(): void
     {
         $user = User::factory()->create();
