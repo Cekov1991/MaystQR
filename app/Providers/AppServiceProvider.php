@@ -2,15 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\ServiceProvider;
+use App\Services\AgentaOS\AgentaOsClient;
 use App\Services\IpGeolocationService;
+use Filament\Events\Auth\Registered as FilamentRegistered;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\Factory as Http;
 use Illuminate\Support\Facades\Event;
-use Filament\Events\Auth\Registered as FilamentRegistered;
-use Illuminate\Auth\Events\Registered as LaravelRegistered;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
             return new IpGeolocationService(
                 $app->make(Http::class),
                 config('services.ipgeolocation.key')
+            );
+        });
+
+        $this->app->singleton(AgentaOsClient::class, function () {
+            return new AgentaOsClient(
+                config('services.agentaos.key'),
+                config('services.agentaos.base_url'),
             );
         });
     }

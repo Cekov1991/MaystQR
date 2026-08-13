@@ -1,0 +1,19 @@
+# Entitlement is a local date, reconciled from AgentaOS
+
+Access to Dynamic QR Code resolution is gated on a date MaystQR stores and owns (`entitled_until`), not on the live `status` field of the AgentaOS subscription. AgentaOS grants the date; nothing else revokes it. The daily reconciliation command may only ever extend or leave that date alone in response to a healthy API reply — a failed sync, a timeout, or a subscription it cannot find must never shorten it.
+
+We billed through AgentaOS (Merchant of Record, so it also handles destination VAT and remittance) rather than Stripe via Cashier. Three constraints of that API drove this design, and a future reader will otherwise find the code baffling:
+
+1. **There are no subscription lifecycle webhooks.** The only events are `checkout.session.completed`, `send.completed`, and `send.failed`. Nothing fires on renewal, cancellation, or a failed charge, so those are discoverable only by polling `GET /gateway/subscriptions`.
+2. **The Subscription resource carries no `metadata` and no `session_id`** — only `customerEmail` joins it back to a `users` row. The webhook carries our `user_id` in `metadata`, so a payment can always be attributed to an account; identifying the *subscription* that payment created is the separate problem.
+
+   This point originally read that the webhook could not identify the subscription at all, and that was wrong. AgentaOS returns the `metadata` we sent enriched with keys of its own, and one of them is `subscriptionId` — found by reading a live payload, documented nowhere. The code therefore treats it as a windfall and not a contract: when present it is stored the moment payment lands and email is never consulted, and when absent the `customerEmail` match still runs. Do not delete that fallback on the strength of an undocumented field, and do not assume a renewal carries the same key — that is untested, and tied to the open question below.
+3. **There is no trial support.** `POST /gateway/payment-links` has no `trialDays` field, so the 7-day Trial is entirely ours and the provider never knows it exists.
+
+## Consequences
+
+- A subscriber is never locked out by an AgentaOS outage, a lapsed cron, or a polling bug. The failure mode is "someone keeps access slightly too long", which is recoverable; the alternative failure mode is "a paying customer's printed QR codes go dark", which is not.
+- `entitled_until` is `currentPeriodEnd + 7 days`. The grace absorbs the processor's card-retry window without hard-coding its length, and makes `past_due` a warning state rather than a shutdown.
+- A subscription AgentaOS stops listing is closed by the daily sync. Without that, a remote row purged after cancellation leaves `status` claiming `active` forever and `User::activeSubscription()` reporting a subscription that exists nowhere. The inference is capped by `subscription.max_missing_per_sync` and skipped entirely after an aborted run or an empty listing: many subscriptions vanishing at once is a likelier symptom of an API fault than of mass cancellation. It never touches `entitled_until`, which is what makes it safe to infer at all — being wrong costs a misleading badge, not somebody's access.
+- Every silent billing failure raises a `BillingAlert` to `subscription.alert_email` alongside its log line: a payment nobody could be attributed to, a grant job that exhausted its retries, a rejected webhook signature, an aborted sync. This design's failure modes are all chosen to be recoverable, and recoverable only means anything if somebody finds out. Leave that address unset and the guarantee reverts to "somebody reads the logs".
+- Whether an annual renewal re-fires `checkout.session.completed` is undocumented and unverified. The daily sync is what makes that question non-fatal — confirm the behaviour with AgentaOS before the first renewals land.

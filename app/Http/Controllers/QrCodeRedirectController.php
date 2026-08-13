@@ -4,44 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\QrCode;
 use App\Services\IpGeolocationService;
-use Illuminate\Http\Request;
-use Jenssegers\Agent\Agent;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Jenssegers\Agent\Agent;
 
 class QrCodeRedirectController extends Controller
 {
-    public function redirect($shortUrl, IpGeolocationService $geolocation)
+    public function redirect(string $shortUrl, IpGeolocationService $geolocation): View|RedirectResponse
     {
-        $qrCode = QrCode::where('short_url', $shortUrl)->firstOrFail();
+        $qrCode = QrCode::with('user')->where('short_url', $shortUrl)->firstOrFail();
 
-        // Check if QR code is expired (for dynamic QR codes)
-        if ($qrCode->isExpired()) {
-            return redirect()->route('qr.expired', $qrCode->short_url);
+        // A dynamic code resolves only while its owner holds an entitlement.
+        // Static codes never reach this controller — their image encodes the
+        // destination directly — so they are unaffected by billing state.
+        if ($qrCode->isDynamic() && ! $qrCode->user?->isEntitled()) {
+            $this->recordScan($qrCode, $geolocation, blocked: true);
+
+            // The scanner is a stranger who cannot pay someone else's
+            // subscription, so they see nothing about the owner or the
+            // destination. Only the owner gets the reactivation prompt.
+            $viewerIsOwner = Auth::check() && Auth::id() === $qrCode->user_id;
+
+            return view('qr.inactive', [
+                'qrCode' => $qrCode,
+                'viewerIsOwner' => $viewerIsOwner,
+                'offlineCodeCount' => $viewerIsOwner
+                    ? $qrCode->user->qrCodes()->where('type', 'dynamic')->count()
+                    : 0,
+                'missedScanCount' => $viewerIsOwner
+                    ? $qrCode->scans()->blocked()->count()
+                    : 0,
+            ]);
         }
 
-        // Increment scan count and log the scan
-        DB::transaction(function () use ($qrCode, $geolocation) {
-            $qrCode->increment('scan_count');
-
-            // Get device information
-            $agent = new Agent();
-
-            // Get location information
-            $location = $geolocation->locate(config('app.env') === 'local' ? '46.217.223.14' : request()->ip());
-
-            // Log the scan
-            $qrCode->scans()->create([
-                'scanned_at' => now(),
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'referer' => request()->header('referer'),
-                'device' => $agent->device(),
-                'os' => $agent->platform(),
-                'browser' => $agent->browser(),
-                'country' => $location['country_code'],
-                'city' => $location['city'],
-            ]);
-        });
+        $this->recordScan($qrCode, $geolocation, blocked: false);
 
         // Handle different content types
         return match ($qrCode->qr_content_type) {
@@ -59,9 +57,34 @@ class QrCodeRedirectController extends Controller
         };
     }
 
-    public function expired($shortUrl)
+    /**
+     * A blocked scan is logged but never counted: the code did not resolve, so
+     * it does not belong in `scan_count`. It stays queryable so the owner can
+     * be shown what their inactive subscription cost them.
+     */
+    private function recordScan(QrCode $qrCode, IpGeolocationService $geolocation, bool $blocked): void
     {
-        $qrCode = QrCode::where('short_url', $shortUrl)->firstOrFail();
-        return view('qr.expired', compact('qrCode'));
+        DB::transaction(function () use ($qrCode, $geolocation, $blocked) {
+            if (! $blocked) {
+                $qrCode->increment('scan_count');
+            }
+
+            $agent = new Agent;
+
+            $location = $geolocation->locate(config('app.env') === 'local' ? '46.217.223.14' : request()->ip());
+
+            $qrCode->scans()->create([
+                'scanned_at' => now(),
+                'blocked' => $blocked,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'referer' => request()->header('referer'),
+                'device' => $agent->device(),
+                'os' => $agent->platform(),
+                'browser' => $agent->browser(),
+                'country' => $location['country_code'],
+                'city' => $location['city'],
+            ]);
+        });
     }
 }

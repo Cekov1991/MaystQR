@@ -2,67 +2,75 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * A local mirror of an AgentaOS subscription. Never the entitlement gate —
+ * `users.entitled_until` is. See docs/adr/0002.
+ */
 class Subscription extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'status',
-        'dynamic_qr_limit',
-        'scans_per_code',
-        'current_price',
-        'next_billing_date',
+    /**
+     * Statuses in which AgentaOS considers the subscription finished. Anything
+     * else is either running or being retried, and is left alone.
+     */
+    public const DEAD_STATUSES = [
+        'canceled',
+        'incomplete_expired',
+        'unpaid',
     ];
 
-    protected $casts = [
-        'next_billing_date' => 'datetime',
-        'dynamic_qr_limit' => 'integer',
-        'scans_per_code' => 'integer',
-        'current_price' => 'float',
-    ];
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'current_period_end' => 'datetime',
+            'cancel_at_period_end' => 'boolean',
+            'unit_amount_minor' => 'integer',
+        ];
+    }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function subscriptionPlan(): BelongsTo
+    public function isLive(): bool
     {
-        return $this->belongsTo(SubscriptionPlan::class);
+        return ! in_array($this->status, self::DEAD_STATUSES, true);
     }
 
-    public function incrementDynamicQrLimit(int $amount = 5): void
+    /**
+     * A renewal charge is failing and the processor is retrying it.
+     */
+    public function isPastDue(): bool
     {
-        $this->update([
-            'dynamic_qr_limit' => $this->dynamic_qr_limit + $amount,
-            'current_price' => $this->current_price + 5.00,
-        ]);
+        return $this->status === 'past_due';
     }
 
-    public function incrementScansPerCode(int $amount = 1000): void
+    public function scopeLive(Builder $query): Builder
     {
-        $this->update([
-            'scans_per_code' => $this->scans_per_code + $amount,
-            'current_price' => $this->current_price + 5.00,
-        ]);
+        return $query->whereNotIn('status', self::DEAD_STATUSES);
     }
 
-    public function cancel(): void
+    public function scopeAwaitingRemoteId(Builder $query): Builder
     {
-        $this->update([
-            'status' => 'cancelled',
-        ]);
+        return $query->whereNull('agentaos_subscription_id');
     }
 
-    public function isActive(): bool
+    /**
+     * The per-cycle price in currency units, from AgentaOS's integer minor
+     * units — the one field in that API that is not already decimal.
+     */
+    public function amount(): ?float
     {
-        return $this->status === 'active';
-    }
-
-    public function isCancelled(): bool
-    {
-        return $this->status === 'cancelled';
+        return $this->unit_amount_minor === null
+            ? null
+            : $this->unit_amount_minor / 100;
     }
 }
