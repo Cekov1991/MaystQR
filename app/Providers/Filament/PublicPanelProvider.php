@@ -23,7 +23,7 @@ class PublicPanelProvider extends PanelProvider
             ->id('public')
             ->path('free')
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => \App\Support\BrandColor::LIGHT_BLUE,
             ])
             ->discoverResources(in: app_path('Filament/Public/Resources'), for: 'App\\Filament\\Public\\Resources')
             ->discoverPages(in: app_path('Filament/Public/Pages'), for: 'App\\Filament\\Public\\Pages')
