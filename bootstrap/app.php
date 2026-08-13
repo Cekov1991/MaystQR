@@ -11,7 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // AgentaOS signs its webhooks with an HMAC over the raw body; it has no
+        // CSRF token to present. Authenticity is proved by the signature check
+        // in AgentaOsWebhookController, not by the session.
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/agentaos',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

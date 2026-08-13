@@ -123,7 +123,4 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'qr_code_trial_days' => env('QR_CODE_TRIAL_DAYS', 7),
-    'free_dynamic_qr_codes' => env('FREE_DYNAMIC_QR_CODES', true),
-
 ];

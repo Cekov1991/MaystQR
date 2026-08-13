@@ -39,10 +39,11 @@ return [
         'key' => env('IP_GEOLOCATION_API_KEY'),
     ],
 
-    'paypal' => [
-        'client_id' => env('PAYPAL_CLIENT_ID'),
-        'secret' => env('PAYPAL_SECRET'),
-        'mode' => env('PAYPAL_MODE', 'sandbox'), // or 'live' for production
+    'agentaos' => [
+        'key' => env('AGENTAOS_API_KEY'),
+        'webhook_secret' => env('AGENTAOS_WEBHOOK_SECRET'),
+        'payment_link_id' => env('AGENTAOS_PAYMENT_LINK_ID'),
+        'base_url' => env('AGENTAOS_BASE_URL', 'https://api.agentaos.ai/api/v1'),
     ],
 
 ];
