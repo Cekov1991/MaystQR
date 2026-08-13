@@ -14,7 +14,17 @@ return [
     |
     */
 
-    'default' => env('APP_ENV') === 'production' ? 'brevo' : 'mailtrap',
+    /*
+     * Each environment picks its own transport via MAIL_MAILER. This was
+     * previously derived from APP_ENV, which made it unoverridable and silently
+     * ignored MAIL_MAILER everywhere — including phpunit.xml, so the suite made
+     * real SMTP connections.
+     *
+     * Falling back to `log` keeps an unconfigured environment from dialling
+     * someone else's relay. Every environment that must actually deliver mail
+     * has to name its mailer, and `log` means nothing was named.
+     */
+    'default' => env('MAIL_MAILER', 'log'),
 
     /*
     |--------------------------------------------------------------------------
@@ -36,6 +46,23 @@ return [
     */
 
     'mailers' => [
+
+        /*
+         * The generic SMTP mailer, and the only one that reads the standard
+         * MAIL_* variables. The named mailers below each read their own prefix,
+         * so MAIL_HOST and MAIL_PASSWORD do nothing unless this mailer is the
+         * one selected. `failover` also references this entry, which did not
+         * exist before and would have thrown had anyone selected it.
+         */
+        'smtp' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST', '127.0.0.1'),
+            'port' => env('MAIL_PORT', 587),
+            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
+        ],
 
         'mailtrap' => [
             'transport' => 'smtp',
