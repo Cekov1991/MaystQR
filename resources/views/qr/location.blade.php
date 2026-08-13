@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Location — ' . $qrCode->name)
+@section('title', 'Location - ' . $qrCode->name)
 @section('description', 'Location details')
 @section('robots', 'noindex, nofollow')
 

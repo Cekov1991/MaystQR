@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Wi-Fi — ' . $qrCode->name)
+@section('title', 'Wi-Fi - ' . $qrCode->name)
 @section('description', 'Wi-Fi network details')
 @section('robots', 'noindex, nofollow')
 
@@ -20,7 +20,7 @@
             <p class="eq-scan-note">
                 Open your Wi-Fi settings, pick this network
                 @if ($isOpen)
-                    and connect — no password needed.
+                    and connect. No password needed.
                 @else
                     and enter the password below.
                 @endif
@@ -35,7 +35,7 @@
                 </li>
                 <li>
                     <span class="eq-detail-label">Security</span>
-                    <span class="eq-detail-value">{{ $isOpen ? 'Open — no password' : $security }}</span>
+                    <span class="eq-detail-value">{{ $isOpen ? 'Open, no password' : $security }}</span>
                 </li>
                 @if (! $isOpen && ! empty($password))
                     <li>

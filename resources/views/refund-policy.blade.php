@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Refund Policy — ' . config('app.name'))
+@section('title', 'Refund Policy - ' . config('app.name'))
 @section('description', 'How refunds work for ' . config('app.name') . ' subscriptions.')
 
 @section('content')
@@ -34,8 +34,8 @@
             until the end of the period you have already paid for.
         </p>
         <p>
-            If the service fails in a way we cannot resolve — for example your dynamic QR
-            codes stop resolving through our fault — contact us and we will refund a fair
+            If the service fails in a way we cannot resolve, for example your dynamic QR
+            codes stop resolving through our fault, contact us and we will refund a fair
             share of the period affected.
         </p>
 

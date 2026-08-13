@@ -12,7 +12,7 @@ use Tests\TestCase;
 /**
  * The pages a stranger lands on after scanning a code. They are the most
  * public thing we ship and the least watched, so every content type is
- * rendered here — including the ones nobody creates often.
+ * rendered here, including the ones nobody creates often.
  */
 class ScanPageTest extends TestCase
 {
@@ -86,12 +86,12 @@ class ScanPageTest extends TestCase
     {
         $qrCode = QrCode::factory()->dynamic()->create([
             'qr_content_type' => 'text',
-            'qr_content_data' => ['text' => "It's Kiril's table — don't move it"],
+            'qr_content_data' => ['text' => "It's Kiril's table, don't move it"],
         ]);
 
         $this->get("/q/{$qrCode->short_url}")
             ->assertOk()
-            ->assertSee("It's Kiril's table — don't move it");
+            ->assertSee("It's Kiril's table, don't move it");
     }
 
     /**

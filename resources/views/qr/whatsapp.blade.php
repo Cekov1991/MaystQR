@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'WhatsApp — ' . $qrCode->name)
+@section('title', 'WhatsApp - ' . $qrCode->name)
 @section('description', 'Send a WhatsApp message')
 @section('robots', 'noindex, nofollow')
 

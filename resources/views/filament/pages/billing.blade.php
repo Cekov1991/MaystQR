@@ -24,12 +24,12 @@
                     <span class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $user->trialDaysRemaining() }}
                         {{ \Illuminate\Support\Str::plural('day', $user->trialDaysRemaining()) }}
-                        remaining — ends {{ $user->trial_ends_at?->format('j F Y') }}
+                        remaining, ends {{ $user->trial_ends_at?->format('j F Y') }}
                     </span>
                 @elseif ($state->value === 'subscribed')
                     <span class="text-sm text-gray-500 dark:text-gray-400">
                         @if ($subscription?->cancel_at_period_end)
-                            Cancelled — access until {{ $user->entitled_until?->format('j F Y') }}
+                            Cancelled, access until {{ $user->entitled_until?->format('j F Y') }}
                         @else
                             Renews {{ $subscription?->current_period_end?->format('j F Y') ?? 'yearly' }}
                         @endif
@@ -72,7 +72,7 @@
             </x-slot>
 
             <x-slot name="description">
-                {{ $this->getFormattedPrice() }} per year, billed once. Tax included — AgentaOS is
+                {{ $this->getFormattedPrice() }} per year, billed once. Tax included. AgentaOS is
                 the merchant of record and handles VAT for your country.
             </x-slot>
 
@@ -80,14 +80,14 @@
                 <ul class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <li>Up to {{ config('subscription.quotas.dynamic') }} dynamic QR codes, editable after printing</li>
                     <li>Up to {{ config('subscription.quotas.static') }} static QR codes</li>
-                    <li>Scan analytics — device, browser and country</li>
+                    <li>Scan analytics for device, browser and country</li>
                 </ul>
 
                 <form method="POST" action="{{ route('billing.subscribe') }}">
                     @csrf
                     <x-filament::button type="submit" size="lg">
                         {{ $state->value === 'lapsed' ? 'Reactivate' : 'Subscribe' }}
-                        — {{ $this->getFormattedPrice() }}/year
+                        for {{ $this->getFormattedPrice() }}/year
                     </x-filament::button>
                 </form>
 

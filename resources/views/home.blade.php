@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
-@section('title', config('app.name') . ' — Create your QR code')
-@section('description', 'Create a free static QR code instantly — no account needed. Upgrade to dynamic QR codes with editable destinations and scan analytics.')
+@section('title', config('app.name') . ' - Create your QR code')
+@section('description', 'Create a free static QR code instantly, with no account needed. Upgrade to dynamic QR codes with editable destinations and scan analytics.')
 @section('keywords', 'QR Code, Free QR Code Generator, Dynamic QR, Analytics, Editable QR Codes, Trackable QR Codes')
 
 @section('content')
@@ -15,14 +15,14 @@
 
     <div class="eq-card-grid">
 
-        {{-- Static QR — free, generated on the fly, never stored --}}
+        {{-- Static QR: free, generated on the fly, never stored --}}
         <div class="eq-card eq-card--choice">
             <div class="eq-card-head">
                 <span class="eq-card-title">Static QR</span>
                 <span class="eq-badge">FREE</span>
             </div>
             <p class="eq-card-text">
-                Generated instantly and shown on screen. Nothing is stored — refresh the page and it’s gone, so download it right away.
+                Generated instantly and shown on screen. Nothing is stored. Refresh the page and it’s gone, so download it right away.
             </p>
             <ul class="eq-check-list">
                 <li><span class="eq-check">✓</span>No account needed</li>
@@ -37,7 +37,7 @@
             </form>
         </div>
 
-        {{-- Dynamic QR — teaser card; creation lives in the dashboard --}}
+        {{-- Dynamic QR: teaser card, creation lives in the dashboard --}}
         <div class="eq-card eq-card--choice">
             <div class="eq-card-head">
                 <span class="eq-card-title">Dynamic QR</span>
@@ -65,12 +65,12 @@
 
     </div>
 
-    {{-- QR result — lives outside the cards so generating never changes their height --}}
+    {{-- QR result: lives outside the cards so generating never changes their height --}}
     <div id="static-result" class="eq-result-panel" hidden>
         <img id="static-qr-img" src="" alt="Your QR code">
         <div class="eq-result-info">
             <h2 class="eq-h2">Your QR code is ready</h2>
-            <p>Scan it with your phone to test it, then download it. Nothing is stored on our side — once you leave this page, the code is gone.</p>
+            <p>Scan it with your phone to test it, then download it. Nothing is stored on our side, so once you leave this page the code is gone.</p>
             <div class="eq-actions">
                 <a id="static-download-png" href="#" download="qr-code.png" class="eq-btn eq-btn-primary eq-btn--sm">Download PNG</a>
                 <a id="static-download-svg" href="#" download="qr-code.svg" class="eq-btn eq-btn-outline eq-btn--sm">Download SVG</a>
@@ -135,7 +135,7 @@
 
                     if (!response.ok) {
                         if (response.status === 429) {
-                            showError('Too many requests — please wait a minute and try again.');
+                            showError('Too many requests. Please wait a minute and try again.');
                         } else {
                             showError((data && (data.errors?.url?.[0] || data.message)) || 'Something went wrong. Please try again.');
                         }

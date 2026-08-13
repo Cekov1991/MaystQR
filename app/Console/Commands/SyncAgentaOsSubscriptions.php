@@ -12,7 +12,7 @@ use Illuminate\Console\Command;
 /**
  * Reconciles local subscription state with AgentaOS.
  *
- * AgentaOS emits no subscription lifecycle webhooks — the only events are
+ * AgentaOS emits no subscription lifecycle webhooks: the only events are
  * checkout completion and outbound sends. Renewals, cancellations and failed
  * cards are therefore discoverable only by polling, which is what this does.
  *
@@ -138,7 +138,7 @@ class SyncAgentaOsSubscriptions extends Command
         if ($cap > 0 && $vanished->count() > $cap) {
             BillingAlerts::raise(
                 'subscriptions-missing-en-masse',
-                "billing:sync found {$vanished->count()} live subscriptions missing from AgentaOS, past the safety cap of {$cap}. Nothing was closed — a listing that drops many subscriptions at once is more likely an API fault than mass cancellation.",
+                "billing:sync found {$vanished->count()} live subscriptions missing from AgentaOS, past the safety cap of {$cap}. Nothing was closed. A listing that drops many subscriptions at once is more likely an API fault than mass cancellation.",
                 [
                     'missing' => $vanished->count(),
                     'cap' => $cap,
@@ -158,7 +158,7 @@ class SyncAgentaOsSubscriptions extends Command
 
     /**
      * Prefer the stored id. Fall back to email only for rows that never got
-     * one — the case ResolveAgentaOsSubscription failed to complete.
+     * one, the case ResolveAgentaOsSubscription failed to complete.
      *
      * @param  array<string, mixed>  $remote
      */

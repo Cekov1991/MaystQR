@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Event — ' . $qrCode->name)
+@section('title', 'Event - ' . $qrCode->name)
 @section('description', 'Calendar event details')
 @section('robots', 'noindex, nofollow')
 

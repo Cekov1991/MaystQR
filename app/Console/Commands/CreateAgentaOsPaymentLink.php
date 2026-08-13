@@ -28,7 +28,7 @@ class CreateAgentaOsPaymentLink extends Command
             return self::FAILURE;
         }
 
-        $name = $this->option('name') ?: config('app.name').' — Yearly';
+        $name = $this->option('name') ?: config('app.name').' Yearly';
         $description = $this->option('description')
             ?: sprintf(
                 'Keeps your dynamic QR codes online. Up to %d dynamic and %d static QR codes.',
@@ -57,7 +57,7 @@ class CreateAgentaOsPaymentLink extends Command
         $this->newLine();
         $this->components->info('Payment link created.');
         $this->components->twoColumnDetail('Environment', $link['environment'] ?? 'unknown');
-        $this->components->twoColumnDetail('Checkout URL', $link['checkoutUrl'] ?? '—');
+        $this->components->twoColumnDetail('Checkout URL', $link['checkoutUrl'] ?? 'none');
         $this->newLine();
         $this->line('Add this to your .env:');
         $this->line("  AGENTAOS_PAYMENT_LINK_ID={$link['id']}");

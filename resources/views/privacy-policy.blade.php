@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Privacy Policy — ' . config('app.name'))
+@section('title', 'Privacy Policy - ' . config('app.name'))
 @section('description', 'How ' . config('app.name') . ' collects, uses, and protects your personal information.')
 
 @section('content')
@@ -78,7 +78,7 @@
         <p>By creating an account, you agree to receive:</p>
         <ul>
             <li>Transactional emails (e.g., account confirmation, password reset, service updates)</li>
-            <li>Optional product updates or promotions (only if you opt in — you can unsubscribe anytime)</li>
+            <li>Optional product updates or promotions (only if you opt in; you can unsubscribe anytime)</li>
         </ul>
 
         <h2>6. Data Retention</h2>

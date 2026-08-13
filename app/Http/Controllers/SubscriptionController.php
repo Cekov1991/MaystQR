@@ -34,7 +34,7 @@ class SubscriptionController extends Controller
             $checkout = $this->agentaOs->createCheckout($user, $linkId);
         } catch (AgentaOsException $exception) {
             // A checkout that cannot be opened stops every sale, and the buyer
-            // only sees a vague apology — so this must not sit in the log alone.
+            // only sees a vague apology, so this must not sit in the log alone.
             BillingAlerts::raise(
                 'checkout-creation-failed',
                 'An AgentaOS checkout could not be created. Nobody hitting this can subscribe.',
@@ -73,13 +73,13 @@ class SubscriptionController extends Controller
     {
         return redirect()
             ->route('filament.admin.pages.dashboard')
-            ->with('status', 'Thanks! Your payment is being confirmed — this usually takes a few seconds.');
+            ->with('status', 'Thanks! Your payment is being confirmed. This usually takes a few seconds.');
     }
 
     public function cancel(): RedirectResponse
     {
         return redirect()
             ->route('filament.admin.pages.dashboard')
-            ->with('status', 'Checkout cancelled — you have not been charged.');
+            ->with('status', 'Checkout cancelled. You have not been charged.');
     }
 }

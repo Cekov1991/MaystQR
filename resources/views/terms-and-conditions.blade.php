@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Terms and Conditions — ' . config('app.name'))
+@section('title', 'Terms and Conditions - ' . config('app.name'))
 @section('description', 'The terms that govern your use of ' . config('app.name') . '.')
 
 @section('content')

@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notification;
 
 /**
  * The renewal charge failed and the card processor is retrying. Nothing has
- * been switched off yet — this is the warning inside the grace window.
+ * been switched off yet. This is the warning inside the grace window.
  */
 class RenewalPaymentFailed extends Notification implements ShouldQueue
 {
@@ -32,7 +32,7 @@ class RenewalPaymentFailed extends Notification implements ShouldQueue
         $message = (new MailMessage)
             ->subject('We could not renew your '.config('app.name').' subscription')
             ->greeting("Hi {$notifiable->name},")
-            ->line('Your yearly renewal payment did not go through — usually an expired or replaced card.')
+            ->line('Your yearly renewal payment did not go through, usually an expired or replaced card.')
             ->line('Your QR codes are still working. We will keep retrying for a few days.');
 
         if ($notifiable->entitled_until !== null) {
