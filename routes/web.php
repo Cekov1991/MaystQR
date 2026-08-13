@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\InstantQrController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QrCodeRedirectController;
 use App\Http\Controllers\QrCodeExpiredController;
@@ -9,10 +10,18 @@ use App\Http\Controllers\PayPalController;
 use App\Models\QrCodePackage;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::get('/', [InstantQrController::class, 'index'])->name('welcome');
+
+Route::post('/qr/instant', [InstantQrController::class, 'generate'])
+    ->middleware('throttle:20,1')
+    ->name('qr.instant');
+
+// Previous marketing landing page, parked here until the new design is finalized
+// (path must not be /landing — public/landing/ is the template asset directory and shadows the route)
+Route::get('/landing-page', function () {
     $packages = QrCodePackage::active()->orderBy('duration_months')->get();
     return view('welcome', compact('packages'));
-})->name('welcome');
+})->name('landing');
 
 // QR Code routes
 Route::get('/q/{shortUrl}', [QrCodeRedirectController::class, 'redirect'])
