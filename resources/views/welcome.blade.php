@@ -21,9 +21,6 @@
                 <li><a href="{{route('filament.admin.pages.dashboard')}}" class="active">Dashboard</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#features">Features</a></li>
-                @if(!config('app.free_dynamic_qr_codes'))
-                    <li><a href="#pricing">Pricing</a></li>
-                @endif
                 <li><a href="#faq">FAQ</a></li>
             </ul>
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -169,120 +166,6 @@
             </div>
         </div>
     </section><!-- /Features Cards Section -->
-
-    <!-- Pricing Section -->
-    @if(!config('app.free_dynamic_qr_codes'))
-    <section id="pricing" class="pricing section">
-        <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-            <div class="row justify-content-center">
-                <div class="col-lg-8 text-center">
-                    <h2 class="mb-4">Simple, Transparent Pricing</h2>
-                    <p class="lead mb-5">
-                        Start for free and scale as you grow. Our flexible pricing model ensures you only pay for what you need.
-                    </p>
-                </div>
-            </div>
-
-            <div class="row justify-content-center mb-5">
-                <div class="col-lg-10">
-                    <div class="card border-0 shadow-sm bg-light">
-                        <div class="card-body p-4">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <h4 class="text-primary mb-2">💡 How Our Pricing Works</h4>
-                                    <p class="mb-2">
-                                        <strong>Static QR Codes:</strong> Create unlimited static QR codes completely free - forever! Perfect for simple redirects, contact info, and basic use cases.
-                                    </p>
-                                    <p class="mb-0">
-                                        <strong>Dynamic QR Codes:</strong> Each dynamic QR code comes with a <span class="text-success fw-bold">{{ config('app.qr_code_trial_days') }} days free trial</span>. After the trial, simply purchase an affordable extension package to keep your QR code active. You only pay for the dynamic features you actually use!
-                                    </p>
-                                </div>
-                                <div class="col-md-4 text-center">
-                                    <div class="text-success">
-                                        <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
-                                        <p class="mt-2 mb-0"><small>Pay only for what you use</small></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-        <div class="row justify-content-center">
-
-                @foreach($packages as $package)
-                    <div class="col-lg-4 mt-4" data-aos="fade-up" data-aos-delay="{{ 200 + ($loop->index * 100) }}">
-                        <div class="pricing-card {{ $package->id == 2 ? 'popular' : '' }}">
-                            @if($package->id == 2)
-                                <div class="popular-badge">Most Popular</div>
-                            @endif
-                            <h3>{{ $package->name }} Extension</h3>
-                            <div class="price">
-                                <span class="currency">$</span>
-                                <span class="amount">{{ $package->price }}</span>
-                                <span class="period">/ QR code</span>
-                            </div>
-
-                            <h4>Extension Includes:</h4>
-                            <ul class="features-list">
-                                <li>
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    {{ $package->duration_text }} extension per QR code
-                                </li>
-                                <li>
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    Unlimited scans & updates
-                                </li>
-                                <li>
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    Real-time analytics
-                                </li>
-                                <li>
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    Custom branding options
-                                </li>
-                            </ul>
-
-                            <a href="{{ route('filament.public.resources.qrcodes.create') }}" class="btn {{ $package->id == 2 ? 'btn-light' : 'btn-primary' }}">
-                                Get Started
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-
-            <div class="row justify-content-center mt-5">
-                <div class="col-lg-8 text-center">
-                    <div class="value-proposition">
-                        <h4 class="text-primary mb-3">Why This Model Benefits You</h4>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <i class="bi bi-piggy-bank text-success mb-2" style="font-size: 2rem;"></i>
-                                <h6>Cost Effective</h6>
-                                <p class="small">Only pay for advanced features when you need them</p>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <i class="bi bi-clock text-success mb-2" style="font-size: 2rem;"></i>
-                                <h6>Risk-Free Trial</h6>
-                                <p class="small">{{ config('app.qr_code_trial_days') }} days to test all dynamic features before committing</p>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <i class="bi bi-graph-up text-success mb-2" style="font-size: 2rem;"></i>
-                                <h6>Scale as You Grow</h6>
-                                <p class="small">Start small and add more dynamic QR codes as needed</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    @endif
 
 
     <!-- Call To Action Section -->
