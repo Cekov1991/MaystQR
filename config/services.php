@@ -35,10 +35,6 @@ return [
         ],
     ],
 
-    'ipgeolocation' => [
-        'key' => env('IP_GEOLOCATION_API_KEY'),
-    ],
-
     'agentaos' => [
         'key' => env('AGENTAOS_API_KEY'),
         'webhook_secret' => env('AGENTAOS_WEBHOOK_SECRET'),

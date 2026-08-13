@@ -80,7 +80,7 @@
                 <ul class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <li>Up to {{ config('subscription.quotas.dynamic') }} dynamic QR codes, editable after printing</li>
                     <li>Up to {{ config('subscription.quotas.static') }} static QR codes</li>
-                    <li>Scan analytics — device, browser, country and city</li>
+                    <li>Scan analytics — device, browser and country</li>
                 </ul>
 
                 <form method="POST" action="{{ route('billing.subscribe') }}">

@@ -4,9 +4,10 @@ namespace Tests\Feature\Subscription;
 
 use App\Models\QrCode;
 use App\Models\User;
-use App\Services\IpGeolocationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ScanGateTest extends TestCase
@@ -19,10 +20,9 @@ class ScanGateTest extends TestCase
 
         Storage::fake();
 
-        // Geolocation is a paid third-party call; the scan path must not make it in tests.
-        $this->mock(IpGeolocationService::class)
-            ->shouldReceive('locate')
-            ->andReturn(['country_code' => 'MK', 'city' => 'Skopje']);
+        // The scan path used to call a paid geolocation API. Nothing in it may
+        // reach off the server now, so a stray request is a failure.
+        Http::preventStrayRequests();
     }
 
     private function dynamicCodeOwnedBy(User $user): QrCode
@@ -144,6 +144,59 @@ class ScanGateTest extends TestCase
 
         $this->get("/q/{$sixth->short_url}")
             ->assertRedirect('https://example.com/menu');
+    }
+
+    public function test_the_country_is_taken_from_the_cloudflare_header(): void
+    {
+        $qrCode = $this->dynamicCodeOwnedBy(User::factory()->create());
+
+        $this->withHeader('CF-IPCountry', 'mk')
+            ->get("/q/{$qrCode->short_url}")
+            ->assertRedirect('https://example.com/menu');
+
+        $this->assertSame('MK', $qrCode->scans()->sole()->country);
+    }
+
+    #[DataProvider('unusableCountryHeaders')]
+    public function test_a_country_that_is_not_a_country_is_stored_as_unknown(?string $header): void
+    {
+        $qrCode = $this->dynamicCodeOwnedBy(User::factory()->create());
+
+        $request = $header === null ? $this : $this->withHeader('CF-IPCountry', $header);
+
+        $request->get("/q/{$qrCode->short_url}")->assertRedirect('https://example.com/menu');
+
+        $this->assertNull($qrCode->scans()->sole()->country);
+    }
+
+    /**
+     * @return array<string, array{0: string|null}>
+     */
+    public static function unusableCountryHeaders(): array
+    {
+        return [
+            'absent, as it is locally and for anything not behind Cloudflare' => [null],
+            'Cloudflare could not resolve one' => ['XX'],
+            'arrived over Tor' => ['T1'],
+            'forged by a request that bypassed Cloudflare' => ['Neverland'],
+            'empty' => [''],
+        ];
+    }
+
+    /**
+     * A scan writes a row, so an unthrottled scan URL is a way to fill the
+     * table. The ceiling has to stay clear of what one genuine scanner does.
+     */
+    public function test_looping_the_scan_url_is_throttled(): void
+    {
+        $qrCode = $this->dynamicCodeOwnedBy(User::factory()->create());
+
+        for ($i = 0; $i < 60; $i++) {
+            $this->get("/q/{$qrCode->short_url}")->assertRedirect();
+        }
+
+        $this->get("/q/{$qrCode->short_url}")->assertStatus(429);
+        $this->assertSame(60, $qrCode->scans()->count());
     }
 
     public function test_a_code_can_never_outlive_its_owner(): void
