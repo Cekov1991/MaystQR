@@ -12,11 +12,10 @@ class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_reset_password_link_screen_can_be_rendered(): void
+    public function test_the_forgot_password_route_sends_you_to_the_panel(): void
     {
-        $response = $this->get('/forgot-password');
-
-        $response->assertStatus(200);
+        $this->get('/forgot-password')
+            ->assertRedirect(route('filament.admin.auth.password-reset.request', absolute: false));
     }
 
     public function test_reset_password_link_can_be_requested(): void

@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Sent the moment dynamic QR codes stop resolving — whether that is the end of
+ * Sent the moment dynamic QR codes stop resolving, whether that is the end of
  * an unconverted trial or the end of a cancelled subscription's paid period.
  */
 class TrialEnded extends Notification implements ShouldQueue
@@ -56,7 +56,7 @@ class TrialEnded extends Notification implements ShouldQueue
         }
 
         return $message
-            ->action('Reactivate — $'.$this->price().'/year', route('filament.admin.pages.billing'))
+            ->action('Reactivate for $'.$this->price().'/year', route('filament.admin.pages.billing'))
             ->line('Everything is exactly where you left it, and your static QR codes are unaffected.');
     }
 

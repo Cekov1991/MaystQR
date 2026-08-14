@@ -10,11 +10,26 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_screen_can_be_rendered(): void
+    /**
+     * There is one login screen and it is the panel's. Laravel sends
+     * unauthenticated users to route('login'), so this route has to keep
+     * existing — it just must not render a second, differently designed one.
+     */
+    public function test_the_login_route_sends_you_to_the_panel(): void
     {
-        $response = $this->get('/login');
+        $this->get('/login')
+            ->assertRedirect(route('filament.admin.auth.login', absolute: false));
+    }
 
-        $response->assertStatus(200);
+    /**
+     * The Breeze dashboard was the scaffold placeholder — a Laravel logo and
+     * "You're logged in!". Breeze's controllers still redirect here after
+     * login and registration, so it has to land somewhere real.
+     */
+    public function test_the_dashboard_route_sends_you_to_the_panel(): void
+    {
+        $this->get('/dashboard')
+            ->assertRedirect(route('filament.admin.pages.dashboard', absolute: false));
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

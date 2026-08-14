@@ -37,7 +37,7 @@ class SubscriptionBanner extends Widget
             'heading' => $lapsed
                 ? 'Your subscription is inactive'
                 : sprintf(
-                    'Free trial — %d %s left',
+                    'Free trial, %d %s left',
                     $user->trialDaysRemaining(),
                     str('day')->plural($user->trialDaysRemaining()),
                 ),

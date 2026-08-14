@@ -47,7 +47,7 @@ class TrialEndingSoon extends Notification implements ShouldQueue
             : 'After that, you will need a subscription to create dynamic QR codes.');
 
         return $message
-            ->action('Subscribe — $'.$this->price().'/year', route('filament.admin.pages.billing'))
+            ->action('Subscribe for $'.$this->price().'/year', route('filament.admin.pages.billing'))
             ->line('Your static QR codes are free forever and are not affected.');
     }
 

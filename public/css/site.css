@@ -1,0 +1,686 @@
+/*
+ * EasyQR public site.
+ *
+ * Served with asset() rather than Vite: public/build is gitignored and there is
+ * no build step on deploy, so a missing manifest would take every public page
+ * down. These pages need no bundling — one stylesheet, no JS dependencies.
+ *
+ * Tokens below are the source of truth for the public site. Change a colour
+ * here and it changes on the homepage, the scan pages and the legal pages.
+ */
+
+:root {
+    --eq-bg: #FBFDFE;
+    --eq-surface: #ffffff;
+    --eq-tint: #D4EBF2;
+
+    --eq-ink: #0A0F24;
+    --eq-muted: #5a5f6e;
+
+    --eq-primary: #348FAD;
+    --eq-primary-hover: #2C7790;
+    --eq-primary-disabled: #ADD8E6;
+    --eq-accent: #3A9FC0;
+
+    --eq-link: #2C7790;
+    --eq-link-hover: #235F73;
+    --eq-dark-hover: #232a47;
+    --eq-danger: #d92d20;
+
+    --eq-border: rgba(10, 15, 36, 0.08);
+    --eq-border-strong: rgba(10, 15, 36, 0.15);
+
+    --eq-font-heading: 'Manrope', sans-serif;
+    --eq-font-body: 'Inter', sans-serif;
+
+    --eq-radius-card: 16px;
+    --eq-radius-panel: 12px;
+    --eq-radius-btn: 10px;
+    --eq-radius-input: 9px;
+
+    --eq-shadow: 0 1px 2px rgba(10, 15, 36, 0.04);
+    --eq-width: 920px;
+}
+
+/* ---------------------------------------------------------------- base ---- */
+
+* {
+    box-sizing: border-box;
+}
+
+/*
+ * A flex column so the consent banner can be a sticky flow element at the end
+ * rather than a fixed overlay. Fixed positioning put it on top of the footer,
+ * hiding the credit line entirely, and any padding large enough to clear it
+ * would be wrong as soon as the banner wrapped to another line.
+ */
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--eq-bg);
+    font-family: var(--eq-font-body);
+    -webkit-font-smoothing: antialiased;
+    color: var(--eq-ink);
+}
+
+a {
+    color: var(--eq-link);
+}
+
+a:hover {
+    color: var(--eq-link-hover);
+}
+
+input::placeholder {
+    color: #a3a8b5;
+}
+
+/* -------------------------------------------------------------- shell ----- */
+
+.eq-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 24px 40px;
+}
+
+.eq-width {
+    width: 100%;
+    max-width: var(--eq-width);
+}
+
+.eq-header {
+    width: 100%;
+    max-width: var(--eq-width);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 56px;
+}
+
+.eq-logo {
+    display: flex;
+    align-items: center;
+}
+
+.eq-logo img {
+    height: 44px;
+    width: auto;
+    display: block;
+}
+
+/* The nav item is a button, so it carries its own colour and hover. */
+.eq-topnav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.eq-main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+/* ------------------------------------------------------------- footer ----- */
+
+.eq-footer {
+    width: 100%;
+    max-width: var(--eq-width);
+    margin-top: 72px;
+    padding-top: 28px;
+    border-top: 1px solid var(--eq-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--eq-muted);
+}
+
+.eq-footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.eq-footer a {
+    color: var(--eq-muted);
+    text-decoration: none;
+}
+
+.eq-footer a:hover {
+    color: var(--eq-link);
+    text-decoration: underline;
+}
+
+.eq-footer-credit {
+    width: 100%;
+    font-size: 12px;
+    color: #8b8f9c;
+}
+
+/* -------------------------------------------------------------- type ------ */
+
+.eq-h1 {
+    font-family: var(--eq-font-heading);
+    font-weight: 800;
+    font-size: 42px;
+    line-height: 1.15;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+}
+
+.eq-h2 {
+    font-family: var(--eq-font-heading);
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0;
+}
+
+.eq-lead {
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--eq-muted);
+    margin: 0;
+}
+
+.eq-hero {
+    text-align: center;
+    max-width: 560px;
+    margin-bottom: 56px;
+}
+
+.eq-muted {
+    color: var(--eq-muted);
+}
+
+/* ------------------------------------------------------------- cards ------ */
+
+.eq-card {
+    width: 100%;
+    max-width: 100%;
+    background: var(--eq-surface);
+    border: 1px solid var(--eq-border);
+    border-radius: var(--eq-radius-card);
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--eq-shadow);
+}
+
+/* The homepage pair: a fixed width so the two cards sit side by side. */
+.eq-card--choice {
+    width: 400px;
+}
+
+.eq-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.eq-card-title {
+    font-family: var(--eq-font-heading);
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.eq-card-grid {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: var(--eq-width);
+}
+
+.eq-card-text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--eq-muted);
+    margin: 0 0 24px;
+}
+
+/* Pins a card's call to action to the bottom so a pair of cards stays aligned. */
+.eq-card-foot {
+    margin-top: auto;
+}
+
+.eq-card-form {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.eq-badge {
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--eq-tint);
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.03em;
+}
+
+.eq-badge--dark {
+    color: var(--eq-surface);
+    background: var(--eq-ink);
+}
+
+.eq-check-list {
+    list-style: none;
+    margin: 0 0 28px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.eq-check-list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 14px;
+    color: var(--eq-ink);
+}
+
+.eq-check {
+    color: var(--eq-accent);
+    font-weight: 700;
+}
+
+.eq-check--ink {
+    color: var(--eq-ink);
+}
+
+/* ------------------------------------------------------------ controls ---- */
+
+.eq-input {
+    font-family: var(--eq-font-body);
+    font-size: 14.5px;
+    padding: 12px 14px;
+    border-radius: var(--eq-radius-input);
+    border: 1.5px solid var(--eq-border-strong);
+    color: var(--eq-ink);
+    outline: none;
+    width: 100%;
+}
+
+.eq-input:focus {
+    border-color: var(--eq-accent);
+}
+
+.eq-label {
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.eq-btn {
+    border: none;
+    border-radius: var(--eq-radius-btn);
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--eq-font-body);
+    cursor: pointer;
+    color: var(--eq-surface);
+    text-decoration: none;
+    text-align: center;
+}
+
+.eq-btn--sm {
+    padding: 12px 24px;
+    font-size: 14px;
+}
+
+/* Header-sized: reads as a control without competing with the page's own CTA. */
+.eq-btn--nav {
+    padding: 9px 18px;
+    font-size: 13.5px;
+    border-radius: 9px;
+}
+
+.eq-btn-primary {
+    background: var(--eq-primary);
+}
+
+.eq-btn-primary:hover {
+    background: var(--eq-primary-hover);
+    color: var(--eq-surface);
+}
+
+.eq-btn-primary:disabled {
+    background: var(--eq-primary-disabled);
+    cursor: wait;
+}
+
+.eq-btn-dark {
+    background: var(--eq-ink);
+}
+
+.eq-btn-dark:hover {
+    background: var(--eq-dark-hover);
+    color: var(--eq-surface);
+}
+
+.eq-btn-outline {
+    background: var(--eq-surface);
+    color: var(--eq-ink);
+    border: 1.5px solid var(--eq-border-strong);
+}
+
+.eq-btn-outline:hover {
+    border-color: var(--eq-accent);
+    color: var(--eq-ink);
+}
+
+.eq-error {
+    display: none;
+    font-size: 13px;
+    color: var(--eq-danger);
+    margin: 0;
+}
+
+/* -------------------------------------------------------------- panels ---- */
+
+.eq-panel {
+    background: var(--eq-tint);
+    border-radius: var(--eq-radius-panel);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.eq-result-panel[hidden] {
+    display: none;
+}
+
+.eq-result-panel {
+    width: 100%;
+    max-width: var(--eq-width);
+    margin-top: 28px;
+    padding: 32px;
+    background: var(--eq-tint);
+    border-radius: var(--eq-radius-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.eq-result-panel img {
+    width: 200px;
+    height: 200px;
+    border-radius: var(--eq-radius-btn);
+    background: var(--eq-surface);
+}
+
+.eq-result-info {
+    flex: 1;
+    min-width: 260px;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.eq-result-info p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--eq-muted);
+    margin: 0;
+}
+
+.eq-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------- scan pages ----- */
+
+/*
+ * What a stranger sees after scanning a code. Narrow, mobile-first, and the
+ * action they came for is the first thing under the heading.
+ */
+
+.eq-scan {
+    width: 100%;
+    max-width: 480px;
+}
+
+.eq-scan-head {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.eq-scan-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--eq-primary);
+    margin: 0 0 8px;
+}
+
+.eq-scan-title {
+    font-family: var(--eq-font-heading);
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1.2;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+}
+
+.eq-scan-note {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--eq-muted);
+    margin: 0;
+}
+
+.eq-scan .eq-btn {
+    width: 100%;
+}
+
+.eq-scan-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+/* Label/value rows: wifi credentials, vCard fields, event details. */
+
+.eq-details {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.eq-details li {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--eq-border);
+    font-size: 14.5px;
+}
+
+.eq-details li:last-child {
+    border-bottom: none;
+}
+
+.eq-details dt,
+.eq-detail-label {
+    color: var(--eq-muted);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.eq-details dd,
+.eq-detail-value {
+    margin: 0;
+    text-align: right;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.eq-detail-value--mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px;
+}
+
+.eq-scan-message {
+    font-size: 15px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 0;
+}
+
+/* Two figures side by side: what an inactive subscription is costing the owner. */
+
+.eq-stats {
+    display: flex;
+    background: var(--eq-tint);
+    border-radius: var(--eq-radius-panel);
+    margin-bottom: 24px;
+}
+
+.eq-stat {
+    flex: 1;
+    padding: 20px 16px;
+    text-align: center;
+}
+
+.eq-stat + .eq-stat {
+    border-left: 1px solid rgba(10, 15, 36, 0.08);
+}
+
+.eq-stat-figure {
+    font-family: var(--eq-font-heading);
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1.1;
+}
+
+.eq-stat-label {
+    font-size: 12.5px;
+    color: var(--eq-muted);
+    margin-top: 4px;
+}
+
+/* -------------------------------------------------------- legal pages ----- */
+
+.eq-prose {
+    width: 100%;
+    max-width: 720px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--eq-ink);
+}
+
+.eq-prose h2 {
+    font-family: var(--eq-font-heading);
+    font-weight: 700;
+    font-size: 19px;
+    margin: 40px 0 12px;
+    letter-spacing: -0.01em;
+}
+
+.eq-prose h3 {
+    font-family: var(--eq-font-heading);
+    font-weight: 700;
+    font-size: 16px;
+    margin: 28px 0 8px;
+}
+
+.eq-prose p {
+    margin: 0 0 14px;
+    color: var(--eq-muted);
+}
+
+.eq-prose ul,
+.eq-prose ol {
+    margin: 0 0 16px;
+    padding-left: 20px;
+    color: var(--eq-muted);
+}
+
+.eq-prose li {
+    margin-bottom: 8px;
+}
+
+.eq-prose strong {
+    color: var(--eq-ink);
+    font-weight: 600;
+}
+
+.eq-prose-updated {
+    font-size: 13px;
+    color: var(--eq-muted);
+    margin: 0 0 8px;
+}
+
+/* -------------------------------------------------------- responsive ------ */
+
+@media (max-width: 640px) {
+    .eq-shell {
+        padding: 20px 18px 32px;
+    }
+
+    .eq-header {
+        margin-bottom: 36px;
+    }
+
+    .eq-logo img {
+        height: 36px;
+    }
+
+    .eq-h1 {
+        font-size: 32px;
+    }
+
+    .eq-lead {
+        font-size: 15.5px;
+    }
+
+    .eq-hero {
+        margin-bottom: 36px;
+    }
+
+    .eq-card {
+        padding: 28px 22px;
+    }
+
+    .eq-scan-title {
+        font-size: 24px;
+    }
+
+    .eq-result-panel {
+        padding: 24px;
+        gap: 24px;
+    }
+
+    .eq-footer {
+        margin-top: 48px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

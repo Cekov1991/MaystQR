@@ -45,7 +45,7 @@ class BillingSyncTest extends TestCase
             'id' => 'sub_remote_1',
             'customerEmail' => $email,
             'customerName' => 'Test Buyer',
-            'planName' => 'MaystQR — Yearly',
+            'planName' => 'MaystQR Yearly',
             'billingInterval' => 'year',
             'status' => $status,
             'unitAmountMinor' => 2700,
