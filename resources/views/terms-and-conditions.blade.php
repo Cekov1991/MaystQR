@@ -8,7 +8,7 @@
     <div class="eq-prose">
         <h1 class="eq-h1">Terms and Conditions</h1>
         <p class="eq-prose-updated">
-            Last updated 13 August 2026 · {{ config('site.domain') }} · Operated by {{ config('site.company.name') }}
+            Last updated 14 August 2026 · {{ config('site.domain') }} · Operated by {{ config('site.operator.name') }}
         </p>
 
         <h2>1. Introduction</h2>
@@ -53,6 +53,18 @@
             </li>
             <li>We reserve the right to suspend or terminate your access if we believe your use violates these Terms.</li>
         </ul>
+        <p>
+            <strong>Reporting a code.</strong> Anyone can report a QR code that breaks these rules at
+            <a href="{{ route('report.create') }}">{{ config('site.domain') }}/report</a>, with or without
+            an account. We investigate every report. Where we find a code pointing at phishing, malware,
+            illegal content, or material intended to harass, we disable it without notice and may suspend
+            the account behind it.
+        </p>
+        <p>
+            Because a dynamic code's destination can be changed after it has been printed and scanned, we
+            may disable a code based on where it points at the time we review it, regardless of where it
+            pointed when it was created.
+        </p>
 
         <h2>5. Trial, Subscription &amp; Payments</h2>
         <ul>
@@ -62,9 +74,9 @@
             </li>
             <li>
                 After the trial, keeping dynamic QR codes active requires a subscription costing
-                ${{ rtrim(rtrim(number_format((float) config('subscription.price'), 2), '0'), '.') }}
-                per year. Prices are in {{ config('subscription.currency') }} and include any applicable
-                VAT or sales tax.
+                {{ \App\Support\SubscriptionPrice::formatted() }}
+                per year. Prices are in {{ \App\Support\SubscriptionPrice::currency() }} and include any applicable
+                VAT or sales tax. Our <a href="{{ route('pricing') }}">Pricing page</a> sets this out in full.
             </li>
             <li>
                 The subscription renews automatically each year until cancelled. You may cancel at any time from
@@ -137,17 +149,26 @@
 
         <h2>11. Governing Law</h2>
         <p>
-            These Terms are governed by and construed in accordance with the laws of The Republic of North Macedonia.
+            These Terms are governed by and construed in accordance with the laws of The Republic of North Macedonia,
+            and disputes are subject to the jurisdiction of the courts in The Republic of North Macedonia.
         </p>
         <p>
-            Any disputes shall be subject to the exclusive jurisdiction of the courts in The Republic of North Macedonia.
+            <strong>Nothing in this section removes any protection you have as a consumer under the mandatory law
+            of your country of residence.</strong> If you are a consumer in the European Union or the United
+            Kingdom, you keep the right to bring proceedings in the courts of your own country, and to rely on
+            the consumer protection law that applies there. Where that law gives you more than these Terms do,
+            that law wins.
         </p>
 
         <h2>12. Contact</h2>
         <p>For any questions about these Terms, contact us at:</p>
         <ul>
+            <li><strong>Operator:</strong> {{ config('site.operator.name') }}, trading as {{ config('app.name') }}</li>
             <li><strong>Email:</strong> <a href="mailto:{{ config('site.support_email') }}">{{ config('site.support_email') }}</a></li>
-            <li><strong>Address:</strong> {{ config('site.company.address') }}</li>
+            <li><strong>Address:</strong> {{ config('site.operator.address') }}</li>
+            @if (config('site.operator.tax_id'))
+                <li><strong>Tax number:</strong> {{ config('site.operator.tax_id') }}</li>
+            @endif
         </ul>
     </div>
 

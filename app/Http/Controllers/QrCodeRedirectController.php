@@ -71,6 +71,13 @@ class QrCodeRedirectController extends Controller
      * geolocation API inside this transaction, which meant a provider outage or
      * an exhausted quota stopped every dynamic code from resolving, and a slow
      * reply held a row lock on qr_codes for the length of the request.
+     *
+     * No IP address is recorded, deliberately. The person scanning is a stranger
+     * with no account who never saw our Privacy Policy, and the country, device
+     * and browser below give the code's owner everything the feature promises.
+     * `throttle:60,1` on the route still reads the address on the live request;
+     * it just never lands in a row. Do not add it back — for unique-visitor
+     * counting, hash it with a daily-rotating salt instead.
      */
     private function recordScan(QrCode $qrCode, bool $blocked): void
     {
@@ -84,7 +91,6 @@ class QrCodeRedirectController extends Controller
             $qrCode->scans()->create([
                 'scanned_at' => now(),
                 'blocked' => $blocked,
-                'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
                 'referer' => request()->header('referer'),
                 'device' => $agent->device(),

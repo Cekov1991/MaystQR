@@ -41,11 +41,6 @@ class ScansRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('country')
                     ->searchable()
                     ->toggleable(),
-
-                Tables\Columns\TextColumn::make('ip_address')
-                    ->searchable()
-                    ->toggleable()
-                    ->toggledHiddenByDefault(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('device')
