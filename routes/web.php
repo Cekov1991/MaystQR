@@ -50,6 +50,14 @@ Route::middleware('auth')->group(function () {
 // Signed by AgentaOS, not by a session. CSRF exemption lives in bootstrap/app.php.
 Route::post('/webhooks/agentaos', AgentaOsWebhookController::class)->name('webhooks.agentaos');
 
+/**
+ * AgentaOS is merchant of record and reviews the site before approving it for
+ * live payments, which includes checking that the price is reachable without
+ * registering. It previously appeared only in clause 5 of the Terms and on the
+ * billing page behind the login.
+ */
+Route::view('pricing', 'pricing')->name('pricing');
+
 Route::view('terms-and-conditions', 'terms-and-conditions');
 
 Route::view('privacy-policy', 'privacy-policy');

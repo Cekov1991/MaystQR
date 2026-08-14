@@ -21,12 +21,14 @@
                 <span class="eq-card-title">Static QR</span>
                 <span class="eq-badge">FREE</span>
             </div>
+            <p class="eq-price">Free<span class="eq-price-period">forever</span></p>
+            <p class="eq-price-note">No account, no payment, no expiry.</p>
             <p class="eq-card-text">
                 Generated instantly and shown on screen. Nothing is stored. Refresh the page and it’s gone, so download it right away.
             </p>
             <ul class="eq-check-list">
                 <li><span class="eq-check">✓</span>No account needed</li>
-                <li><span class="eq-check">✓</span>Free, forever</li>
+                <li><span class="eq-check">✓</span>Keeps working permanently</li>
                 <li><span class="eq-check">✓</span>Instant download (PNG/SVG)</li>
             </ul>
             <form id="static-qr-form" class="eq-card-form">
@@ -43,13 +45,20 @@
                 <span class="eq-card-title">Dynamic QR</span>
                 <span class="eq-badge eq-badge--dark">PAID</span>
             </div>
+            <p class="eq-price">
+                {{ \App\Support\SubscriptionPrice::formatted() }}<span class="eq-price-period">per year</span>
+            </p>
+            <p class="eq-price-note">
+                {{ config('subscription.trial_days') }}-day free trial, no payment details needed.
+                Tax included. <a href="{{ route('pricing') }}">See what’s included</a>
+            </p>
             <p class="eq-card-text">
                 Saved to your account. Change where it points anytime without reprinting, and see how many times it’s been scanned.
             </p>
             <ul class="eq-check-list">
                 <li><span class="eq-check eq-check--ink">✓</span>Editable destination, anytime</li>
                 <li><span class="eq-check eq-check--ink">✓</span>Scan tracking &amp; analytics</li>
-                <li><span class="eq-check eq-check--ink">✓</span>Requires login &amp; a paid plan</li>
+                <li><span class="eq-check eq-check--ink">✓</span>Cancel anytime, keep access to period end</li>
             </ul>
             <div class="eq-panel eq-card-foot">
                 @auth

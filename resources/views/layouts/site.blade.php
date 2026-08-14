@@ -36,6 +36,7 @@
                 <img src="{{ asset('images/easy-qr-logo-trim.png') }}" alt="{{ config('app.name') }}">
             </a>
             <nav class="eq-topnav">
+                <a href="{{ route('pricing') }}" class="eq-navlink">Pricing</a>
                 @auth
                     <a href="{{ route('filament.admin.pages.dashboard') }}" class="eq-btn eq-btn-outline eq-btn--nav">Dashboard</a>
                 @else
@@ -51,6 +52,7 @@
         <footer class="eq-footer">
             <span>© {{ date('Y') }} {{ config('app.name') }}</span>
             <nav>
+                <a href="{{ route('pricing') }}">Pricing</a>
                 <a href="{{ url('/terms-and-conditions') }}">Terms &amp; Conditions</a>
                 <a href="{{ url('/privacy-policy') }}">Privacy Policy</a>
                 <a href="{{ url('/refund-policy') }}">Refund Policy</a>

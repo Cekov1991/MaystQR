@@ -62,9 +62,9 @@
             </li>
             <li>
                 After the trial, keeping dynamic QR codes active requires a subscription costing
-                ${{ rtrim(rtrim(number_format((float) config('subscription.price'), 2), '0'), '.') }}
-                per year. Prices are in {{ config('subscription.currency') }} and include any applicable
-                VAT or sales tax.
+                {{ \App\Support\SubscriptionPrice::formatted() }}
+                per year. Prices are in {{ \App\Support\SubscriptionPrice::currency() }} and include any applicable
+                VAT or sales tax. Our <a href="{{ route('pricing') }}">Pricing page</a> sets this out in full.
             </li>
             <li>
                 The subscription renews automatically each year until cancelled. You may cancel at any time from

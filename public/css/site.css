@@ -112,11 +112,22 @@ input::placeholder {
     display: block;
 }
 
-/* The nav item is a button, so it carries its own colour and hover. */
+/* Holds a plain text link and a button; each carries its own colour and hover. */
 .eq-topnav {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 18px;
+}
+
+.eq-navlink {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--eq-ink);
+    text-decoration: none;
+}
+
+.eq-navlink:hover {
+    color: var(--eq-link);
 }
 
 .eq-main {
@@ -272,6 +283,42 @@ input::placeholder {
 .eq-badge--dark {
     color: var(--eq-surface);
     background: var(--eq-ink);
+}
+
+/* --------------------------------------------------------------- price ---- */
+
+/*
+ * The price figure, on the homepage cards and the pricing page.
+ *
+ * AgentaOS is our merchant of record and requires the price to be legible
+ * before checkout. It used to live only in clause 5 of the Terms and on the
+ * billing page behind the login, which is the "hidden pricing until checkout"
+ * their review explicitly fails. This is the type treatment that fixes that,
+ * so it belongs wherever a paid product is named.
+ */
+.eq-price {
+    font-family: var(--eq-font-heading);
+    font-weight: 800;
+    font-size: 34px;
+    line-height: 1;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.eq-price-period {
+    font-family: var(--eq-font-body);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--eq-muted);
+}
+
+.eq-price-note {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--eq-muted);
+    margin: 0 0 20px;
 }
 
 .eq-check-list {
@@ -667,6 +714,10 @@ input::placeholder {
 
     .eq-card {
         padding: 28px 22px;
+    }
+
+    .eq-price {
+        font-size: 28px;
     }
 
     .eq-scan-title {

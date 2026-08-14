@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Support\SubscriptionPrice;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -56,7 +57,7 @@ class TrialEnded extends Notification implements ShouldQueue
         }
 
         return $message
-            ->action('Reactivate for $'.$this->price().'/year', route('filament.admin.pages.billing'))
+            ->action('Reactivate for '.SubscriptionPrice::perInterval(), route('filament.admin.pages.billing'))
             ->line('Everything is exactly where you left it, and your static QR codes are unaffected.');
     }
 
@@ -66,10 +67,5 @@ class TrialEnded extends Notification implements ShouldQueue
             ->join('qr_code_scans', 'qr_codes.id', '=', 'qr_code_scans.qr_code_id')
             ->where('qr_code_scans.blocked', true)
             ->count();
-    }
-
-    private function price(): string
-    {
-        return rtrim(rtrim(number_format((float) config('subscription.price'), 2), '0'), '.');
     }
 }

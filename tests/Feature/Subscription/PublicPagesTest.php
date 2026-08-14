@@ -45,6 +45,78 @@ class PublicPagesTest extends TestCase
             ->assertSee('Privacy Policy');
     }
 
+    /*
+     * AgentaOS is merchant of record and reviews the site before approving live
+     * payments. Their go-live form asks us to attest that pricing is "easily
+     * accessible and clearly displayed to users before they purchase", and lists
+     * "hidden pricing until checkout" as a failure. The price used to exist only
+     * in clause 5 of the Terms and on the billing page behind the login, so a
+     * reviewer could not learn it without registering.
+     *
+     * The tests below are that attestation. They must fail if the price stops
+     * being reachable while logged out.
+     */
+
+    public function test_the_pricing_page_is_publicly_reachable(): void
+    {
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee('Pricing');
+    }
+
+    public function test_the_pricing_page_states_the_price_period_and_tax_treatment(): void
+    {
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee('$27')
+            ->assertSee('per year')
+            ->assertSee('Tax is included')
+            ->assertSee('merchant of record');
+    }
+
+    public function test_the_pricing_page_states_the_trial_needs_no_payment_details(): void
+    {
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee('7 days of full access', false)
+            ->assertSee('no payment details to begin it');
+    }
+
+    public function test_the_pricing_page_explains_cancelling_and_the_refund_window(): void
+    {
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee('14 days')
+            ->assertSee('until the end of the period you have')
+            ->assertSee('refund-policy', false);
+    }
+
+    public function test_the_homepage_shows_the_dynamic_price_without_logging_in(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('$27')
+            ->assertSee('per year');
+    }
+
+    public function test_the_pricing_page_follows_the_configured_price(): void
+    {
+        config(['subscription.price' => 42]);
+
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee('$42')
+            ->assertDontSee('$27');
+    }
+
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_links_to_pricing(string $path): void
+    {
+        $this->get($path)
+            ->assertOk()
+            ->assertSee(url('/pricing'), false);
+    }
+
     /**
      * @return array<string, array{0: string}>
      */
@@ -52,6 +124,7 @@ class PublicPagesTest extends TestCase
     {
         return [
             'homepage' => ['/'],
+            'pricing' => ['/pricing'],
             'terms' => ['/terms-and-conditions'],
             'privacy' => ['/privacy-policy'],
             'refunds' => ['/refund-policy'],
