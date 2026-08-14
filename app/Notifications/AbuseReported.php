@@ -21,7 +21,7 @@ class AbuseReported extends Notification implements ShouldQueue
     use Queueable;
 
     /**
-     * @param  array{code_url: string, reason: string, details: string, reporter_email: ?string}  $report
+     * @param  array{code_url: string, reason: string, details: string, reporter_email?: ?string}  $report
      */
     public function __construct(private array $report) {}
 
@@ -65,8 +65,13 @@ class AbuseReported extends Notification implements ShouldQueue
                 ));
         }
 
-        $message->line($this->report['reporter_email'] !== null
-            ? 'Reporter left an address for a reply: '.$this->report['reporter_email']
+        // Coalesced rather than compared directly: this runs on the queue, so an
+        // absent key would fail the job and lose the report behind a retry log
+        // instead of surfacing as a request error anyone would notice.
+        $reporterEmail = $this->report['reporter_email'] ?? null;
+
+        $message->line($reporterEmail !== null
+            ? 'Reporter left an address for a reply: '.$reporterEmail
             : 'The reporter did not leave an address, so there is nobody to reply to.');
 
         return $message;

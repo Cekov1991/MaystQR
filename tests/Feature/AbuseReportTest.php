@@ -179,6 +179,31 @@ class AbuseReportTest extends TestCase
         );
     }
 
+    /**
+     * Distinct from sending the field as null: `validated()` drops a key that was
+     * never submitted, so the payload reaching the notification has no such index
+     * at all. Our own form always posts the input, but nothing else has to.
+     */
+    public function test_a_report_that_omits_the_reporter_email_field_entirely_is_delivered(): void
+    {
+        Notification::fake();
+
+        $report = $this->validReport();
+        unset($report['reporter_email']);
+
+        $this->post('/report', $report)
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('report.create'));
+
+        Notification::assertSentOnDemand(
+            AbuseReported::class,
+            fn ($notification) => str_contains(
+                $notification->toMail((object) [])->render(),
+                'did not leave an address',
+            ),
+        );
+    }
+
     public function test_a_report_rejects_a_malformed_reporter_email(): void
     {
         Notification::fake();

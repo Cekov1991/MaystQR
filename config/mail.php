@@ -140,11 +140,18 @@ return [
     | the same address. Here you may specify a name and address that is
     | used globally for all emails that are sent by your application.
     |
+    | Laravel ships `hello@example.com` and `Example` as the defaults here. Both
+    | are silent failures rather than loud ones: an environment that forgets
+    | MAIL_FROM_NAME sends real mail signed "Example", and one that forgets
+    | MAIL_FROM_ADDRESS sends from a domain we do not own, which Resend rejects.
+    | The name falls back to APP_NAME so it tracks the brand without a second
+    | variable having to be kept in step.
+    |
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => env('MAIL_FROM_ADDRESS', 'support@easy-qr-code.com'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Easy QR Code')),
     ],
 
 ];

@@ -32,6 +32,20 @@ class StoreAbuseReportRequest extends FormRequest
     }
 
     /**
+     * `validated()` returns only the keys that were present in the request, so an
+     * omitted optional field disappears from the payload rather than arriving as
+     * null. Anything reading the result by key then hits an undefined index.
+     * Browsers always submit the input, but a report filed by anything other than
+     * our own form does not have to.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'reporter_email' => $this->input('reporter_email'),
+        ]);
+    }
+
+    /**
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array

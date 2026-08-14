@@ -41,6 +41,16 @@ green after, with the new tests added by each phase:
 | 6 — scan retention | 272 | 831 |
 | 8 — legal identity and Terms | 282 | 861 |
 | 7 — abuse reporting | 307 | 948 |
+| Mail branding (out of plan) | 318 | 1001 |
+
+The last row is not a phase. Setting up the support mailbox exposed two problems
+in outgoing mail — Laravel's `Example` / `hello@example.com` From defaults reaching
+real recipients, and Laravel's own logo one env value away from being served as
+ours — so the mail views were published and branded, covered by
+`tests/Feature/MailBrandingTest.php`. That work also turned up a 500 in the Phase 7
+report endpoint when `reporter_email` was omitted from the request rather than sent
+empty; because `AbuseReported` is queued, it would have lost the report to a retry
+log instead of erroring where anyone would see it.
 
 Also confirm nothing was left behind:
 
@@ -55,9 +65,34 @@ grep -rn "landing-page\|WelcomeController" routes/ app/        # Phase 2 — emp
 ## Deploy gate
 
 - [ ] Deployed to production
-- [ ] `SITE_SUPPORT_EMAIL=support@easy-qr-code.com`, and a test mail to it arrives
-- [ ] `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` removed from `.env`;
-      `SITE_OPERATOR_*` set or intentionally left on defaults
+- [x] `support@easy-qr-code.com` receives mail. The domain had **no MX record at
+      all**, so senders fell back to the A record — Cloudflare's proxy IPs, which
+      do not answer on port 25 — and every message deferred for ~72h and then
+      bounced. Fixed with Cloudflare Email Routing forwarding to a private inbox,
+      plus a catch-all so `abuse@` and `privacy@` do not bounce either. Replies go
+      out as support@ through a Gmail "Send mail as" alias on Resend's SMTP.
+      Tested end to end 14 August 2026.
+- [ ] `SITE_SUPPORT_EMAIL=support@easy-qr-code.com` set in production
+- [ ] `MAIL_FROM_ADDRESS=support@easy-qr-code.com` and
+      `MAIL_FROM_NAME="Easy QR Code"` set in production. Leaving either unset is
+      not cosmetic: `config/mail.php` now falls back to our own domain and to
+      `APP_NAME`, but before that fix mail went out signed **Example** from
+      **hello@example.com** — a domain we do not own, which Resend rejects.
+      `APP_NAME` is currently `EasyQR`, so without `MAIL_FROM_NAME` the sender
+      reads "EasyQR" while the legal pages say Easy QR Code.
+- [ ] `APP_URL=https://easy-qr-code.com`. This is load-bearing for email now: the
+      logo in the mail header is built with `asset()`, so a wrong `APP_URL` means
+      a broken image in every message the app sends.
+- [ ] `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` removed from `.env` — they are
+      ignored after the Phase 8 rename, and leaving them there implies the site
+      reads them
+- [ ] The operator defaults now name **Mayst Impact DOOEL**, tax number
+      **4032020546119**, so `SITE_OPERATOR_*` need not be set at all. Check the
+      name and address character-for-character against the central registry entry
+      instead: this is the string a reviewer compares to the AgentaOS account
+      holder, and the address currently on the default is the one inherited from
+      the old `SITE_COMPANY_ADDRESS`, which was never verified against the
+      registry.
 - [ ] `SITE_CREDIT_URL` removed from `.env` — the footer credit is off for launch
 - [ ] Migrations ran — `qr_code_scans` has no `ip_address` and no `city`
 - [ ] `php artisan schedule:list` shows `billing:sync`, `billing:notify` and

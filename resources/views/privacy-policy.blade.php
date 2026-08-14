@@ -11,10 +11,10 @@
 
         <h2>Who we are</h2>
         <p>
-            {{ config('site.operator.name') }} operates {{ config('site.domain') }} as an individual and is
-            the <strong>data controller</strong> for the personal data described in this Policy. That means
-            {{ config('site.operator.name') }} decides what is collected and why, and is the person legally
-            answerable for it.
+            {{ config('site.operator.name') }}, a company registered in the Republic of North Macedonia,
+            operates {{ config('site.domain') }} and is the <strong>data controller</strong> for the personal
+            data described in this Policy. That means {{ config('site.operator.name') }} decides what is
+            collected and why, and is the party legally answerable for it.
         </p>
         <ul>
             <li><strong>Controller:</strong> {{ config('site.operator.name') }}</li>

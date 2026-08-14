@@ -7,6 +7,32 @@ customers we are selling to.
 **Blocks submission:** yes.
 **Status:** ✅ implemented and tested. Suite 272 → 282 tests, 831 → 861 assertions.
 
+> ### ⚠️ The applicant changed after this phase shipped
+>
+> This phase was written and implemented on the plan of applying to AgentaOS as an
+> **individual**, so it renamed `site.company.*` to `site.operator.*` and set the
+> operator to *Stefan Cekov*, treating "Mayst Impact" as a brand that belonged
+> nowhere near the legal documents.
+>
+> On **14 August 2026** that decision reversed: the applicant is
+> **Mayst Impact DOOEL**, tax number **4032020546119**. Mayst Impact is a registered
+> ДОО, and the deciding argument was liability rather than tax — a dynamic QR
+> service is a link redirector and therefore a phishing vector by construction, so
+> the entity is what keeps a defrauded scanner's claim away from a private person's
+> assets. The headline rates in North Macedonia are flat 10% either way, so the
+> "save on taxes by going individual" premise did not survive contact with the
+> contributions and expense-deductibility questions.
+>
+> **What the rename got right:** the `operator` abstraction is entity-agnostic, so
+> the reversal cost three config values, one sentence in the Privacy Policy, and
+> three test assertions. Nothing structural had to move. Read every "an individual"
+> in the reasoning below as history, not as the current state.
+>
+> **One correction to the Tests section:** it describes a
+> `test_no_page_refers_to_a_company` asserting `assertDontSee('Mayst Impact')`. No
+> such test was ever written. Had it been, this reversal would have broken it — and
+> it would have been right to.
+>
 > Most of this phase shipped early. The `site.company.*` → `site.operator.*` rename
 > and the operator naming on both legal pages were pulled forward into
 > [Phase 4](./phase-04-privacy-policy.md), because a privacy policy cannot name a
