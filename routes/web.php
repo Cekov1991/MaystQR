@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbuseReportController;
 use App\Http\Controllers\AgentaOsWebhookController;
 use App\Http\Controllers\InstantQrController;
 use App\Http\Controllers\ProfileController;
@@ -12,10 +13,6 @@ Route::get('/', [InstantQrController::class, 'index'])->name('welcome');
 Route::post('/qr/instant', [InstantQrController::class, 'generate'])
     ->middleware('throttle:20,1')
     ->name('qr.instant');
-
-// Previous marketing landing page, parked here until the new design is finalized
-// (path must not be /landing — public/landing/ is the template asset directory and shadows the route)
-Route::view('/landing-page', 'welcome')->name('landing');
 
 // QR Code routes
 // Scans are public and a popular code is legitimately hit by many people, so the
@@ -50,18 +47,46 @@ Route::middleware('auth')->group(function () {
 // Signed by AgentaOS, not by a session. CSRF exemption lives in bootstrap/app.php.
 Route::post('/webhooks/agentaos', AgentaOsWebhookController::class)->name('webhooks.agentaos');
 
+/**
+ * AgentaOS is merchant of record and reviews the site before approving it for
+ * live payments, which includes checking that the price is reachable without
+ * registering. It previously appeared only in clause 5 of the Terms and on the
+ * billing page behind the login.
+ */
+Route::view('pricing', 'pricing')->name('pricing');
+
+/*
+ * Reporting a QR code that leads somewhere harmful. Public, because the people
+ * who need it are strangers who scanned a poster.
+ *
+ * The POST is throttled: it sends mail to our own support address on an
+ * unauthenticated request, so without a ceiling it is an open relay into the
+ * inbox we rely on to act. Five an hour is generous for a real reporter.
+ */
+Route::get('report', [AbuseReportController::class, 'create'])->name('report.create');
+
+Route::post('report', [AbuseReportController::class, 'store'])
+    ->middleware('throttle:5,60')
+    ->name('report.store');
+
 Route::view('terms-and-conditions', 'terms-and-conditions');
 
 Route::view('privacy-policy', 'privacy-policy');
 
 Route::view('refund-policy', 'refund-policy');
 
+/*
+ * Dismisses the cookie notice. There is no matching decline route: the only
+ * cookies we set are strictly necessary, which need no consent and cannot be
+ * refused while still using the site. The Decline button that used to sit here
+ * set a cookie and hid the banner — it suppressed nothing, because there was
+ * nothing to suppress, and it implied a choice we were not honouring.
+ *
+ * If analytics are ever added, this becomes a real consent gate and the decline
+ * route comes back with it.
+ */
 Route::get('cookies/accept', function () {
     return redirect()->back()->cookie('cookie_consent', 'accepted', 525600); // in minutes (1 year)
 })->name('cookies.accept');
-
-Route::get('cookies/decline', function () {
-    return redirect()->back()->cookie('cookie_consent', 'declined', 525600); // in minutes (1 year)
-})->name('cookies.reject');
 
 require __DIR__.'/auth.php';

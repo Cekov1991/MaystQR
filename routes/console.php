@@ -29,3 +29,16 @@ Schedule::command('billing:sync')
 Schedule::command('billing:notify')
     ->dailyAt('09:00')
     ->withoutOverlapping();
+
+/*
+ * Section 7 of the Privacy Policy tells people who scanned a QR code how long we
+ * keep the record. This is the only thing that makes that true — without it the
+ * page states a retention period that nothing enforces.
+ *
+ * Weekly rather than daily: the window is two years, so a few days of slack at
+ * the boundary is immaterial, and there is no reason to run a bulk delete every
+ * night. 04:00 keeps it clear of billing:sync at 03:00.
+ */
+Schedule::command('scans:prune')
+    ->weeklyOn(1, '04:00')
+    ->withoutOverlapping();

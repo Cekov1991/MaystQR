@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'support_email' => env('SITE_SUPPORT_EMAIL', 'mayst.impact@gmail.com'),
+    'support_email' => env('SITE_SUPPORT_EMAIL', 'support@easy-qr-code.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,33 +34,121 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Company
+    | Operator
     |--------------------------------------------------------------------------
     |
-    | The legal entity behind the service. Named in the Terms as the contracting
-    | party and in the Privacy Policy as the data controller, so it must be the
-    | registered name rather than the product name.
+    | The person legally behind the service: the contracting party in the Terms
+    | and the data controller in the Privacy Policy.
+    |
+    | This must match the account holder at AgentaOS. They are our merchant of
+    | record, so the question their review answers is who they are selling on
+    | behalf of — a company name here against an individual there is exactly the
+    | mismatch that stalls the application.
+    |
+    | The service is operated by an individual, so this is a legal name and not a
+    | brand. "Mayst Impact" is a brand and belongs in the footer credit below,
+    | never in the legal documents.
+    |
+    | Was 'company' with a default of "Mayst Impact". If SITE_COMPANY_NAME or
+    | SITE_COMPANY_ADDRESS are still set in a deployed .env they are now ignored;
+    | delete them so they cannot mislead later.
     |
     */
 
-    'company' => [
-        'name' => env('SITE_COMPANY_NAME', 'Mayst Impact'),
-        'address' => env('SITE_COMPANY_ADDRESS', 'Vladimir Komarov 25/4-16, Skopje, North Macedonia'),
+    'operator' => [
+        'name' => env('SITE_OPERATOR_NAME', 'Stefan Cekov'),
+        'address' => env('SITE_OPERATOR_ADDRESS', 'Vladimir Komarov 25/4-16, Skopje, North Macedonia'),
+        'tax_id' => env('SITE_OPERATOR_TAX_ID'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Processors
+    |--------------------------------------------------------------------------
+    |
+    | Every company that processes personal data on our behalf, as named in the
+    | Privacy Policy. The policy renders this list rather than repeating it in
+    | prose, so a processor cannot be added to the stack without appearing in the
+    | document — and cannot be dropped from the document while still in use.
+    |
+    | Adding a row here is a disclosure, not a config change. If you add a
+    | processor, confirm its data processing agreement incorporates the Standard
+    | Contractual Clauses before shipping, because section 6 of the policy relies
+    | on them for transfers out of the EEA.
+    |
+    */
+
+    'processors' => [
+        [
+            'name' => 'Laravel Cloud',
+            'role' => 'Application hosting and database',
+            'location' => 'United States',
+        ],
+        [
+            'name' => 'Cloudflare',
+            'role' => 'Content delivery, TLS, bot protection, and the approximate country of a QR code scan',
+            'location' => 'Global edge network',
+        ],
+        [
+            'name' => 'Resend',
+            'role' => 'Delivery of account and billing email',
+            'location' => 'United States',
+        ],
+        [
+            'name' => 'AgentaOS',
+            'role' => 'Payment processing as merchant of record',
+            'location' => 'See their privacy policy',
+        ],
+        [
+            'name' => 'Bunny Fonts',
+            'role' => 'Serving the web fonts used on our public pages',
+            'location' => 'European Union',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scan retention
+    |--------------------------------------------------------------------------
+    |
+    | How many months of QR code scan records are kept before `scans:prune`
+    | deletes them.
+    |
+    | This number is published in section 7 of the Privacy Policy, which renders
+    | it from here rather than restating it. So it is not a tuning knob: shortening
+    | it is always safe, but lengthening it changes a commitment already made to
+    | the people in those rows — strangers who scanned a poster and have no
+    | account with us.
+    |
+    | Long enough for a subscriber to compare a campaign against the same month
+    | last year; short enough that we are not holding third-party scan data
+    | indefinitely.
+    |
+    */
+
+    'scan_retention_months' => (int) env('SITE_SCAN_RETENTION_MONTHS', 24),
 
     /*
     |--------------------------------------------------------------------------
     | Footer credit
     |--------------------------------------------------------------------------
     |
-    | The optional "Powered by" line. Leave the URL blank to drop the credit
-    | from the footer entirely.
+    | The optional "Powered by" line. The credit renders only when the URL is
+    | set, so a blank URL drops it from the footer entirely.
+    |
+    | Off by default, deliberately. The legal pages name an individual operator,
+    | and this line pointed at a company on a different domain — one identity on
+    | the page is the cleaner presentation for the AgentaOS review, which exists
+    | to establish who they are selling on behalf of.
+    |
+    | Nothing here is permanent: set SITE_CREDIT_URL to bring it back after
+    | approval.
     |
     */
 
     'credit' => [
         'name' => env('SITE_CREDIT_NAME', 'Mayst Impact'),
-        'url' => env('SITE_CREDIT_URL', 'https://maystimpact.mk'),
+        'url' => env('SITE_CREDIT_URL'),
     ],
 
 ];

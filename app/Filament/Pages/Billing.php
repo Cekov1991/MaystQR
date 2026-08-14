@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Subscription;
 use App\Services\AgentaOS\AgentaOsClient;
 use App\Services\AgentaOS\AgentaOsException;
+use App\Support\SubscriptionPrice;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -30,7 +31,7 @@ class Billing extends Page
 
     public function getFormattedPrice(): string
     {
-        return '$'.rtrim(rtrim(number_format((float) config('subscription.price'), 2), '0'), '.');
+        return SubscriptionPrice::formatted();
     }
 
     /**

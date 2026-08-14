@@ -112,11 +112,22 @@ input::placeholder {
     display: block;
 }
 
-/* The nav item is a button, so it carries its own colour and hover. */
+/* Holds a plain text link and a button; each carries its own colour and hover. */
 .eq-topnav {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 18px;
+}
+
+.eq-navlink {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--eq-ink);
+    text-decoration: none;
+}
+
+.eq-navlink:hover {
+    color: var(--eq-link);
 }
 
 .eq-main {
@@ -274,6 +285,42 @@ input::placeholder {
     background: var(--eq-ink);
 }
 
+/* --------------------------------------------------------------- price ---- */
+
+/*
+ * The price figure, on the homepage cards and the pricing page.
+ *
+ * AgentaOS is our merchant of record and requires the price to be legible
+ * before checkout. It used to live only in clause 5 of the Terms and on the
+ * billing page behind the login, which is the "hidden pricing until checkout"
+ * their review explicitly fails. This is the type treatment that fixes that,
+ * so it belongs wherever a paid product is named.
+ */
+.eq-price {
+    font-family: var(--eq-font-heading);
+    font-weight: 800;
+    font-size: 34px;
+    line-height: 1;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.eq-price-period {
+    font-family: var(--eq-font-body);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--eq-muted);
+}
+
+.eq-price-note {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--eq-muted);
+    margin: 0 0 20px;
+}
+
 .eq-check-list {
     list-style: none;
     margin: 0 0 28px;
@@ -315,6 +362,24 @@ input::placeholder {
 
 .eq-input:focus {
     border-color: var(--eq-accent);
+}
+
+/*
+ * The report form puts .eq-input on a <select> and a <textarea> as well as text
+ * inputs. Both need help: a select inherits neither the body font nor the height,
+ * and a textarea defaults to a monospace family and free resizing that lets the
+ * user drag the card apart sideways.
+ */
+select.eq-input {
+    background: var(--eq-surface);
+    height: 45px;
+    cursor: pointer;
+}
+
+textarea.eq-input {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.55;
 }
 
 .eq-label {
@@ -638,6 +703,48 @@ input::placeholder {
     margin: 0 0 8px;
 }
 
+/*
+ * The Privacy Policy states the legal basis for each purpose and a retention
+ * period for each kind of data. Both are matrices, and reading a matrix as prose
+ * is how nobody reads it.
+ *
+ * The scroll wrapper is required, not decorative: a two-column table of full
+ * sentences will not fit 320px, and the page body must never scroll sideways.
+ */
+.eq-table-scroll {
+    overflow-x: auto;
+    margin: 0 0 20px;
+}
+
+.eq-prose table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.eq-prose th,
+.eq-prose td {
+    text-align: left;
+    vertical-align: top;
+    padding: 10px 14px 10px 0;
+    border-bottom: 1px solid var(--eq-border);
+    color: var(--eq-muted);
+    line-height: 1.55;
+}
+
+.eq-prose th {
+    font-family: var(--eq-font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--eq-ink);
+    border-bottom-color: var(--eq-border-strong);
+}
+
+.eq-prose td strong {
+    color: var(--eq-ink);
+}
+
 /* -------------------------------------------------------- responsive ------ */
 
 @media (max-width: 640px) {
@@ -667,6 +774,10 @@ input::placeholder {
 
     .eq-card {
         padding: 28px 22px;
+    }
+
+    .eq-price {
+        font-size: 28px;
     }
 
     .eq-scan-title {

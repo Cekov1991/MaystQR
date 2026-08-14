@@ -18,9 +18,15 @@
     <link href="{{ asset('landing/assets/img/favicon.png') }}" rel="icon">
     <link href="{{ asset('landing/assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
-    <link href="https://fonts.googleapis.com" rel="preconnect">
-    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    {{--
+        Bunny Fonts, not Google Fonts. Hotlinking fonts.googleapis.com sent every
+        visitor's IP to Google — on the homepage, the pricing page and the privacy
+        policy itself — with Google named nowhere as a processor. Bunny is
+        EU-operated, sets no cookies and logs no IPs, and the rest of the app
+        (layouts.app, layouts.guest) already uses it.
+    --}}
+    <link href="https://fonts.bunny.net" rel="preconnect">
+    <link href="https://fonts.bunny.net/css?family=manrope:500,700,800|inter:400,500,600&display=swap" rel="stylesheet">
 
     <link href="{{ asset('css/site.css') }}" rel="stylesheet">
 
@@ -36,6 +42,7 @@
                 <img src="{{ asset('images/easy-qr-logo-trim.png') }}" alt="{{ config('app.name') }}">
             </a>
             <nav class="eq-topnav">
+                <a href="{{ route('pricing') }}" class="eq-navlink">Pricing</a>
                 @auth
                     <a href="{{ route('filament.admin.pages.dashboard') }}" class="eq-btn eq-btn-outline eq-btn--nav">Dashboard</a>
                 @else
@@ -51,9 +58,11 @@
         <footer class="eq-footer">
             <span>© {{ date('Y') }} {{ config('app.name') }}</span>
             <nav>
+                <a href="{{ route('pricing') }}">Pricing</a>
                 <a href="{{ url('/terms-and-conditions') }}">Terms &amp; Conditions</a>
                 <a href="{{ url('/privacy-policy') }}">Privacy Policy</a>
                 <a href="{{ url('/refund-policy') }}">Refund Policy</a>
+                <a href="{{ route('report.create') }}">Report a QR code</a>
                 <a href="mailto:{{ config('site.support_email') }}">Contact</a>
             </nav>
             @if (config('site.credit.url'))
