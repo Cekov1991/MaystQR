@@ -685,6 +685,48 @@ input::placeholder {
     margin: 0 0 8px;
 }
 
+/*
+ * The Privacy Policy states the legal basis for each purpose and a retention
+ * period for each kind of data. Both are matrices, and reading a matrix as prose
+ * is how nobody reads it.
+ *
+ * The scroll wrapper is required, not decorative: a two-column table of full
+ * sentences will not fit 320px, and the page body must never scroll sideways.
+ */
+.eq-table-scroll {
+    overflow-x: auto;
+    margin: 0 0 20px;
+}
+
+.eq-prose table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.eq-prose th,
+.eq-prose td {
+    text-align: left;
+    vertical-align: top;
+    padding: 10px 14px 10px 0;
+    border-bottom: 1px solid var(--eq-border);
+    color: var(--eq-muted);
+    line-height: 1.55;
+}
+
+.eq-prose th {
+    font-family: var(--eq-font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--eq-ink);
+    border-bottom-color: var(--eq-border-strong);
+}
+
+.eq-prose td strong {
+    color: var(--eq-ink);
+}
+
 /* -------------------------------------------------------- responsive ------ */
 
 @media (max-width: 640px) {

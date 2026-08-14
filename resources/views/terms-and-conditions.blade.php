@@ -8,7 +8,7 @@
     <div class="eq-prose">
         <h1 class="eq-h1">Terms and Conditions</h1>
         <p class="eq-prose-updated">
-            Last updated 13 August 2026 · {{ config('site.domain') }} · Operated by {{ config('site.company.name') }}
+            Last updated 14 August 2026 · {{ config('site.domain') }} · Operated by {{ config('site.operator.name') }}
         </p>
 
         <h2>1. Introduction</h2>
@@ -147,7 +147,7 @@
         <p>For any questions about these Terms, contact us at:</p>
         <ul>
             <li><strong>Email:</strong> <a href="mailto:{{ config('site.support_email') }}">{{ config('site.support_email') }}</a></li>
-            <li><strong>Address:</strong> {{ config('site.company.address') }}</li>
+            <li><strong>Address:</strong> {{ config('site.operator.address') }}</li>
         </ul>
     </div>
 

@@ -3,20 +3,28 @@
 **Goal:** the 24-month scan retention period stated in the privacy policy is
 enforced by code, not by intention.
 
-**Blocks submission:** no — but [Phase 4](./phase-04-privacy-policy.md) publishes
-the number, and an unenforced retention period is exactly the kind of untrue
-claim this whole plan exists to remove.
+**Blocks submission:** no.
+
+> ⚠️ **Phase 4 shipped first and deliberately did not publish a number.** The
+> retention table currently reads "for as long as the QR code exists", which is
+> true today. When this phase lands, change that row to render
+> `config('site.scan_retention_months')` and add a test asserting the page shows
+> the configured value — see
+> [Phase 4's follow-up note](./phase-04-privacy-policy.md#wording-that-phases-5-and-6-must-revisit).
 
 ---
 
 ## Why
 
-Phase 4 §7 tells visitors that scan records are kept for 24 months and then
-deleted automatically. Nothing deletes them today. `qr_code_scans` grows forever.
+Nothing deletes scan records today. `qr_code_scans` grows forever.
 
-If Phase 6 does not ship, Phase 4 must not publish the number — we would have
-replaced the false Google Analytics claim with a false retention claim, which is
-no improvement. Ship them together.
+Phase 4 was written around that rather than against it: its retention table ties
+scan records to the life of the QR code, which is true, instead of publishing a
+window nothing enforces. Replacing the false Google Analytics claim with a false
+retention claim would have been no improvement.
+
+So this phase is what lets the policy make the stronger, more reassuring
+statement — not what rescues it from a lie.
 
 Two independent reasons this is worth doing regardless of the policy:
 
@@ -74,6 +82,13 @@ Behaviour:
 - Support `--dry-run` to print what would go without touching anything. The
   first production run deletes real rows irreversibly; being able to look first
   is worth the ten lines.
+
+**Deletes here are real.** The migration declares `softDeletes()` on
+`qr_code_scans`, but `App\Models\QrCodeScan` does not use the `SoftDeletes` trait,
+so `delete()` removes rows rather than stamping `deleted_at`. That is what the
+retention claim needs. If anyone ever adds the trait to that model, this command
+silently stops deleting anything and the published retention period becomes false
+— guard it with a test that asserts the row count actually drops.
 
 Do **not** decrement `qr_codes.scan_count` when pruning. That counter is the
 lifetime total the subscriber sees, it is incremented independently

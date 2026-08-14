@@ -4,7 +4,13 @@
 people who scan a QR code.
 
 **Blocks submission:** no. Do it anyway — it is the largest genuine privacy
-exposure in the application, and Phase 4's policy asserts it is fixed.
+exposure in the application.
+
+> ⚠️ **Phase 4 shipped first and now openly discloses that scanner IPs are stored
+> and shown to the code's owner.** That disclosure is accurate, but it documents
+> the exposure rather than removing it. When this phase lands, update Privacy
+> Policy §3 per
+> [Phase 4's follow-up note](./phase-04-privacy-policy.md#wording-that-phases-5-and-6-must-revisit).
 
 ---
 
@@ -77,6 +83,12 @@ php artisan make:migration drop_ip_address_from_qr_code_scans_table --no-interac
 ```
 
 Drop `ip_address` from `qr_code_scans`.
+
+**Drop `city` in the same migration.** `2024_11_25_115039_create_qr_code_scans_table.php:25`
+declares it and nothing has ever written to it — `recordScan()` does not set it and
+no view reads it. While the table is being altered anyway, an always-null column
+claiming to hold a scanner's city is worth removing rather than leaving for someone
+to start populating.
 
 The `down()` method must restore the column with its original definition —
 `string('ip_address', 45)->nullable()` — per the project rule that a modified

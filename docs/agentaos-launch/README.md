@@ -104,4 +104,10 @@ Things no phase can do for you, gathered here so none is forgotten:
 - [ ] Confirm the cron entry `* * * * * php artisan schedule:run` exists on
       Laravel Cloud — without it, Phase 6's pruning never runs and Phase 4's
       retention claim silently becomes false again.
+- [ ] **Confirm the Laravel Cloud data processing agreement is in place.**
+      Section 6 of the Privacy Policy relies on the Standard Contractual Clauses
+      for transfers to the United States. Cloudflare's and Resend's public DPAs
+      were verified to incorporate the SCCs; Laravel Cloud's DPA sits behind a
+      sign-in at `cloud.laravel.com/legal/dpa` and could not be checked from
+      outside the account. Log in, read it, and accept it if it needs accepting.
 - [ ] Run `npm run build` if any Filament-side styling changed.

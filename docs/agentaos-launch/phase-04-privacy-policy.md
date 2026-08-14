@@ -4,10 +4,14 @@
 company that touches personal data, and states the correct country.
 
 **Blocks submission:** yes.
+**Status:** ✅ implemented and tested. Suite 244 → 256 tests, 746 → 795 assertions.
 
-**Depends on:** [Phase 3](./phase-03-remove-google.md) (Google claims removed),
-[Phase 5](./phase-05-remove-scanner-ip.md) (no IP stored — §Scan data asserts this),
-[Phase 6](./phase-06-scan-retention.md) (retention window enforced — §Retention asserts this).
+**Depends on:** [Phase 3](./phase-03-remove-google.md) (Google claims removed) — done.
+[Phase 5](./phase-05-remove-scanner-ip.md) and [Phase 6](./phase-06-scan-retention.md)
+were **not** done first, at the owner's direction. The policy was therefore written
+to describe what is true today rather than what those phases will make true. See
+[Wording that Phases 5 and 6 must revisit](#wording-that-phases-5-and-6-must-revisit)
+below — this is a required follow-up, not an optional one.
 
 ---
 
@@ -250,6 +254,89 @@ In `tests/Feature/Subscription/PublicPagesTest.php`:
 
 The processor test is the one worth writing carefully. It is the mechanism that
 keeps this document honest after we stop thinking about it.
+
+## Wording that Phases 5 and 6 must revisit
+
+Phase 4 shipped before Phases 5 and 6, so two passages describe the current
+behaviour rather than the intended behaviour. Both are accurate as published. Both
+become **stale and wrong** the moment those phases land, so the phases own the edit.
+
+### Phase 5 — §3 QR Code Scan Data
+
+The plan's copy said *"We do not store the IP address of anyone who scans a QR
+code."* That is not true yet, so it was not written. The published list instead ends:
+
+```
+<li>The IP address the request came from</li>
+```
+
+When Phase 5 drops the column, replace that bullet with the negative statement,
+and add it as a bolded line — it is a good thing to be able to say.
+
+> ⚠️ Until then the policy openly discloses that scanner IPs are recorded and are
+> visible to the code's owner. That is the honest disclosure of what the code does
+> and it is better than the previous silence, but it is not a good look for a
+> reviewer reading it. Phase 5 is a small change. Do it soon.
+
+### Phase 6 — §7 How Long We Keep It
+
+The scan-records row reads:
+
+| QR code scan records | For as long as the QR code exists; deleted when the code is deleted |
+
+not the planned 24-month window, because nothing enforces a window yet. When
+Phase 6 ships `scans:prune`, change the row to render
+`config('site.scan_retention_months')` and add a test asserting the page shows the
+configured value — the same pattern
+`test_the_privacy_policy_states_the_real_session_lifetime` already uses.
+
+## Found during implementation
+
+**The identity rename was pulled forward from Phase 8.** A privacy policy cannot
+name a data controller without one, and `config('site.company.name')` defaulted to
+"Mayst Impact" — a brand, against an individual applicant. Renaming `site.company.*`
+to `site.operator.*` (default `Stefan Cekov`, plus an optional `tax_id`) was a
+prerequisite, so it happened here along with the two Terms references and the
+existing address test.
+
+**Phase 8 is correspondingly smaller.** What remains there: the consumer-protection
+carve-out in Terms §11, the support-email default, the footer-credit decision, and
+publishing the tax number if wanted. The config rename and the operator naming are
+already done.
+
+**The planned session-retention row was wrong.** The plan said "2 weeks (the
+session lifetime)". `config/session.php` sets `lifetime` to **120 minutes**, not two
+weeks. The table now renders `config('session.lifetime')` so it cannot drift, and
+`test_the_privacy_policy_states_the_real_session_lifetime` pins it. Writing "2
+weeks" would have put a fresh false statement into the document this phase exists
+to correct.
+
+**`qr_code_scans` has a `city` column that nothing populates.**
+`2024_11_25_115039_create_qr_code_scans_table.php:25` declares it;
+`QrCodeRedirectController::recordScan()` never writes it. The policy correctly does
+not claim we collect city data. Worth dropping in the Phase 5 migration while that
+table is already being altered.
+
+**Scans hard-delete.** The migration declares `softDeletes()` but `QrCodeScan` does
+not use the `SoftDeletes` trait, so `delete()` really removes rows. Phase 6's prune
+therefore does what the retention claim needs. If anyone ever adds the trait, the
+prune becomes a lie — note it there.
+
+**Backup retention was softened.** The plan promised erasure "within 30 days of
+deletion, backups included". Laravel Cloud's backup rotation is not something this
+repo controls or documents, so the published wording is that active-system data is
+removed and backup copies disappear as backups age out of rotation. Accurate
+without inventing a number.
+
+**Bunny Fonts was added to the processor list.** Phase 3 swapped Google Fonts for
+Bunny, which is still a third party receiving visitor IPs. Naming it costs nothing
+and the alternative is an incomplete list.
+
+**SCC wording states our position, not our counterparties' paperwork.** Cloudflare's
+and Resend's public DPAs were fetched and confirmed to incorporate the Standard
+Contractual Clauses. Laravel Cloud's sits behind a sign-in and could not be verified,
+so the sentence says what we rely on rather than asserting what each processor has
+signed. Confirming that DPA is now a deploy-gate item in the [README](./README.md).
 
 ## Done when
 - [ ] Every claim in the document is verifiable from the codebase or a signed DPA

@@ -311,9 +311,9 @@ class PublicPagesTest extends TestCase
             ->assertSee('support@example.test');
     }
 
-    public function test_the_legal_pages_name_the_full_company_address(): void
+    public function test_the_legal_pages_name_the_full_operator_address(): void
     {
-        config(['site.company.address' => 'Some Street 1, Skopje, North Macedonia']);
+        config(['site.operator.address' => 'Some Street 1, Skopje, North Macedonia']);
 
         $this->get('/terms-and-conditions')
             ->assertOk()
@@ -322,6 +322,145 @@ class PublicPagesTest extends TestCase
         $this->get('/privacy-policy')
             ->assertOk()
             ->assertSee('Some Street 1, Skopje, North Macedonia');
+    }
+
+    /**
+     * The Terms name the contracting party and the Privacy Policy names the data
+     * controller. They must be the same person, and that person must match the
+     * account holder at AgentaOS — a company name on the site against an
+     * individual on the application is the mismatch their review looks for.
+     */
+    public function test_the_legal_pages_name_the_same_operator(): void
+    {
+        config(['site.operator.name' => 'Some Operator Name']);
+
+        $this->get('/terms-and-conditions')
+            ->assertOk()
+            ->assertSee('Some Operator Name');
+
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('Some Operator Name');
+    }
+
+    public function test_the_privacy_policy_names_the_data_controller(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('Stefan Cekov')
+            ->assertSee('data controller');
+    }
+
+    /**
+     * The policy renders config('site.processors') rather than repeating the list
+     * in prose, so a processor cannot be added to the stack without appearing in
+     * the document. This is the mechanism that keeps the disclosure honest after
+     * we stop thinking about it.
+     */
+    public function test_the_privacy_policy_names_every_processor(): void
+    {
+        $response = $this->get('/privacy-policy');
+
+        $response->assertOk();
+
+        foreach (config('site.processors') as $processor) {
+            $response->assertSee($processor['name']);
+            $response->assertSee($processor['role'], false);
+        }
+    }
+
+    public function test_the_privacy_policy_names_the_processors_we_actually_use(): void
+    {
+        $names = array_column(config('site.processors'), 'name');
+
+        $this->assertContains('Laravel Cloud', $names);
+        $this->assertContains('Cloudflare', $names);
+        $this->assertContains('Resend', $names);
+        $this->assertContains('AgentaOS', $names);
+    }
+
+    /**
+     * The policy used to say data was "stored and processed in The Republic of
+     * North Macedonia". Hosting is Laravel Cloud in the United States, so the one
+     * paragraph about international transfers said the opposite of what happens.
+     */
+    public function test_the_privacy_policy_states_the_real_hosting_country(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('United States')
+            ->assertDontSee('processed in The Republic of North Macedonia');
+    }
+
+    /**
+     * Neither the United States nor North Macedonia is covered by an adequacy
+     * decision that applies to us, so a transfer mechanism has to be named.
+     */
+    public function test_the_privacy_policy_names_the_transfer_mechanism(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('Standard Contractual')
+            ->assertSee('European Economic Area');
+    }
+
+    public function test_the_privacy_policy_states_a_legal_basis_for_each_purpose(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('Performance of a contract')
+            ->assertSee('Legitimate interest')
+            ->assertSee('Legal obligation')
+            ->assertSee('Consent, which you may withdraw');
+    }
+
+    /**
+     * People who scan a code are third parties with no account who never saw this
+     * policy. What we record about them needs its own section, addressed to them.
+     */
+    public function test_the_privacy_policy_explains_what_a_scan_records(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('QR Code Scan Data')
+            ->assertSee('approximate country')
+            ->assertSee('visible to the person who created the code');
+    }
+
+    public function test_the_privacy_policy_explains_the_right_to_complain_to_a_supervisory_authority(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('supervisory')
+            ->assertSee('lodge a complaint');
+    }
+
+    public function test_the_privacy_policy_states_we_never_hold_card_details(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('merchant of record')
+            ->assertSee('never see or store');
+    }
+
+    public function test_the_privacy_policy_and_terms_agree_on_the_minimum_age(): void
+    {
+        $this->get('/privacy-policy')->assertOk()->assertSee('at least 18 years old');
+        $this->get('/terms-and-conditions')->assertOk()->assertSee('at least 18 years old');
+    }
+
+    /**
+     * The retention table renders config('session.lifetime') rather than a written
+     * number. The policy said nothing about sessions before, and a hardcoded "2
+     * weeks" would have been wrong — the real lifetime is 120 minutes.
+     */
+    public function test_the_privacy_policy_states_the_real_session_lifetime(): void
+    {
+        config(['session.lifetime' => 45]);
+
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('45 minutes of inactivity');
     }
 
     /**
