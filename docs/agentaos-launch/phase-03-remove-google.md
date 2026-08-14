@@ -4,6 +4,8 @@
 shipping visitor IPs to a third party it does not disclose.
 
 **Blocks submission:** yes.
+**Status:** ✅ implemented and tested. Suite 227 → 244 tests, 691 → 746 assertions.
+Fonts went to Bunny; self-hosting remains available as the stronger option.
 
 ---
 
@@ -127,6 +129,30 @@ Note the QR content views legitimately link to `google.com/maps` and
 Those are user-initiated outbound links on scan pages, not embedded assets, and
 they are not in `publicPageProvider()`. Scope the assertions to the provider
 pages so these are not caught.
+
+## Found during implementation
+
+**Bunny serves everything we asked for — verified, not assumed.** Fetching
+`https://fonts.bunny.net/css?family=manrope:500,700,800|inter:400,500,600&display=swap`
+returns both families at all six weights (400, 500, 600, 700, 800), across
+latin, greek and cyrillic subsets. No fallback risk.
+
+**The privacy policy's own cookie section had to be rewritten, not just cut.**
+Deleting the Google Analytics bullet from §2c would have left "Essential
+functions" and "Preferences" describing cookies without saying that no tracking
+happens at all. The replacement names the three cookies we actually set — session,
+CSRF, and the consent-notice cookie — and states plainly that there is no
+third-party tracking. `test_the_privacy_policy_still_discloses_the_cookies_we_do_set`
+guards that the removal did not create a new omission.
+
+**One test had to be narrowed.** An early `assertDontSee('encrypted')` from Phase 2
+would have caught the policy's truthful "Encrypted passwords" line. Any test in
+this family must target the specific false claim, not the vocabulary around it.
+
+**Section renumbering.** Removing §3 shifted everything below it: old 4–12 are now
+3–11. Nothing links to a numbered section internally, so there were no anchors to
+fix — but [Phase 4](./phase-04-privacy-policy.md) restructures the document again
+and should be written against the current numbering, not the original.
 
 ## Done when
 

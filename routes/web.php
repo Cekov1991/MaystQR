@@ -60,12 +60,18 @@ Route::view('privacy-policy', 'privacy-policy');
 
 Route::view('refund-policy', 'refund-policy');
 
+/*
+ * Dismisses the cookie notice. There is no matching decline route: the only
+ * cookies we set are strictly necessary, which need no consent and cannot be
+ * refused while still using the site. The Decline button that used to sit here
+ * set a cookie and hid the banner — it suppressed nothing, because there was
+ * nothing to suppress, and it implied a choice we were not honouring.
+ *
+ * If analytics are ever added, this becomes a real consent gate and the decline
+ * route comes back with it.
+ */
 Route::get('cookies/accept', function () {
     return redirect()->back()->cookie('cookie_consent', 'accepted', 525600); // in minutes (1 year)
 })->name('cookies.accept');
-
-Route::get('cookies/decline', function () {
-    return redirect()->back()->cookie('cookie_consent', 'declined', 525600); // in minutes (1 year)
-})->name('cookies.reject');
 
 require __DIR__.'/auth.php';

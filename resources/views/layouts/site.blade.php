@@ -18,9 +18,15 @@
     <link href="{{ asset('landing/assets/img/favicon.png') }}" rel="icon">
     <link href="{{ asset('landing/assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
-    <link href="https://fonts.googleapis.com" rel="preconnect">
-    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    {{--
+        Bunny Fonts, not Google Fonts. Hotlinking fonts.googleapis.com sent every
+        visitor's IP to Google — on the homepage, the pricing page and the privacy
+        policy itself — with Google named nowhere as a processor. Bunny is
+        EU-operated, sets no cookies and logs no IPs, and the rest of the app
+        (layouts.app, layouts.guest) already uses it.
+    --}}
+    <link href="https://fonts.bunny.net" rel="preconnect">
+    <link href="https://fonts.bunny.net/css?family=manrope:500,700,800|inter:400,500,600&display=swap" rel="stylesheet">
 
     <link href="{{ asset('css/site.css') }}" rel="stylesheet">
 

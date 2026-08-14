@@ -3,7 +3,7 @@
 Everything that must be true on `easy-qr-code.com` before the production application
 is submitted at `app.agentaos.ai/go-live`.
 
-**Status:** Phases 1–2 implemented and tested. Phases 3–10 planned.
+**Status:** Phases 1–3 implemented and tested. Phases 4–10 planned.
 **Applicant:** Stefan Cekov, as an individual (not a company).
 **Related:** [subscription plan](../subscription-implementation-plan.md) · [ADR-0001](../adr/0001-account-level-entitlement-replaces-per-code-expiry.md) · [ADR-0002](../adr/0002-entitlement-is-a-local-date-reconciled-from-agentaos.md)
 
@@ -27,7 +27,7 @@ claim the site makes and the way the application actually behaves.
 | Existing paying customers? | No, just starting out | ✅ Yes | — |
 | Product name infringes a trademark? | No | ✅ Yes | — |
 | Pricing accessible and clear before purchase? | Yes | ✅ Now true — public `/pricing` page | [Phase 1](./phase-01-public-pricing.md) ✅ |
-| Publicly accessible Privacy Policy? | Yes | ⚠️ Reachable, but describes tracking we do not run | [Phases 3–6](./phase-03-remove-google.md) |
+| Publicly accessible Privacy Policy? | Yes | ⚠️ [Phase 3](./phase-03-remove-google.md) ✅ removed the false tracking claims; [Phases 4–6](./phase-04-privacy-policy.md) still owed | [Phases 4–6](./phase-04-privacy-policy.md) |
 | Publicly accessible Terms of Service? | Yes | ✅ Reachable | [Phase 8](./phase-08-legal-identity.md) refines it |
 | High-risk / shady use of technology? | No | ✅ Yes — [Phase 7](./phase-07-abuse-reporting.md) proves it |
 
@@ -41,7 +41,7 @@ carries social proof we cannot substantiate, the first attestation becomes false
 |---|---|---|---|---|
 | 1 | [Public pricing](./phase-01-public-pricing.md) | ✅ Done | **Yes** | Feature + copy |
 | 2 | [Remove the parked landing page](./phase-02-remove-parked-landing.md) | ✅ Done | **Yes** | Deletion |
-| 3 | [Remove Google from the public site](./phase-03-remove-google.md) | Planned | **Yes** | Copy + asset |
+| 3 | [Remove Google from the public site](./phase-03-remove-google.md) | ✅ Done | **Yes** | Copy + asset |
 | 4 | [Privacy policy rewrite](./phase-04-privacy-policy.md) | Planned | **Yes** | Copy |
 | 5 | [Stop storing scanner IPs](./phase-05-remove-scanner-ip.md) | Planned | No, but do it | Migration |
 | 6 | [Enforce scan retention](./phase-06-scan-retention.md) | Planned | No — makes Phase 4 true | Feature |

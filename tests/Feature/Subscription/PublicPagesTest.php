@@ -145,6 +145,75 @@ class PublicPagesTest extends TestCase
     }
 
     /**
+     * The Privacy Policy carried a whole section on Google Analytics, and the
+     * cookie banner asked permission for it — but no gtag or GTM tag was ever
+     * installed. A reviewer reading the policy and then the page source finds
+     * consent being sought for tracking that does not exist, which is a false
+     * statement about the site in the same category as a fake testimonial.
+     *
+     * If analytics are added later, this test should fail, and the fix is to
+     * disclose them honestly rather than to delete the test.
+     */
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_does_not_claim_analytics_we_do_not_run(string $path): void
+    {
+        $response = $this->get($path);
+
+        $response->assertOk();
+        $response->assertDontSee('Google Analytics');
+        $response->assertDontSee('gtag', false);
+        $response->assertDontSee('googletagmanager', false);
+    }
+
+    /**
+     * Hotlinking fonts.googleapis.com sent every visitor's IP to Google from the
+     * homepage, the pricing page and the privacy policy itself, with Google named
+     * nowhere as a processor.
+     */
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_loads_no_assets_from_google(string $path): void
+    {
+        $response = $this->get($path);
+
+        $response->assertOk();
+        $response->assertDontSee('googleapis.com', false);
+        $response->assertDontSee('gstatic.com', false);
+    }
+
+    /**
+     * Removing the false analytics claim must not leave the cookies we really do
+     * set undisclosed. The notice and the policy have to describe them.
+     */
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_notice_describes_only_essential_cookies(string $path): void
+    {
+        $response = $this->get($path);
+
+        $response->assertOk();
+        $response->assertSee('only essential cookies');
+        $response->assertDontSee('Decline');
+    }
+
+    public function test_the_privacy_policy_still_discloses_the_cookies_we_do_set(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('session cookie')
+            ->assertSee('cross-site request forgery')
+            ->assertSee('no third-party tracking');
+    }
+
+    /**
+     * You cannot decline a strictly necessary cookie and keep using the site, so
+     * offering the button implied a choice that was never honoured — it set a
+     * cookie and hid the banner.
+     */
+    public function test_there_is_no_cookie_decline_route(): void
+    {
+        $this->get('/cookies/decline')->assertNotFound();
+    }
+
+    /**
      * The deleted page claimed dynamic QR codes were "secure and encrypted" and
      * "use advanced encryption algorithms to protect your data". A QR code is an
      * encoding, not a cipher.
