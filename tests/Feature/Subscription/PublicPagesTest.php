@@ -28,9 +28,19 @@ class PublicPagesTest extends TestCase
         $response->assertDontSee('Paid extensions');
     }
 
-    public function test_the_parked_landing_page_still_renders_without_the_package_model(): void
+    /**
+     * The parked marketing page advertised dynamic QR codes as free, claimed
+     * they were "secure and encrypted", and carried a commented-out "12,000+
+     * happy customers" badge — with zero paying customers. It was publicly
+     * routable and indexable.
+     *
+     * AgentaOS asks us to attest that the site displays no false usage claims
+     * and that pricing is clear. That page contradicted both, so it is gone
+     * rather than parked. This is the guard against restoring the route.
+     */
+    public function test_the_parked_marketing_page_is_gone(): void
     {
-        $this->get('/landing-page')->assertOk();
+        $this->get('/landing-page')->assertNotFound();
     }
 
     public function test_the_homepage_still_renders(): void
@@ -118,6 +128,60 @@ class PublicPagesTest extends TestCase
     }
 
     /**
+     * The deleted marketing page sold the paid product as free: "Dynamic QR Code
+     * Generator: Free & Powerful Solutions", "For Free", and "Free solutions for
+     * individuals, SMBs, and enterprises". Dynamic codes cost money, and we have
+     * no enterprise tier.
+     */
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_does_not_advertise_dynamic_codes_as_free(string $path): void
+    {
+        $response = $this->get($path);
+
+        $response->assertOk();
+        $response->assertDontSee('For Free');
+        $response->assertDontSee('Free &amp; Powerful', false);
+        $response->assertDontSee('Free solutions');
+    }
+
+    /**
+     * The deleted page claimed dynamic QR codes were "secure and encrypted" and
+     * "use advanced encryption algorithms to protect your data". A QR code is an
+     * encoding, not a cipher.
+     *
+     * Scoped to that claim rather than the word "encrypted", because the Privacy
+     * Policy truthfully says passwords are encrypted and must keep saying so.
+     */
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_makes_no_encryption_claim_about_qr_codes(string $path): void
+    {
+        $response = $this->get($path);
+
+        $response->assertOk();
+        $response->assertDontSee('secure and encrypted');
+        $response->assertDontSee('advanced encryption');
+        $response->assertDontSee('encryption algorithms');
+    }
+
+    /**
+     * The go-live form's first attestation is that we display no usage claims or
+     * testimonials. It was true only because a "12,000+ happy customers" badge
+     * and a "15+ Years" experience badge were commented out on the parked page,
+     * one uncomment away from making us liars. Both are deleted; this keeps them
+     * from coming back.
+     */
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_carries_no_social_proof_we_cannot_substantiate(string $path): void
+    {
+        $response = $this->get($path);
+
+        $response->assertOk();
+        $response->assertDontSee('happy customers');
+        $response->assertDontSee('Of experience in business');
+        $response->assertDontSee('testimonial');
+    }
+
+    /**
      * @return array<string, array{0: string}>
      */
     public static function publicPageProvider(): array
@@ -132,8 +196,9 @@ class PublicPagesTest extends TestCase
     }
 
     /**
-     * Bootstrap and the scraped template bundle are 9.7MB of vendor assets.
-     * Only the parked landing page may still reference them.
+     * Bootstrap and the scraped template bundle are 11MB of vendor assets under
+     * public/landing/. Nothing references them now that the parked marketing
+     * layout is deleted, except the two icon files layouts.site still uses.
      */
     #[DataProvider('publicPageProvider')]
     public function test_a_public_page_loads_the_redesigned_stylesheet_and_nothing_else(string $path): void

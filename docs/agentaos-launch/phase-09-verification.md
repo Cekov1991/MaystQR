@@ -31,6 +31,7 @@ green after, with the new tests added by each phase:
 |---|---|---|
 | Baseline (`ce47257`) | 192 | 584 |
 | 1 — public pricing | 212 | 631 |
+| 2 — remove parked landing | 227 | 691 |
 
 Pint note: this project's Pint build does not support `--format agent`. Run
 `vendor/bin/pint --dirty` instead.

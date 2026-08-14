@@ -13,10 +13,6 @@ Route::post('/qr/instant', [InstantQrController::class, 'generate'])
     ->middleware('throttle:20,1')
     ->name('qr.instant');
 
-// Previous marketing landing page, parked here until the new design is finalized
-// (path must not be /landing — public/landing/ is the template asset directory and shadows the route)
-Route::view('/landing-page', 'welcome')->name('landing');
-
 // QR Code routes
 // Scans are public and a popular code is legitimately hit by many people, so the
 // ceiling is per-IP and generous. It exists to stop one client looping a URL,

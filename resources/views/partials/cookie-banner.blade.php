@@ -1,7 +1,8 @@
 {{--
-    Included by both layouts.site and the parked layouts.qr, and only one of
-    those loads site.css — so these styles stay inline rather than depending on
-    a stylesheet that is not always present.
+    Styles are inline for historical reasons: this was included by two layouts
+    and only one of them loaded site.css. Since the parked marketing layout was
+    deleted, layouts.site is the only includer and these could move into the
+    stylesheet — no longer a constraint, just not yet tidied.
 
     Sticky rather than fixed: as the last element in the flow it reserves its
     own height, so it can never cover the footer the way a fixed overlay did,

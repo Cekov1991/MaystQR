@@ -4,6 +4,7 @@
 our first go-live attestation.
 
 **Blocks submission:** yes.
+**Status:** ✅ implemented and tested. Suite 212 → 227 tests, 631 → 691 assertions.
 
 ---
 
@@ -84,6 +85,35 @@ The dead-anchor test at line 82 (`#about`, `#features`, `#faq`) already passes
 for the remaining pages — those anchors only ever existed on the deleted page,
 so that test becomes trivially true. Keep it; it costs nothing and documents why
 the footer must not grow those links back.
+
+## Found during implementation
+
+**`WelcomeController` was worse than dead.** It imported `App\Models\Blog`,
+`Event`, `BoardMember` and `Page` — models from an unrelated scaffold that this
+project does not have. It would have fatalled if anything had ever routed to it.
+Nothing did.
+
+**`public/landing/` is now 11MB of which 13KB is used.** With `layouts/qr.blade.php`
+gone, the only surviving references are the two icons in
+`layouts/site.blade.php:18-19`:
+
+```
+landing/assets/img/favicon.png
+landing/assets/img/apple-touch-icon.png
+```
+
+Everything else — Bootstrap, AOS, GLightbox, Swiper, PureCounter,
+`php-email-form/validate.js`, `main.css`, `main.js` — is unreferenced. It is
+static asset data rather than executable PHP, so this is repo hygiene rather
+than a security issue.
+
+**Recommended follow-up, deliberately not done here:** move the two icons to
+`public/images/` beside `easy-qr-logo-trim.png`, repoint
+`layouts/site.blade.php:18-19`, and delete `public/landing/` entirely. That is a
+one-line view change plus a directory removal, and it drops 11MB. Left out
+because this phase was scoped to the page, and changing the favicon path is the
+kind of thing that should fail loudly in its own commit rather than hide inside
+a deletion.
 
 ## Done when
 
