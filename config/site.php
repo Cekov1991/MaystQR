@@ -37,28 +37,34 @@ return [
     | Operator
     |--------------------------------------------------------------------------
     |
-    | The person legally behind the service: the contracting party in the Terms
-    | and the data controller in the Privacy Policy.
+    | Who is legally behind the service: the contracting party in the Terms and
+    | the data controller in the Privacy Policy.
     |
     | This must match the account holder at AgentaOS. They are our merchant of
     | record, so the question their review answers is who they are selling on
-    | behalf of — a company name here against an individual there is exactly the
-    | mismatch that stalls the application.
+    | behalf of — one identity here against another there is exactly the mismatch
+    | that stalls the application.
     |
-    | The service is operated by an individual, so this is a legal name and not a
-    | brand. "Mayst Impact" is a brand and belongs in the footer credit below,
-    | never in the legal documents.
+    | The service is operated by a registered company, so the name must be the
+    | one in the central registry, including the legal form. Not the trading name:
+    | "Easy QR Code" is the product and "Mayst Impact" the brand, but neither is
+    | the contracting party.
     |
-    | Was 'company' with a default of "Mayst Impact". If SITE_COMPANY_NAME or
-    | SITE_COMPANY_ADDRESS are still set in a deployed .env they are now ignored;
-    | delete them so they cannot mislead later.
+    | This was briefly set to an individual, on the plan of applying as one. The
+    | company won on liability rather than tax — a QR redirect service is a
+    | phishing vector by construction, and the entity is what keeps a victim's
+    | claim away from a private person's assets.
+    |
+    | Was 'company' with a default of "Mayst Impact", unqualified. If
+    | SITE_COMPANY_NAME or SITE_COMPANY_ADDRESS are still set in a deployed .env
+    | they are ignored; delete them so they cannot mislead later.
     |
     */
 
     'operator' => [
-        'name' => env('SITE_OPERATOR_NAME', 'Stefan Cekov'),
+        'name' => env('SITE_OPERATOR_NAME', 'Mayst Impact DOOEL'),
         'address' => env('SITE_OPERATOR_ADDRESS', 'Vladimir Komarov 25/4-16, Skopje, North Macedonia'),
-        'tax_id' => env('SITE_OPERATOR_TAX_ID'),
+        'tax_id' => env('SITE_OPERATOR_TAX_ID', '4032020546119'),
     ],
 
     /*
@@ -136,13 +142,13 @@ return [
     | The optional "Powered by" line. The credit renders only when the URL is
     | set, so a blank URL drops it from the footer entirely.
     |
-    | Off by default, deliberately. The legal pages name an individual operator,
-    | and this line pointed at a company on a different domain — one identity on
-    | the page is the cleaner presentation for the AgentaOS review, which exists
-    | to establish who they are selling on behalf of.
+    | Off by default. It was switched off when the legal pages named an individual
+    | and this line pointed at a company on a different domain, which read as two
+    | identities on one page. That objection is gone now that Mayst Impact is the
+    | operator, but the line has become redundant instead: the footer would credit
+    | the same entity the Terms already name as the contracting party.
     |
-    | Nothing here is permanent: set SITE_CREDIT_URL to bring it back after
-    | approval.
+    | Nothing here is permanent: set SITE_CREDIT_URL to bring it back.
     |
     */
 

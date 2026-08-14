@@ -83,8 +83,16 @@ grep -rn "landing-page\|WelcomeController" routes/ app/        # Phase 2 — emp
 - [ ] `APP_URL=https://easy-qr-code.com`. This is load-bearing for email now: the
       logo in the mail header is built with `asset()`, so a wrong `APP_URL` means
       a broken image in every message the app sends.
-- [ ] `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` removed from `.env`;
-      `SITE_OPERATOR_*` set or intentionally left on defaults
+- [ ] `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` removed from `.env` — they are
+      ignored after the Phase 8 rename, and leaving them there implies the site
+      reads them
+- [ ] The operator defaults now name **Mayst Impact DOOEL**, tax number
+      **4032020546119**, so `SITE_OPERATOR_*` need not be set at all. Check the
+      name and address character-for-character against the central registry entry
+      instead: this is the string a reviewer compares to the AgentaOS account
+      holder, and the address currently on the default is the one inherited from
+      the old `SITE_COMPANY_ADDRESS`, which was never verified against the
+      registry.
 - [ ] `SITE_CREDIT_URL` removed from `.env` — the footer credit is off for launch
 - [ ] Migrations ran — `qr_code_scans` has no `ip_address` and no `city`
 - [ ] `php artisan schedule:list` shows `billing:sync`, `billing:notify` and

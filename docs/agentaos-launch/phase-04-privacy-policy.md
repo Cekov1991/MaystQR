@@ -95,12 +95,21 @@ Who we are (controller identity)
 
 Uses the Phase 8 config keys so this cannot drift from the Terms:
 
-> **Data controller:** Stefan Cekov
+> **Data controller:** {{ config('site.operator.name') }}
 > **Address:** {{ config('site.operator.address') }}
 > **Email:** {{ config('site.support_email') }}
+> **Tax number:** {{ config('site.operator.tax_id') }}
 >
-> Stefan Cekov operates {{ config('site.domain') }} as an individual and is the
-> data controller for the personal data described in this policy.
+> {{ config('site.operator.name') }}, a company registered in the Republic of
+> North Macedonia, operates {{ config('site.domain') }} and is the data
+> controller for the personal data described in this policy.
+
+> ⚠️ Reworded on 14 August 2026. This block originally named Stefan Cekov and said
+> "operates … **as an individual**", because the plan was to apply to AgentaOS as
+> one. The applicant is now Mayst Impact DOOEL — see the note at the top of
+> [Phase 8](./phase-08-legal-identity.md). The controller name and tax number are
+> rendered from config rather than written out here, so that this document does not
+> become the next thing to drift.
 
 ### §3 QR code scan data — new, verbatim
 

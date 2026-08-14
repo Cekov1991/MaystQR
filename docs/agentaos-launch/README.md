@@ -4,7 +4,9 @@ Everything that must be true on `easy-qr-code.com` before the production applica
 is submitted at `app.agentaos.ai/go-live`.
 
 **Status:** Phases 1–8 implemented and tested. Phase 9 (live verification) and Phase 10 remain.
-**Applicant:** Stefan Cekov, as an individual (not a company).
+**Applicant:** Mayst Impact DOOEL, tax number 4032020546119, Skopje, North Macedonia.
+Reversed on 14 August 2026 from an individual application in Stefan Cekov's name;
+see the note at the top of [Phase 8](./phase-08-legal-identity.md).
 **Related:** [subscription plan](../subscription-implementation-plan.md) · [ADR-0001](../adr/0001-account-level-entitlement-replaces-per-code-expiry.md) · [ADR-0002](../adr/0002-entitlement-is-a-local-date-reconciled-from-agentaos.md)
 
 ---
@@ -118,10 +120,16 @@ Things no phase can do for you, gathered here so none is forgotten:
       value ships a broken image in every email the application sends.
 - [ ] Delete `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` from production `.env`.
       They are ignored after the Phase 4 rename, and leaving them there misleads.
-      Set `SITE_OPERATOR_*` only if the defaults are wrong.
+- [ ] **Verify the operator name and address against the central registry.** The
+      defaults now name Mayst Impact DOOEL with tax number 4032020546119, so no
+      env values are needed — but the address was inherited from the old
+      `SITE_COMPANY_ADDRESS` default and has never been checked against the
+      registry entry. This is the string a reviewer compares to the AgentaOS
+      account holder.
 - [ ] **Remove `SITE_CREDIT_URL` from production `.env`** if set. The footer credit
-      is off by default now (owner's decision for launch); an env value overrides
-      that and the "Powered by Mayst Impact" line will keep rendering.
+      is off by default; an env value overrides that and the "Powered by Mayst
+      Impact" line renders again — now redundant rather than confusing, since the
+      Terms already name that company as the contracting party.
 - [ ] Confirm the cron entry `* * * * * php artisan schedule:run` exists on
       Laravel Cloud — without it, Phase 6's pruning never runs and Phase 4's
       retention claim silently becomes false again.

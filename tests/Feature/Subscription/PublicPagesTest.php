@@ -327,9 +327,9 @@ class PublicPagesTest extends TestCase
 
     /**
      * The Terms name the contracting party and the Privacy Policy names the data
-     * controller. They must be the same person, and that person must match the
-     * account holder at AgentaOS — a company name on the site against an
-     * individual on the application is the mismatch their review looks for.
+     * controller. They must be the same party, and that party must match the
+     * account holder at AgentaOS — one identity on the site against another on the
+     * application is the mismatch their review looks for.
      */
     public function test_the_legal_pages_name_the_same_operator(): void
     {
@@ -360,9 +360,10 @@ class PublicPagesTest extends TestCase
     }
 
     /**
-     * The credit pointed at a company on another domain while the legal pages
-     * name an individual operator. Off for launch so the site presents one
-     * identity; the config still supports switching it back on.
+     * Switched off when the credit pointed at a company while the legal pages named
+     * an individual. Now that the company is the operator the line is redundant
+     * rather than confusing — the footer would credit the party the Terms already
+     * name. Still off; the config supports switching it back on.
      */
     #[DataProvider('publicPageProvider')]
     public function test_a_public_page_shows_no_powered_by_credit_by_default(string $path): void
@@ -385,18 +386,41 @@ class PublicPagesTest extends TestCase
             ->assertSee('Some Studio');
     }
 
+    /**
+     * The literal name is deliberate here rather than read from config, which
+     * `test_the_legal_pages_name_the_same_operator` already covers. This asserts
+     * the shipped default itself, because the operator identity moved once — from
+     * an individual to the company — and it has to match the AgentaOS account
+     * holder to survive their review. The legal form is part of the registered
+     * name, not decoration.
+     */
     public function test_the_terms_name_the_operator_as_the_contracting_party(): void
     {
         $this->get('/terms-and-conditions')
             ->assertOk()
-            ->assertSee('Stefan Cekov')
+            ->assertSee('Mayst Impact DOOEL')
             ->assertSee('trading as');
     }
 
     /**
-     * A tax number is a credibility signal for a sole trader with no company
-     * registration behind them, but it is not something to invent — the row
-     * appears only when the value is configured.
+     * The pages described the operator as an individual for as long as the plan was
+     * to apply as one. Naming a registered company while still calling it a person
+     * is the kind of leftover that reads as a copied template.
+     */
+    public function test_the_legal_pages_do_not_describe_the_operator_as_a_person(): void
+    {
+        foreach (['/terms-and-conditions', '/privacy-policy'] as $path) {
+            $this->get($path)
+                ->assertOk()
+                ->assertDontSee('as an individual')
+                ->assertDontSee('the person legally answerable');
+        }
+    }
+
+    /**
+     * The tax number is the company's registry number. It is rendered
+     * conditionally because it is not something to invent when absent, and the
+     * row was genuinely absent while the operator was an individual.
      */
     public function test_the_legal_pages_show_a_tax_number_only_when_one_is_configured(): void
     {
@@ -430,7 +454,7 @@ class PublicPagesTest extends TestCase
     {
         $this->get('/privacy-policy')
             ->assertOk()
-            ->assertSee('Stefan Cekov')
+            ->assertSee('Mayst Impact DOOEL')
             ->assertSee('data controller');
     }
 
