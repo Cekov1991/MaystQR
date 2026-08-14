@@ -3,7 +3,7 @@
 Everything that must be true on `easy-qr-code.com` before the production application
 is submitted at `app.agentaos.ai/go-live`.
 
-**Status:** Phases 1–5 implemented and tested. Phases 6–10 planned.
+**Status:** Phases 1–6 implemented and tested. Phases 7–10 planned.
 **Applicant:** Stefan Cekov, as an individual (not a company).
 **Related:** [subscription plan](../subscription-implementation-plan.md) · [ADR-0001](../adr/0001-account-level-entitlement-replaces-per-code-expiry.md) · [ADR-0002](../adr/0002-entitlement-is-a-local-date-reconciled-from-agentaos.md)
 
@@ -27,7 +27,7 @@ claim the site makes and the way the application actually behaves.
 | Existing paying customers? | No, just starting out | ✅ Yes | — |
 | Product name infringes a trademark? | No | ✅ Yes | — |
 | Pricing accessible and clear before purchase? | Yes | ✅ Now true — public `/pricing` page | [Phase 1](./phase-01-public-pricing.md) ✅ |
-| Publicly accessible Privacy Policy? | Yes | ⚠️ [Phase 3](./phase-03-remove-google.md) ✅ removed the false tracking claims; [Phases 4–6](./phase-04-privacy-policy.md) still owed | [Phases 4–6](./phase-04-privacy-policy.md) |
+| Publicly accessible Privacy Policy? | Yes | ✅ Now describes the system we actually run | [Phases 3–6](./phase-04-privacy-policy.md) ✅ |
 | Publicly accessible Terms of Service? | Yes | ✅ Reachable | [Phase 8](./phase-08-legal-identity.md) refines it |
 | High-risk / shady use of technology? | No | ✅ Yes — [Phase 7](./phase-07-abuse-reporting.md) proves it |
 
@@ -44,7 +44,7 @@ carries social proof we cannot substantiate, the first attestation becomes false
 | 3 | [Remove Google from the public site](./phase-03-remove-google.md) | ✅ Done | **Yes** | Copy + asset |
 | 4 | [Privacy policy rewrite](./phase-04-privacy-policy.md) | ✅ Done | **Yes** | Copy |
 | 5 | [Stop storing scanner IPs](./phase-05-remove-scanner-ip.md) | ✅ Done | No, but do it | Migration |
-| 6 | [Enforce scan retention](./phase-06-scan-retention.md) | Planned | No — owed by Phase 4 | Feature |
+| 6 | [Enforce scan retention](./phase-06-scan-retention.md) | ✅ Done | No — owed by Phase 4 | Feature |
 | 7 | [Abuse reporting](./phase-07-abuse-reporting.md) | Planned | No — strongest positive signal | Feature |
 | 8 | [Legal identity and Terms](./phase-08-legal-identity.md) | Planned | **Yes** | Config + copy |
 | 9 | [Verification](./phase-09-verification.md) | Planned | **Yes** | Checklist |
@@ -67,9 +67,8 @@ neither of which was true at the time. It ran before them instead, at the owner'
 direction, so it was written to describe the system as it actually was:
 
 - **Phase 5** then dropped the IP column and rewrote §3 in the same commit. Discharged.
-- **Phase 6** is still owed. §7's retention table currently ties scan records to the
-  life of the QR code, which is true; Phase 6 replaces that with the enforced window.
-  See [Phase 4's follow-up note](./phase-04-privacy-policy.md#wording-that-phases-5-and-6-must-revisit).
+- **Phase 6** then shipped `scans:prune` and rewrote §7's retention row to render the
+  enforced window. Discharged.
 
 The lesson worth keeping: a phase that publishes a claim must either follow the
 phase that makes the claim true, or publish the weaker claim that is true today.

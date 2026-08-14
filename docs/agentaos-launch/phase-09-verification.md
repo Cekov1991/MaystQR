@@ -38,6 +38,7 @@ green after, with the new tests added by each phase:
 | 3 — remove Google | 244 | 746 |
 | 4 — privacy policy | 256 | 795 |
 | 5 — remove scanner IP | 262 | 807 |
+| 6 — scan retention | 272 | 831 |
 
 Also confirm nothing was left behind:
 

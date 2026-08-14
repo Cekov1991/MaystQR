@@ -108,6 +108,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Scan retention
+    |--------------------------------------------------------------------------
+    |
+    | How many months of QR code scan records are kept before `scans:prune`
+    | deletes them.
+    |
+    | This number is published in section 7 of the Privacy Policy, which renders
+    | it from here rather than restating it. So it is not a tuning knob: shortening
+    | it is always safe, but lengthening it changes a commitment already made to
+    | the people in those rows — strangers who scanned a poster and have no
+    | account with us.
+    |
+    | Long enough for a subscriber to compare a campaign against the same month
+    | last year; short enough that we are not holding third-party scan data
+    | indefinitely.
+    |
+    */
+
+    'scan_retention_months' => (int) env('SITE_SCAN_RETENTION_MONTHS', 24),
+
+    /*
+    |--------------------------------------------------------------------------
     | Footer credit
     |--------------------------------------------------------------------------
     |

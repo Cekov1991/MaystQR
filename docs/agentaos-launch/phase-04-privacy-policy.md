@@ -11,7 +11,7 @@ company that touches personal data, and states the correct country.
 were **not** done first, at the owner's direction. The policy was therefore written
 to describe what is true today rather than what those phases will make true. See
 [Wording that Phases 5 and 6 must revisit](#wording-that-phases-5-and-6-must-revisit)
-below. Phase 5 has since shipped and discharged its half; **Phase 6's is still owed.**
+below. **Both have since shipped and discharged their halves; nothing is owed.**
 
 ---
 
@@ -274,17 +274,20 @@ column and replaced that bullet in the same commit with:
 
 Nothing further owed here.
 
-### Phase 6 — §7 How Long We Keep It — ⚠️ still owed
+### Phase 6 — §7 How Long We Keep It — ✅ discharged
 
 The scan-records row reads:
 
 | QR code scan records | For as long as the QR code exists; deleted when the code is deleted |
 
-not the planned 24-month window, because nothing enforces a window yet. When
-Phase 6 ships `scans:prune`, change the row to render
-`config('site.scan_retention_months')` and add a test asserting the page shows the
-configured value — the same pattern
-`test_the_privacy_policy_states_the_real_session_lifetime` already uses.
+was what Phase 4 published, because nothing enforced a window yet.
+[Phase 6](./phase-06-scan-retention.md) shipped `scans:prune` and changed the row to
+render `config('site.scan_retention_months')`, so the page and the command read the
+same number.
+`ScanPruningTest::test_the_privacy_policy_publishes_the_window_the_command_enforces`
+fails if they ever diverge.
+
+**Both follow-ups are now discharged. Nothing is owed to this phase.**
 
 ## Found during implementation
 

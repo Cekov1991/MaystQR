@@ -248,7 +248,11 @@
                     </tr>
                     <tr>
                         <td>QR code scan records</td>
-                        <td>For as long as the QR code exists; deleted when the code is deleted</td>
+                        <td>
+                            <strong>{{ config('site.scan_retention_months') }} months</strong>, then deleted
+                            automatically. Sooner if the QR code itself is deleted, which removes its scans
+                            with it
+                        </td>
                     </tr>
                     <tr>
                         <td>Sign-in session records</td>

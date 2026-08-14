@@ -4,13 +4,9 @@
 enforced by code, not by intention.
 
 **Blocks submission:** no.
-
-> ⚠️ **Phase 4 shipped first and deliberately did not publish a number.** The
-> retention table currently reads "for as long as the QR code exists", which is
-> true today. When this phase lands, change that row to render
-> `config('site.scan_retention_months')` and add a test asserting the page shows
-> the configured value — see
-> [Phase 4's follow-up note](./phase-04-privacy-policy.md#wording-that-phases-5-and-6-must-revisit).
+**Status:** ✅ implemented and tested. Suite 262 → 272 tests, 807 → 831 assertions.
+Privacy Policy §7 now renders `config('site.scan_retention_months')`, discharging
+Phase 4's last outstanding follow-up.
 
 ---
 
@@ -136,6 +132,39 @@ New `tests/Feature/ScanPruningTest.php`:
 - `test_it_prunes_blocked_scans_too` — blocked rows
   (`QrCodeRedirectController.php:28`) are scan records like any other and are
   covered by the same published retention period
+
+## Found during implementation
+
+**`QrCodeScan` had no factory and no `HasFactory` trait.** Added both. The factory
+deliberately writes no IP address, matching what
+`QrCodeRedirectController::recordScan()` actually records after Phase 5 — a factory
+that invents columns the app no longer writes is how a test starts proving something
+untrue.
+
+**The SoftDeletes hazard is guarded, and that was verified.** The class docblock
+claims `ScanPruningTest` would catch someone adding the `SoftDeletes` trait to
+`QrCodeScan`. Checked by temporarily adding it: three tests failed, and passed again
+on restore. The claim in the comment is true rather than hopeful.
+
+**A zero window had to be refused, not obeyed.** `site.scan_retention_months => 0`
+computes a cutoff of `now()` and would delete every scan in the table including one
+written a second ago. The command now fails with an error instead of interpreting
+that as "keep nothing", and `test_it_refuses_a_window_below_one_month` pins it.
+
+**The chunk loop is tested with real volume.** `test_it_deletes_across_more_than_one_chunk`
+inserts 1,200 stale rows plus one fresh one and asserts exactly one survives. That
+drives two iterations, so a wrong exit condition would hang the suite rather than
+pass quietly. It runs in under a second.
+
+**Deleting a QR code still removes its scans, and that is now stated.** Verified
+`QrCode` does not use `SoftDeletes` and `qr_code_scans.qr_code_id` carries
+`onDelete('cascade')`, so §7's "sooner if the QR code itself is deleted" is
+structurally true. `qr_codes.user_id` cascades from `users` the same way, which is
+what backs the account-deletion promise in the same section.
+
+**`scan_count` is deliberately untouched.** Pruning detail rows must not make a
+subscriber's lifetime total fall. Documented in the command and pinned by
+`test_it_does_not_change_the_lifetime_scan_count`.
 
 ## Done when
 
