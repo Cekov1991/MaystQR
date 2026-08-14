@@ -4,6 +4,7 @@
 report it, and we can act on it.
 
 **Blocks submission:** no. This is the strongest *positive* signal in the plan.
+**Status:** ✅ implemented and tested. Suite 282 → 307 tests, 861 → 948 assertions.
 
 ---
 
@@ -156,6 +157,37 @@ New `tests/Feature/AbuseReportTest.php`:
 
 Add `'report' => ['/report']` to `publicPageProvider()` so the stylesheet and
 contact-address checks cover it.
+
+## Found during implementation
+
+**Short-code matching had to be forgiving.** Reporters paste whole links, type
+fragments off a poster, or copy the code out of a scanner app. `AbuseReported`
+parses the URL path and takes the last segment, so
+`https://easy-qr-code.com/q/abc123`, `/q/abc123` and a bare `abc123` all resolve to
+the same code. Two tests cover the full-link and bare-code forms.
+
+**`code_url` is deliberately not validated as a URL.** Someone reading a printed
+poster may only be able to type part of it, and rejecting them loses the report —
+which is worse than receiving a vague one. Length-capped string only.
+
+**The form needed CSS for two element types it did not have.** `.eq-input` was
+written for text inputs; on a `<select>` it inherited neither the height nor a
+background, and on a `<textarea>` it defaulted to monospace with free two-axis
+resizing that let the user drag the card apart sideways. Added `select.eq-input` and
+`textarea.eq-input` rules.
+
+**`/report` is `noindex`.** It is a utility page, not something to rank for the
+brand. The `robots` section already existed in `layouts.site` and nothing had used
+it until now.
+
+**One test assertion had to be narrowed.** The Terms clause about judging a code by
+its current destination wraps across a line in the Blade source, so an `assertSee`
+spanning that break fails on the raw HTML. Scoped to text that sits on one line.
+
+**Rate limiting is the security-relevant part.** The POST sends mail to our own
+support address on an unauthenticated request — unthrottled it is an open relay into
+the inbox we depend on to act on reports. `throttle:5,60`, pinned by a test that
+posts six times and expects a 429 on the sixth.
 
 ## Done when
 

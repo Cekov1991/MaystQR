@@ -40,6 +40,7 @@ green after, with the new tests added by each phase:
 | 5 — remove scanner IP | 262 | 807 |
 | 6 — scan retention | 272 | 831 |
 | 8 — legal identity and Terms | 282 | 861 |
+| 7 — abuse reporting | 307 | 948 |
 
 Also confirm nothing was left behind:
 

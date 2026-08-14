@@ -3,7 +3,7 @@
 Everything that must be true on `easy-qr-code.com` before the production application
 is submitted at `app.agentaos.ai/go-live`.
 
-**Status:** Phases 1–6 and 8 implemented and tested. Phases 7, 9 and 10 remain.
+**Status:** Phases 1–8 implemented and tested. Phase 9 (live verification) and Phase 10 remain.
 **Applicant:** Stefan Cekov, as an individual (not a company).
 **Related:** [subscription plan](../subscription-implementation-plan.md) · [ADR-0001](../adr/0001-account-level-entitlement-replaces-per-code-expiry.md) · [ADR-0002](../adr/0002-entitlement-is-a-local-date-reconciled-from-agentaos.md)
 
@@ -29,7 +29,7 @@ claim the site makes and the way the application actually behaves.
 | Pricing accessible and clear before purchase? | Yes | ✅ Now true — public `/pricing` page | [Phase 1](./phase-01-public-pricing.md) ✅ |
 | Publicly accessible Privacy Policy? | Yes | ✅ Now describes the system we actually run | [Phases 3–6](./phase-04-privacy-policy.md) ✅ |
 | Publicly accessible Terms of Service? | Yes | ✅ Reachable, and consumer-safe | [Phase 8](./phase-08-legal-identity.md) ✅ |
-| High-risk / shady use of technology? | No | ✅ Yes — [Phase 7](./phase-07-abuse-reporting.md) proves it |
+| High-risk / shady use of technology? | No | ✅ Yes, and now evidenced by a working report channel | [Phase 7](./phase-07-abuse-reporting.md) ✅ |
 
 Answers one and two are honest and must **stay** honest. Do not add a testimonial,
 a user counter or a "trusted by" logo strip before launch. The moment the site
@@ -45,7 +45,7 @@ carries social proof we cannot substantiate, the first attestation becomes false
 | 4 | [Privacy policy rewrite](./phase-04-privacy-policy.md) | ✅ Done | **Yes** | Copy |
 | 5 | [Stop storing scanner IPs](./phase-05-remove-scanner-ip.md) | ✅ Done | No, but do it | Migration |
 | 6 | [Enforce scan retention](./phase-06-scan-retention.md) | ✅ Done | No — owed by Phase 4 | Feature |
-| 7 | [Abuse reporting](./phase-07-abuse-reporting.md) | Planned | No — strongest positive signal | Feature |
+| 7 | [Abuse reporting](./phase-07-abuse-reporting.md) | ✅ Done | No — strongest positive signal | Feature |
 | 8 | [Legal identity and Terms](./phase-08-legal-identity.md) | ✅ Done | **Yes** | Config + copy |
 | 9 | [Verification](./phase-09-verification.md) | Planned | **Yes** | Checklist |
 | 10 | [Pre-renewal notice](./phase-10-renewal-notice.md) | Planned | No | Feature |

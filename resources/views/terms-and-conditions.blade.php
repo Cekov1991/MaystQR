@@ -53,6 +53,18 @@
             </li>
             <li>We reserve the right to suspend or terminate your access if we believe your use violates these Terms.</li>
         </ul>
+        <p>
+            <strong>Reporting a code.</strong> Anyone can report a QR code that breaks these rules at
+            <a href="{{ route('report.create') }}">{{ config('site.domain') }}/report</a>, with or without
+            an account. We investigate every report. Where we find a code pointing at phishing, malware,
+            illegal content, or material intended to harass, we disable it without notice and may suspend
+            the account behind it.
+        </p>
+        <p>
+            Because a dynamic code's destination can be changed after it has been printed and scanned, we
+            may disable a code based on where it points at the time we review it, regardless of where it
+            pointed when it was created.
+        </p>
 
         <h2>5. Trial, Subscription &amp; Payments</h2>
         <ul>

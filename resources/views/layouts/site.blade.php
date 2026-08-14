@@ -62,6 +62,7 @@
                 <a href="{{ url('/terms-and-conditions') }}">Terms &amp; Conditions</a>
                 <a href="{{ url('/privacy-policy') }}">Privacy Policy</a>
                 <a href="{{ url('/refund-policy') }}">Refund Policy</a>
+                <a href="{{ route('report.create') }}">Report a QR code</a>
                 <a href="mailto:{{ config('site.support_email') }}">Contact</a>
             </nav>
             @if (config('site.credit.url'))

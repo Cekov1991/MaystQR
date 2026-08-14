@@ -261,6 +261,7 @@ class PublicPagesTest extends TestCase
             'terms' => ['/terms-and-conditions'],
             'privacy' => ['/privacy-policy'],
             'refunds' => ['/refund-policy'],
+            'report' => ['/report'],
         ];
     }
 

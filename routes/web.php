@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbuseReportController;
 use App\Http\Controllers\AgentaOsWebhookController;
 use App\Http\Controllers\InstantQrController;
 use App\Http\Controllers\ProfileController;
@@ -53,6 +54,20 @@ Route::post('/webhooks/agentaos', AgentaOsWebhookController::class)->name('webho
  * billing page behind the login.
  */
 Route::view('pricing', 'pricing')->name('pricing');
+
+/*
+ * Reporting a QR code that leads somewhere harmful. Public, because the people
+ * who need it are strangers who scanned a poster.
+ *
+ * The POST is throttled: it sends mail to our own support address on an
+ * unauthenticated request, so without a ceiling it is an open relay into the
+ * inbox we rely on to act. Five an hour is generous for a real reporter.
+ */
+Route::get('report', [AbuseReportController::class, 'create'])->name('report.create');
+
+Route::post('report', [AbuseReportController::class, 'store'])
+    ->middleware('throttle:5,60')
+    ->name('report.store');
 
 Route::view('terms-and-conditions', 'terms-and-conditions');
 
