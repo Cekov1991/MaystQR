@@ -3,14 +3,12 @@
 **Goal:** we no longer retain, or expose to our customers, the IP address of
 people who scan a QR code.
 
-**Blocks submission:** no. Do it anyway — it is the largest genuine privacy
+**Blocks submission:** no. Done anyway — it was the largest genuine privacy
 exposure in the application.
 
-> ⚠️ **Phase 4 shipped first and now openly discloses that scanner IPs are stored
-> and shown to the code's owner.** That disclosure is accurate, but it documents
-> the exposure rather than removing it. When this phase lands, update Privacy
-> Policy §3 per
-> [Phase 4's follow-up note](./phase-04-privacy-policy.md#wording-that-phases-5-and-6-must-revisit).
+**Status:** ✅ implemented and tested. Suite 256 → 262 tests, 795 → 807 assertions.
+Privacy Policy §3 updated in the same commit, so Phase 4's scan-data follow-up is
+discharged.
 
 ---
 
@@ -141,6 +139,29 @@ Then run the existing scan suites, which touch this controller:
 php artisan test --compact --filter=ScanPageTest
 php artisan test --compact --filter=ScanGateTest
 ```
+
+## Found during implementation
+
+**The IP-absence test is mutation-verified.** `test_a_resolved_scan_stores_the_scanner_ip_nowhere`
+asserts against `json_encode($scan->getAttributes())` rather than a named column,
+so it catches the address reappearing under *any* column name. Verified by
+temporarily changing `recordScan()` to write `request()->ip()` into `referer`:
+two tests failed, and passed again on restore. The assertion is not vacuous.
+
+**The migration round-trips.** Verified on an isolated sqlite file — never against
+the dev MySQL database — that `up()` drops both columns, `down()` restores both
+with their original definitions, and the migration re-applies cleanly afterwards.
+
+**Nothing read the column but the display.** Confirmed before deleting: the country
+comes from `CF-IPCountry`, device/OS/browser from the user agent, `scan_count` is a
+counter, blocked-scan counting uses the `blocked` flag, and the route's
+`throttle:60,1` reads the address live without storing it. The only consumer was
+the Filament column that showed it to the customer.
+
+**A note left in the controller.** `recordScan()`'s docblock now says explicitly
+that no IP is recorded and why, and points at a daily-rotating salted hash as the
+way to get unique-visitor counting later. The next person to want that number
+should not rediscover the column as the obvious answer.
 
 ## Done when
 

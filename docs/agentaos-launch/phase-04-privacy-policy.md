@@ -11,7 +11,7 @@ company that touches personal data, and states the correct country.
 were **not** done first, at the owner's direction. The policy was therefore written
 to describe what is true today rather than what those phases will make true. See
 [Wording that Phases 5 and 6 must revisit](#wording-that-phases-5-and-6-must-revisit)
-below — this is a required follow-up, not an optional one.
+below. Phase 5 has since shipped and discharged its half; **Phase 6's is still owed.**
 
 ---
 
@@ -261,24 +261,20 @@ Phase 4 shipped before Phases 5 and 6, so two passages describe the current
 behaviour rather than the intended behaviour. Both are accurate as published. Both
 become **stale and wrong** the moment those phases land, so the phases own the edit.
 
-### Phase 5 — §3 QR Code Scan Data
+### Phase 5 — §3 QR Code Scan Data — ✅ discharged
 
-The plan's copy said *"We do not store the IP address of anyone who scans a QR
-code."* That is not true yet, so it was not written. The published list instead ends:
+Phase 4 published *"The IP address the request came from"* as a bullet, because at
+the time that was the truth. [Phase 5](./phase-05-remove-scanner-ip.md) dropped the
+column and replaced that bullet in the same commit with:
 
-```
-<li>The IP address the request came from</li>
-```
+> **We do not store the IP address of anyone who scans a QR code.** Your address
+> reaches our servers, as it must for any web request, and we use it in the moment
+> to apply rate limits — but it is not written to the scan record and we cannot go
+> back and look it up.
 
-When Phase 5 drops the column, replace that bullet with the negative statement,
-and add it as a bolded line — it is a good thing to be able to say.
+Nothing further owed here.
 
-> ⚠️ Until then the policy openly discloses that scanner IPs are recorded and are
-> visible to the code's owner. That is the honest disclosure of what the code does
-> and it is better than the previous silence, but it is not a good look for a
-> reviewer reading it. Phase 5 is a small change. Do it soon.
-
-### Phase 6 — §7 How Long We Keep It
+### Phase 6 — §7 How Long We Keep It — ⚠️ still owed
 
 The scan-records row reads:
 

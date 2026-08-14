@@ -3,7 +3,7 @@
 Everything that must be true on `easy-qr-code.com` before the production application
 is submitted at `app.agentaos.ai/go-live`.
 
-**Status:** Phases 1–3 implemented and tested. Phases 4–10 planned.
+**Status:** Phases 1–5 implemented and tested. Phases 6–10 planned.
 **Applicant:** Stefan Cekov, as an individual (not a company).
 **Related:** [subscription plan](../subscription-implementation-plan.md) · [ADR-0001](../adr/0001-account-level-entitlement-replaces-per-code-expiry.md) · [ADR-0002](../adr/0002-entitlement-is-a-local-date-reconciled-from-agentaos.md)
 
@@ -42,34 +42,41 @@ carries social proof we cannot substantiate, the first attestation becomes false
 | 1 | [Public pricing](./phase-01-public-pricing.md) | ✅ Done | **Yes** | Feature + copy |
 | 2 | [Remove the parked landing page](./phase-02-remove-parked-landing.md) | ✅ Done | **Yes** | Deletion |
 | 3 | [Remove Google from the public site](./phase-03-remove-google.md) | ✅ Done | **Yes** | Copy + asset |
-| 4 | [Privacy policy rewrite](./phase-04-privacy-policy.md) | Planned | **Yes** | Copy |
-| 5 | [Stop storing scanner IPs](./phase-05-remove-scanner-ip.md) | Planned | No, but do it | Migration |
-| 6 | [Enforce scan retention](./phase-06-scan-retention.md) | Planned | No — makes Phase 4 true | Feature |
+| 4 | [Privacy policy rewrite](./phase-04-privacy-policy.md) | ✅ Done | **Yes** | Copy |
+| 5 | [Stop storing scanner IPs](./phase-05-remove-scanner-ip.md) | ✅ Done | No, but do it | Migration |
+| 6 | [Enforce scan retention](./phase-06-scan-retention.md) | Planned | No — owed by Phase 4 | Feature |
 | 7 | [Abuse reporting](./phase-07-abuse-reporting.md) | Planned | No — strongest positive signal | Feature |
 | 8 | [Legal identity and Terms](./phase-08-legal-identity.md) | Planned | **Yes** | Config + copy |
 | 9 | [Verification](./phase-09-verification.md) | Planned | **Yes** | Checklist |
 | 10 | [Pre-renewal notice](./phase-10-renewal-notice.md) | Planned | No | Feature |
 
-Phases 1–4 and 8 are the submission gate. 5–7 and 10 make the application
-stronger and close real legal exposure, but the form can be submitted without
-them — **except** that Phase 4 states a scan retention period, and Phase 6 is
-what makes that statement true. Ship 4 and 6 together or soften the wording in 4.
+Phases 1–4 and 8 are the submission gate. 5–7 and 10 make the application stronger
+and close real legal exposure, but the form can be submitted without them.
 
-## Ordering
+## Ordering — what actually happened
 
 ```
-1 ──┐
-2 ──┤
-3 ──┼──► 9 (verify) ──► submit
-8 ──┤
-5 ──► 6 ──► 4 ──┘
-        7 ──┘
+1 ──► 2 ──► 3 ──► 4 ──► 5 ──►  6 ──┐
+                                7 ──┼──► 9 (verify) ──► submit
+                                8 ──┘
 ```
 
-Phases 1, 2, 3 and 8 are independent of each other and can be done in any order.
-Phase 4's copy depends on Phase 5 (it states that no IP is stored) and Phase 6
-(it states a retention window), so 4 lands last of that group. Phase 7 adds a
-footer link and a Terms clause, so it should land before Phase 9's final read-through.
+Phase 4 was originally sequenced *after* 5 and 6, because its copy was meant to
+state that no scanner IP is stored and that scan records expire after 24 months —
+neither of which was true at the time. It ran before them instead, at the owner's
+direction, so it was written to describe the system as it actually was:
+
+- **Phase 5** then dropped the IP column and rewrote §3 in the same commit. Discharged.
+- **Phase 6** is still owed. §7's retention table currently ties scan records to the
+  life of the QR code, which is true; Phase 6 replaces that with the enforced window.
+  See [Phase 4's follow-up note](./phase-04-privacy-policy.md#wording-that-phases-5-and-6-must-revisit).
+
+The lesson worth keeping: a phase that publishes a claim must either follow the
+phase that makes the claim true, or publish the weaker claim that is true today.
+Never the claim that will be true later.
+
+Phase 7 adds a footer link and a Terms clause, so it should land before Phase 9's
+final read-through.
 
 [Phase 10](./phase-10-renewal-notice.md) is deliberately outside the diagram. It
 is the only phase that builds something new rather than correcting something
@@ -82,12 +89,12 @@ Confirmed by reading the code, not assumed:
 
 | Fact | Source |
 |---|---|
-| Hosting is Laravel Cloud, **United States** | Confirmed by owner; contradicts `privacy-policy.blade.php:126` |
-| CDN, TLS and scan country come from Cloudflare | `QrCodeRedirectController.php:106-115` |
+| Hosting is Laravel Cloud, **United States** | Confirmed by owner. The policy said North Macedonia until Phase 4 |
+| CDN, TLS and scan country come from Cloudflare | `QrCodeRedirectController::country()` |
 | Transactional email goes through Resend | Confirmed by owner |
-| Payments and invoicing are AgentaOS as MoR | `terms-and-conditions.blade.php:73` |
+| Payments and invoicing are AgentaOS as MoR | Terms §5 |
 | Google Analytics is **not installed** anywhere | No `gtag`/GTM tag in any view |
-| Full scanner IPs are stored and shown to customers | `QrCodeRedirectController.php:87`, `ScansRelationManager.php:45` |
+| Scanner IPs are no longer stored — removed in Phase 5 | `QrCodeRedirectController.php` `recordScan()` |
 | Price is $27/year, tax inclusive | `config/subscription.php` |
 | Trial is 7 days, no card required | `config/subscription.php` |
 | There is no pre-renewal reminder email | `app/Notifications/` holds four, none of them this |

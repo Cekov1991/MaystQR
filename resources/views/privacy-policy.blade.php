@@ -97,8 +97,12 @@
             <li>The approximate country, which Cloudflare determines from the network connection</li>
             <li>The device type, operating system and browser your device reports</li>
             <li>The referring page, where your browser supplies one</li>
-            <li>The IP address the request came from</li>
         </ul>
+        <p>
+            <strong>We do not store the IP address of anyone who scans a QR code.</strong> Your address
+            reaches our servers, as it must for any web request, and we use it in the moment to apply rate
+            limits — but it is not written to the scan record and we cannot go back and look it up.
+        </p>
         <p>
             This information is visible to the person who created the code, both as totals and as individual
             scan records. It is not connected to a name or an account, and we do not use it to recognise you

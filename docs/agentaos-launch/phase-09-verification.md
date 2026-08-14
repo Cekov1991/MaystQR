@@ -19,9 +19,12 @@ receives mail. Every one of those is a way to pass the suite and fail the review
 ## Code gate
 
 ```
-vendor/bin/pint --dirty --format agent
+vendor/bin/pint --dirty
 php artisan test --compact
 ```
+
+> This project's Pint build rejects `--format agent`, the flag `CLAUDE.md`
+> specifies. Use the plain `--dirty` form.
 
 The suite was **192 tests / 584 assertions** green before this plan (measured on
 `dev` at `ce47257`, not the stale 148 figure from an earlier session). It must be
@@ -33,9 +36,8 @@ green after, with the new tests added by each phase:
 | 1 — public pricing | 212 | 631 |
 | 2 — remove parked landing | 227 | 691 |
 | 3 — remove Google | 244 | 746 |
-
-Pint note: this project's Pint build does not support `--format agent`. Run
-`vendor/bin/pint --dirty` instead.
+| 4 — privacy policy | 256 | 795 |
+| 5 — remove scanner IP | 262 | 807 |
 
 Also confirm nothing was left behind:
 
@@ -54,7 +56,7 @@ grep -rn "landing-page\|WelcomeController" routes/ app/        # Phase 2 — emp
 - [ ] `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` removed from `.env`;
       `SITE_OPERATOR_*` set or intentionally left on defaults
 - [ ] Footer credit decision applied (`SITE_CREDIT_URL`)
-- [ ] Migrations ran — `qr_code_scans` has no `ip_address`
+- [ ] Migrations ran — `qr_code_scans` has no `ip_address` and no `city`
 - [ ] `php artisan schedule:list` shows `billing:sync`, `billing:notify` and
       `scans:prune`
 - [ ] The `schedule:run` cron entry exists on Laravel Cloud. Without it Phase 6
