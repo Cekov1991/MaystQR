@@ -5,6 +5,14 @@ account, and the Terms do not contain a clause that is unenforceable against the
 customers we are selling to.
 
 **Blocks submission:** yes.
+**Status:** ✅ implemented and tested. Suite 272 → 282 tests, 831 → 861 assertions.
+
+> Most of this phase shipped early. The `site.company.*` → `site.operator.*` rename
+> and the operator naming on both legal pages were pulled forward into
+> [Phase 4](./phase-04-privacy-policy.md), because a privacy policy cannot name a
+> data controller without them. What landed here: the Terms §11 consumer carve-out,
+> the support-email default, the trading-name line, the optional tax number, and the
+> footer-credit decision.
 
 ---
 
@@ -74,9 +82,14 @@ The fix is not to remove it. It is to add the carve-out that makes it accurate.
 ],
 ```
 
-`tax_id` is optional and renders only when set. A trader identifier is a
-credibility signal for a sole trader with no company registration behind them —
-add the North Macedonian tax number if you are comfortable publishing it.
+`tax_id` is optional and renders only when set — on both the Terms contact block
+and the Privacy Policy controller block.
+
+**Decided by the owner: skip it for now.** Nothing in the AgentaOS form asks for a
+trader identifier, so this is optional polish. Setting `SITE_OPERATOR_TAX_ID` at
+any point makes the row appear on both pages;
+`test_the_legal_pages_show_a_tax_number_only_when_one_is_configured` covers both
+branches so the wiring is known to work when it is wanted.
 
 > ⚠️ **Deploy step.** After this rename, `SITE_COMPANY_NAME` and
 > `SITE_COMPANY_ADDRESS` in production `.env` are ignored silently. If production
@@ -118,9 +131,14 @@ footer pointing at a different domain.
 
 Not fatal, and it is a legitimate brand credit. But the config already supports
 blanking the URL to drop the credit entirely, and the cleanest presentation for a
-review is one identity on the page. **Recommendation:** set `SITE_CREDIT_URL=`
-empty for launch and restore it afterwards if you want it. Your call — flagged,
-not decided.
+review is one identity on the page. **Decided by the owner: drop it for launch.** The config default is now unset, so
+the credit does not render. `SITE_CREDIT_NAME` is left in place and setting
+`SITE_CREDIT_URL` brings the line straight back after approval — no code change.
+Two tests cover it: the credit is absent from every public page by default, and it
+returns when a URL is configured.
+
+> ⚠️ If production `.env` still sets `SITE_CREDIT_URL=https://maystimpact.mk`, the
+> credit will keep rendering. Remove it there.
 
 ### Terms and Privacy Policy
 
@@ -172,6 +190,26 @@ In `tests/Feature/Subscription/PublicPagesTest.php`:
 - `test_the_support_email_is_on_our_own_domain` — a unit-ish assertion that
   `config('site.support_email')` does not end in `gmail.com`. Blunt, and it
   catches the one mistake that matters here.
+
+## Found during implementation
+
+**The jurisdiction clause was softened, not just annotated.** The original asserted
+*exclusive* jurisdiction in North Macedonian courts. Against an EU or UK consumer
+that is unenforceable regardless of what the contract says, so the word was doing no
+work while making the document read as consumer-hostile to an underwriter. It now
+claims ordinary jurisdiction and adds the carve-out, including the plain statement
+that where mandatory local consumer law gives the customer more than these Terms do,
+**that law wins**.
+
+**The contact block gained a trading-name line.** "Stefan Cekov, trading as Easy QR
+Code" states the relationship between the person on the AgentaOS account and the
+brand on the site, which is the exact question the identity check is asking. Cheaper
+than making a reviewer infer it.
+
+**Nothing was promised about renewal notices.** Terms §5 still describes automatic
+yearly renewal without claiming any advance warning, because
+`app/Notifications/` contains no such notification.
+[Phase 10](./phase-10-renewal-notice.md) builds it and owns the Terms edit.
 
 ## Done when
 

@@ -3,7 +3,7 @@
 Everything that must be true on `easy-qr-code.com` before the production application
 is submitted at `app.agentaos.ai/go-live`.
 
-**Status:** Phases 1–6 implemented and tested. Phases 7–10 planned.
+**Status:** Phases 1–6 and 8 implemented and tested. Phases 7, 9 and 10 remain.
 **Applicant:** Stefan Cekov, as an individual (not a company).
 **Related:** [subscription plan](../subscription-implementation-plan.md) · [ADR-0001](../adr/0001-account-level-entitlement-replaces-per-code-expiry.md) · [ADR-0002](../adr/0002-entitlement-is-a-local-date-reconciled-from-agentaos.md)
 
@@ -28,7 +28,7 @@ claim the site makes and the way the application actually behaves.
 | Product name infringes a trademark? | No | ✅ Yes | — |
 | Pricing accessible and clear before purchase? | Yes | ✅ Now true — public `/pricing` page | [Phase 1](./phase-01-public-pricing.md) ✅ |
 | Publicly accessible Privacy Policy? | Yes | ✅ Now describes the system we actually run | [Phases 3–6](./phase-04-privacy-policy.md) ✅ |
-| Publicly accessible Terms of Service? | Yes | ✅ Reachable | [Phase 8](./phase-08-legal-identity.md) refines it |
+| Publicly accessible Terms of Service? | Yes | ✅ Reachable, and consumer-safe | [Phase 8](./phase-08-legal-identity.md) ✅ |
 | High-risk / shady use of technology? | No | ✅ Yes — [Phase 7](./phase-07-abuse-reporting.md) proves it |
 
 Answers one and two are honest and must **stay** honest. Do not add a testimonial,
@@ -46,7 +46,7 @@ carries social proof we cannot substantiate, the first attestation becomes false
 | 5 | [Stop storing scanner IPs](./phase-05-remove-scanner-ip.md) | ✅ Done | No, but do it | Migration |
 | 6 | [Enforce scan retention](./phase-06-scan-retention.md) | ✅ Done | No — owed by Phase 4 | Feature |
 | 7 | [Abuse reporting](./phase-07-abuse-reporting.md) | Planned | No — strongest positive signal | Feature |
-| 8 | [Legal identity and Terms](./phase-08-legal-identity.md) | Planned | **Yes** | Config + copy |
+| 8 | [Legal identity and Terms](./phase-08-legal-identity.md) | ✅ Done | **Yes** | Config + copy |
 | 9 | [Verification](./phase-09-verification.md) | Planned | **Yes** | Checklist |
 | 10 | [Pre-renewal notice](./phase-10-renewal-notice.md) | Planned | No | Feature |
 
@@ -102,11 +102,16 @@ Confirmed by reading the code, not assumed:
 
 Things no phase can do for you, gathered here so none is forgotten:
 
-- [ ] Set `SITE_SUPPORT_EMAIL=support@easy-qr-code.com` and make sure the mailbox
-      receives mail (Phase 8 changes the default, but production `.env` wins).
-- [ ] Set `SITE_OPERATOR_NAME` / `SITE_OPERATOR_ADDRESS`, or delete the old
-      `SITE_COMPANY_*` vars so the new defaults apply (Phase 8).
-- [ ] Decide on the `SITE_CREDIT_URL` footer credit (Phase 8).
+- [ ] **Make sure `support@easy-qr-code.com` actually receives mail.** It is now
+      the config default, it is the legal notice address on both legal pages, and
+      the Refund Policy promises a reply on it within two business days. If
+      production `.env` still sets the old Gmail address, that wins — remove it.
+- [ ] Delete `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` from production `.env`.
+      They are ignored after the Phase 4 rename, and leaving them there misleads.
+      Set `SITE_OPERATOR_*` only if the defaults are wrong.
+- [ ] **Remove `SITE_CREDIT_URL` from production `.env`** if set. The footer credit
+      is off by default now (owner's decision for launch); an env value overrides
+      that and the "Powered by Mayst Impact" line will keep rendering.
 - [ ] Confirm the cron entry `* * * * * php artisan schedule:run` exists on
       Laravel Cloud — without it, Phase 6's pruning never runs and Phase 4's
       retention claim silently becomes false again.

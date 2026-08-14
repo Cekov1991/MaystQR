@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'support_email' => env('SITE_SUPPORT_EMAIL', 'mayst.impact@gmail.com'),
+    'support_email' => env('SITE_SUPPORT_EMAIL', 'support@easy-qr-code.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -133,14 +133,22 @@ return [
     | Footer credit
     |--------------------------------------------------------------------------
     |
-    | The optional "Powered by" line. Leave the URL blank to drop the credit
-    | from the footer entirely.
+    | The optional "Powered by" line. The credit renders only when the URL is
+    | set, so a blank URL drops it from the footer entirely.
+    |
+    | Off by default, deliberately. The legal pages name an individual operator,
+    | and this line pointed at a company on a different domain — one identity on
+    | the page is the cleaner presentation for the AgentaOS review, which exists
+    | to establish who they are selling on behalf of.
+    |
+    | Nothing here is permanent: set SITE_CREDIT_URL to bring it back after
+    | approval.
     |
     */
 
     'credit' => [
         'name' => env('SITE_CREDIT_NAME', 'Mayst Impact'),
-        'url' => env('SITE_CREDIT_URL', 'https://maystimpact.mk'),
+        'url' => env('SITE_CREDIT_URL'),
     ],
 
 ];

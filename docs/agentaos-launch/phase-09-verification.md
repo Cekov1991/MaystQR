@@ -39,6 +39,7 @@ green after, with the new tests added by each phase:
 | 4 — privacy policy | 256 | 795 |
 | 5 — remove scanner IP | 262 | 807 |
 | 6 — scan retention | 272 | 831 |
+| 8 — legal identity and Terms | 282 | 861 |
 
 Also confirm nothing was left behind:
 
@@ -56,7 +57,7 @@ grep -rn "landing-page\|WelcomeController" routes/ app/        # Phase 2 — emp
 - [ ] `SITE_SUPPORT_EMAIL=support@easy-qr-code.com`, and a test mail to it arrives
 - [ ] `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` removed from `.env`;
       `SITE_OPERATOR_*` set or intentionally left on defaults
-- [ ] Footer credit decision applied (`SITE_CREDIT_URL`)
+- [ ] `SITE_CREDIT_URL` removed from `.env` — the footer credit is off for launch
 - [ ] Migrations ran — `qr_code_scans` has no `ip_address` and no `city`
 - [ ] `php artisan schedule:list` shows `billing:sync`, `billing:notify` and
       `scans:prune`
@@ -110,6 +111,9 @@ And:
 - [ ] The Privacy Policy names **Stefan Cekov** as data controller
 - [ ] That name matches the AgentaOS application exactly
 - [ ] The address and support email are identical across both documents
+- [ ] The Terms preserve EU/UK consumer rights (§11)
+- [ ] No "Powered by" credit in the footer
+- [ ] The support address is `support@easy-qr-code.com`, not a Gmail address
 - [ ] The Privacy Policy says data is hosted in the **United States** and names
       Laravel Cloud, Cloudflare, Resend and AgentaOS
 

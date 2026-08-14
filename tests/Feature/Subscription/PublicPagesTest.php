@@ -343,6 +343,88 @@ class PublicPagesTest extends TestCase
             ->assertSee('Some Operator Name');
     }
 
+    /**
+     * The exclusive-jurisdiction clause is unenforceable against an EU or UK
+     * consumer regardless of what the contract says, so asserting it without a
+     * carve-out gained us nothing and read as consumer-hostile to anyone
+     * assessing whether we are a safe merchant to underwrite.
+     */
+    public function test_the_terms_preserve_mandatory_consumer_rights(): void
+    {
+        $this->get('/terms-and-conditions')
+            ->assertOk()
+            ->assertSee('country of residence')
+            ->assertSee('European Union or the United')
+            ->assertSee('that law wins');
+    }
+
+    /**
+     * The credit pointed at a company on another domain while the legal pages
+     * name an individual operator. Off for launch so the site presents one
+     * identity; the config still supports switching it back on.
+     */
+    #[DataProvider('publicPageProvider')]
+    public function test_a_public_page_shows_no_powered_by_credit_by_default(string $path): void
+    {
+        $this->get($path)
+            ->assertOk()
+            ->assertDontSee('Powered by');
+    }
+
+    public function test_the_powered_by_credit_returns_when_a_url_is_configured(): void
+    {
+        config([
+            'site.credit.name' => 'Some Studio',
+            'site.credit.url' => 'https://studio.example',
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Powered by')
+            ->assertSee('Some Studio');
+    }
+
+    public function test_the_terms_name_the_operator_as_the_contracting_party(): void
+    {
+        $this->get('/terms-and-conditions')
+            ->assertOk()
+            ->assertSee('Stefan Cekov')
+            ->assertSee('trading as');
+    }
+
+    /**
+     * A tax number is a credibility signal for a sole trader with no company
+     * registration behind them, but it is not something to invent — the row
+     * appears only when the value is configured.
+     */
+    public function test_the_legal_pages_show_a_tax_number_only_when_one_is_configured(): void
+    {
+        config(['site.operator.tax_id' => null]);
+
+        $this->get('/terms-and-conditions')->assertOk()->assertDontSee('Tax number');
+        $this->get('/privacy-policy')->assertOk()->assertDontSee('Tax number');
+
+        config(['site.operator.tax_id' => 'MK4080012345678']);
+
+        $this->get('/terms-and-conditions')->assertOk()->assertSee('MK4080012345678');
+        $this->get('/privacy-policy')->assertOk()->assertSee('MK4080012345678');
+    }
+
+    /**
+     * This address is the legal notice address cited in both the Terms and the
+     * Privacy Policy, the only contact route on the site, and where the Refund
+     * Policy promises a reply within two business days. A free mailbox there is a
+     * trust signal in the wrong direction for a paid service under a merchant of
+     * record review.
+     */
+    public function test_the_support_address_is_on_our_own_domain(): void
+    {
+        $email = config('site.support_email');
+
+        $this->assertStringEndsWith('@'.config('site.domain'), $email);
+        $this->assertStringNotContainsString('gmail.com', $email);
+    }
+
     public function test_the_privacy_policy_names_the_data_controller(): void
     {
         $this->get('/privacy-policy')
