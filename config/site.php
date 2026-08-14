@@ -136,6 +136,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Link previews
+    |--------------------------------------------------------------------------
+    |
+    | What WhatsApp, Slack, iMessage and X show when someone pastes a link to us.
+    |
+    | The description is also the <meta name="description"> fallback, so the two
+    | cannot drift apart. A page overrides both at once by defining a
+    | `description` section, and the same is true of the title.
+    |
+    | The card is a static PNG committed to the repo, not something generated per
+    | request: previews are fetched by crawlers that will not wait on our queue,
+    | and a link shared before the image existed is cached without one.
+    |
+    | Until this existed there was no og:image at all, so WhatsApp fell back to
+    | the apple-touch-icon, which was still the Bootstrap starter template's
+    | logo. Every link anyone shared was branded with someone else's mark. If you
+    | replace the image, keep the dimensions below in step with the file: X and
+    | LinkedIn read them rather than downloading the image to measure it.
+    |
+    */
+
+    'share' => [
+        'description' => 'Create free static QR codes instantly, or dynamic QR codes you can edit and track.',
+        'image' => 'images/og-image.png',
+        'image_width' => 1200,
+        'image_height' => 630,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Footer credit
     |--------------------------------------------------------------------------
     |

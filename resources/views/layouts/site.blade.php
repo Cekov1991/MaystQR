@@ -7,7 +7,28 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', config('app.name'))</title>
-    <meta name="description" content="@yield('description', 'Create free static QR codes instantly, or dynamic QR codes you can edit and track.')">
+    <meta name="description" content="@yield('description', config('site.share.description'))">
+
+    {{--
+        The link preview. Every public page runs through this layout, so a page
+        that sets `title` and `description` gets its preview for free; there is
+        nothing per-page to remember and nothing to keep in sync by hand.
+
+        og:url is the current URL without its query string, so the share buttons
+        and campaign tags people paste around do not fragment one page into many
+        as far as a crawler is concerned.
+    --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', config('app.name'))">
+    <meta property="og:description" content="@yield('description', config('site.share.description'))">
+    <meta property="og:image" content="{{ asset(config('site.share.image')) }}">
+    <meta property="og:image:width" content="{{ config('site.share.image_width') }}">
+    <meta property="og:image:height" content="{{ config('site.share.image_height') }}">
+    <meta property="og:image:alt" content="{{ config('app.name') }}">
+    <meta name="twitter:card" content="summary_large_image">
+
     @hasSection('keywords')
         <meta name="keywords" content="@yield('keywords')">
     @endif
