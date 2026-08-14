@@ -102,10 +102,20 @@ Confirmed by reading the code, not assumed:
 
 Things no phase can do for you, gathered here so none is forgotten:
 
-- [ ] **Make sure `support@easy-qr-code.com` actually receives mail.** It is now
-      the config default, it is the legal notice address on both legal pages, and
-      the Refund Policy promises a reply on it within two business days. If
-      production `.env` still sets the old Gmail address, that wins — remove it.
+- [x] **`support@easy-qr-code.com` receives mail.** It is the config default, the
+      legal notice address on both legal pages, and the Refund Policy promises a
+      reply on it within two business days — but the domain carried no MX record,
+      so everything sent to it bounced after retrying for days. Now handled by
+      Cloudflare Email Routing (forward plus catch-all) with replies sent as
+      support@ through Resend's SMTP. If production `.env` still sets the old
+      Gmail address in `SITE_SUPPORT_EMAIL`, that wins — remove it.
+- [ ] **Set `MAIL_FROM_ADDRESS` and `MAIL_FROM_NAME` in production.** Laravel's
+      defaults were `hello@example.com` and `Example`, and both were reaching real
+      recipients. `config/mail.php` now falls back to our own domain and to
+      `APP_NAME`, so this is belt-and-braces rather than a bug — but `APP_NAME` is
+      `EasyQR`, which is not how the legal pages spell the brand.
+- [ ] **Check `APP_URL`.** The mail header logo is built with `asset()`, so a wrong
+      value ships a broken image in every email the application sends.
 - [ ] Delete `SITE_COMPANY_NAME` / `SITE_COMPANY_ADDRESS` from production `.env`.
       They are ignored after the Phase 4 rename, and leaving them there misleads.
       Set `SITE_OPERATOR_*` only if the defaults are wrong.
