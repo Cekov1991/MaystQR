@@ -3,6 +3,10 @@
 @section('title', 'Pricing - ' . config('app.name'))
 @section('description', 'Static QR codes are free forever. Dynamic QR codes you can edit and track cost ' . \App\Support\SubscriptionPrice::formatted() . ' per year, tax included, after a ' . config('subscription.trial_days') . '-day free trial.')
 
+@push('structured-data')
+    <script type="application/ld+json">{!! \App\Support\StructuredData::forProduct() !!}</script>
+@endpush
+
 @section('content')
 
     <div class="eq-hero">
