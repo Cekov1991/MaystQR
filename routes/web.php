@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AbuseReportController;
 use App\Http\Controllers\AgentaOsWebhookController;
+use App\Http\Controllers\CrawlerController;
 use App\Http\Controllers\InstantQrController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QrCodeRedirectController;
@@ -9,6 +10,17 @@ use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [InstantQrController::class, 'index'])->name('welcome');
+
+/*
+ * What crawlers fetch before anything else. Routes rather than files in public/
+ * so that every URL inside them is built by the router and is therefore right on
+ * whatever domain the app is running on. public/robots.txt was deleted when
+ * these were added: the web server serves a real file in preference to a route,
+ * so leaving it would have made these rules dead code.
+ */
+Route::get('robots.txt', [CrawlerController::class, 'robots'])->name('crawlers.robots');
+Route::get('sitemap.xml', [CrawlerController::class, 'sitemap'])->name('crawlers.sitemap');
+Route::get('llms.txt', [CrawlerController::class, 'llms'])->name('crawlers.llms');
 
 Route::post('/qr/instant', [InstantQrController::class, 'generate'])
     ->middleware('throttle:20,1')

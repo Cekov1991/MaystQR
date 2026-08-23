@@ -4,6 +4,10 @@
 @section('description', 'Create a free static QR code instantly, with no account needed. Upgrade to dynamic QR codes with editable destinations and scan analytics.')
 @section('keywords', 'QR Code, Free QR Code Generator, Dynamic QR, Analytics, Editable QR Codes, Trackable QR Codes')
 
+@push('structured-data')
+    <script type="application/ld+json">{!! \App\Support\StructuredData::forProduct() !!}</script>
+@endpush
+
 @section('content')
 
     <div class="eq-hero">

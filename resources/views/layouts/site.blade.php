@@ -29,6 +29,22 @@
     <meta property="og:image:alt" content="{{ config('app.name') }}">
     <meta name="twitter:card" content="summary_large_image">
 
+    {{--
+        The one URL this page should be indexed under. It matches og:url rather
+        than being derived separately, so a campaign tag or a share parameter
+        cannot split one page into several as far as a crawler is concerned.
+    --}}
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    {{--
+        Who we are and what this site is, in the vocabulary a machine reads
+        instead of guessing. The product and its price are marked up separately
+        by the pages that sell it, so a legal notice is not filed as a software
+        listing.
+    --}}
+    <script type="application/ld+json">{!! \App\Support\StructuredData::forSite() !!}</script>
+    @stack('structured-data')
+
     @hasSection('keywords')
         <meta name="keywords" content="@yield('keywords')">
     @endif
