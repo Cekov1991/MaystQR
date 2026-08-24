@@ -136,6 +136,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Event retention
+    |--------------------------------------------------------------------------
+    |
+    | How many days of anonymous site event counts are kept before
+    | `events:prune` deletes them. Like the scan window above, this number is
+    | rendered into the Privacy Policy rather than restated there, so it cannot
+    | drift away from what the code enforces.
+    |
+    | Far shorter than the scan window because the purpose is different: these
+    | rows answer "is the funnel working this quarter", not "how did this
+    | campaign do against last year". They also accrue much faster.
+    |
+    */
+
+    'event_retention_days' => (int) env('SITE_EVENT_RETENTION_DAYS', 90),
+
+    /*
+    |--------------------------------------------------------------------------
     | Abandoned logo grace period
     |--------------------------------------------------------------------------
     |

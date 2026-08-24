@@ -28,7 +28,7 @@
             <p class="eq-price">Free<span class="eq-price-period">forever</span></p>
             <p class="eq-price-note">No account, no payment, no expiry.</p>
             <p class="eq-card-text">
-                Generated instantly and shown on screen. Nothing is stored. Refresh the page and it’s gone, so download it right away.
+                Generated instantly and shown on screen. We never store your code or its link. Refresh the page and it’s gone, so download it right away.
             </p>
             <ul class="eq-check-list">
                 <li><span class="eq-check">✓</span>No account needed</li>
@@ -83,7 +83,7 @@
         <img id="static-qr-img" src="" alt="Your QR code">
         <div class="eq-result-info">
             <h2 class="eq-h2">Your QR code is ready</h2>
-            <p>Scan it with your phone to test it, then download it. Nothing is stored on our side, so once you leave this page the code is gone.</p>
+            <p>Scan it with your phone to test it, then download it. We never store your code or its link, so once you leave this page it’s gone.</p>
             <div class="eq-actions">
                 <a id="static-download-png" href="#" download="qr-code.png" class="eq-btn eq-btn-primary eq-btn--sm">Download PNG</a>
                 <a id="static-download-svg" href="#" download="qr-code.svg" class="eq-btn eq-btn-outline eq-btn--sm">Download SVG</a>

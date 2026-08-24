@@ -55,3 +55,17 @@ Schedule::command('scans:prune')
 Schedule::command('logos:prune')
     ->dailyAt('04:30')
     ->withoutOverlapping();
+
+/*
+ * The same arrangement as scans:prune, for the same reason: section 2 of the
+ * Privacy Policy publishes how long the anonymous event counts are kept, and
+ * this is the only thing that makes that sentence true.
+ *
+ * Daily rather than weekly, unlike scans. The window is days rather than
+ * years, so a week of slack at the boundary would be a large fraction of the
+ * whole period. 05:00 keeps it clear of every other scheduled job: billing:sync
+ * at 03:00, scans:prune at 04:00 on Mondays, and logos:prune at 04:30.
+ */
+Schedule::command('events:prune')
+    ->dailyAt('05:00')
+    ->withoutOverlapping();

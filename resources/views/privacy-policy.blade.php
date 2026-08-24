@@ -64,8 +64,19 @@
             </li>
         </ul>
         <p>
-            <strong>We run no analytics and no third-party tracking on this site.</strong> We do not build a
-            profile of the pages you visit or how long you spend on them.
+            <strong>We run no third-party tracking on this site and build no profile of you.</strong> We do
+            not record which pages you visit or how long you spend on them, and no advertising or analytics
+            company receives anything about you from us.
+        </p>
+        <p>
+            We do keep <strong>anonymous counts</strong> of how often certain things happen here — how many
+            free QR codes were generated today, for instance, or how many people opened a checkout. A count
+            records that something happened and never who it happened to: it carries no name, no account, no
+            IP address, no cookie and nothing you typed, and the address you put into a free QR code is never
+            part of it. These counts cannot be traced back to you, connected to one another, or used to
+            recognise you on a later visit. We keep them for
+            <strong>{{ config('site.event_retention_days') }} days</strong> and use them to understand
+            whether the site works, not who is using it.
         </p>
 
         <h3>c) Cookies</h3>
@@ -252,6 +263,14 @@
                             <strong>{{ config('site.scan_retention_months') }} months</strong>, then deleted
                             automatically. Sooner if the QR code itself is deleted, which removes its scans
                             with it
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Anonymous usage counts</td>
+                        <td>
+                            <strong>{{ config('site.event_retention_days') }} days</strong>, then deleted
+                            automatically. A count records that something happened, never who it happened to,
+                            so there is nothing in one to connect to you
                         </td>
                     </tr>
                     <tr>
