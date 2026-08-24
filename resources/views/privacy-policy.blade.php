@@ -44,6 +44,14 @@
             <li>Name (first and/or last)</li>
             <li>Email address</li>
             <li>Password, stored only as a cryptographic hash — we cannot see or recover your actual password</li>
+            <li>
+                Which part of our site sent you to the registration form, if you arrived by following one of
+                our own links — for example the upgrade offer shown after you download a free QR code. This is
+                a single short label chosen from a fixed list we publish, such as
+                <code>static-offer</code>. It records where the link was, never anything about you, and it is
+                blank for most accounts. We use it only to understand which parts of the site people find
+                useful, and it is deleted with your account.
+            </li>
         </ul>
         <p>
             You also provide the content of the QR codes you create, which may include website addresses,
@@ -250,7 +258,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Account details (name, email, password hash)</td>
+                        <td>Account details (name, email, password hash, and where you signed up from)</td>
                         <td>For as long as your account exists</td>
                     </tr>
                     <tr>

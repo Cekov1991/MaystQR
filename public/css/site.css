@@ -513,6 +513,145 @@ textarea.eq-input {
     flex-wrap: wrap;
 }
 
+/* -------------------------------------------------------- static offer ---- */
+
+/*
+ * The upgrade offer under a freshly downloaded static code. Revealed by
+ * home.blade.php once a download has started, never before, so it cannot sit
+ * between someone and the thing they came for.
+ *
+ * On --eq-surface rather than --eq-tint: the result panel above it is already
+ * tinted, and two tinted blocks in a row read as one block with a seam. The
+ * border and the accent rule do the separating instead.
+ */
+
+.eq-offer[hidden] {
+    display: none;
+}
+
+.eq-offer {
+    position: relative;
+    width: 100%;
+    max-width: var(--eq-width);
+    margin-top: 16px;
+    padding: 28px 32px;
+    background: var(--eq-surface);
+    border: 1px solid var(--eq-border-strong);
+    border-left: 3px solid var(--eq-primary);
+    border-radius: var(--eq-radius-card);
+    box-shadow: var(--eq-shadow);
+}
+
+/*
+ * Sized to the 44px touch target Apple and Android both ask for. A dismiss
+ * control that is hard to hit is what turns a card people can close into a card
+ * people resent.
+ */
+.eq-offer-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--eq-muted);
+    background: none;
+    border: 0;
+    border-radius: var(--eq-radius-btn);
+    cursor: pointer;
+}
+
+.eq-offer-close:hover {
+    color: var(--eq-ink);
+    background: var(--eq-tint);
+}
+
+.eq-offer-kicker {
+    margin: 0 0 4px;
+    font-family: var(--eq-font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--eq-primary);
+}
+
+.eq-offer-title {
+    margin: 0 0 10px;
+    padding-right: 44px;
+    font-family: var(--eq-font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--eq-ink);
+}
+
+.eq-offer-text {
+    margin: 0 0 10px;
+    max-width: 62ch;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--eq-muted);
+}
+
+.eq-offer-price {
+    margin: 16px 0 0;
+    font-family: var(--eq-font-heading);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--eq-ink);
+}
+
+.eq-offer-period {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--eq-muted);
+}
+
+/*
+ * The annual charge, and it is not fine print by accident of size: the monthly
+ * figure above is the misleading one on its own, so this line has to stay
+ * legible. 13px is the floor used elsewhere on the page, not smaller.
+ */
+.eq-offer-note {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--eq-muted);
+}
+
+.eq-offer-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+/*
+ * A real button, styled as the quiet option. It was a link once and that was
+ * wrong: it performs an action on this page and navigates nowhere.
+ */
+.eq-offer-quiet {
+    font-family: var(--eq-font-body);
+    font-size: 13.5px;
+    color: var(--eq-muted);
+    background: none;
+    border: 0;
+    padding: 8px 4px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.eq-offer-quiet:hover {
+    color: var(--eq-ink);
+}
+
 /* --------------------------------------------------------- scan pages ----- */
 
 /*
@@ -787,6 +926,25 @@ textarea.eq-input {
     .eq-result-panel {
         padding: 24px;
         gap: 24px;
+    }
+
+    .eq-offer {
+        padding: 24px 20px;
+    }
+
+    .eq-offer-title {
+        font-size: 18px;
+    }
+
+    /* The CTA goes full width; "No thanks" must not sit under the thumb. */
+    .eq-offer-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .eq-offer-actions .eq-btn {
+        justify-content: center;
     }
 
     .eq-footer {

@@ -99,6 +99,47 @@
         </div>
     </div>
 
+    {{--
+        The offer, revealed only once a download has actually started — see the
+        script below. Hidden for anyone already signed in: they have an account and
+        the pitch would be for something they already have.
+    --}}
+    @guest
+        <div id="static-offer" class="eq-offer" hidden>
+            <button type="button" id="static-offer-dismiss" class="eq-offer-close" aria-label="Dismiss">&times;</button>
+
+            <p class="eq-offer-kicker">Printing it?</p>
+
+            <h2 class="eq-offer-title">That code can never be changed</h2>
+
+            <p class="eq-offer-text">
+                The link is baked into the pattern. If the page moves or the offer
+                behind it ends, every poster you printed points at a dead URL and the
+                only fix is reprinting them.
+            </p>
+
+            <p class="eq-offer-text">
+                A dynamic code points at us instead, so you can change where it
+                goes whenever you like &mdash; and see how many people scanned it.
+            </p>
+
+            <p class="eq-offer-price">
+                {{ \App\Support\SubscriptionPrice::monthlyEquivalent() }}<span class="eq-offer-period">/month</span>
+            </p>
+            <p class="eq-offer-note">
+                Billed {{ \App\Support\SubscriptionPrice::formatted() }} once a year.
+                {{ config('subscription.trial_days') }}-day free trial, no payment details needed.
+            </p>
+
+            <div class="eq-offer-actions">
+                <a id="static-offer-cta"
+                   href="{{ route('filament.admin.auth.register', ['ref' => \App\Enums\SignupSource::StaticOffer->value]) }}"
+                   class="eq-btn eq-btn-primary eq-btn--sm">Start the free trial</a>
+                <button type="button" id="static-offer-no" class="eq-offer-quiet">No thanks</button>
+            </div>
+        </div>
+    @endguest
+
 @endsection
 
 @push('scripts')
@@ -144,18 +185,106 @@
                 result.hidden = true;
             }
 
+            const offer = document.getElementById('static-offer');
+            const offerDismiss = document.getElementById('static-offer-dismiss');
+            const offerNoThanks = document.getElementById('static-offer-no');
+            const offerCta = document.getElementById('static-offer-cta');
+
+            /*
+             * Dismissal is remembered in localStorage rather than a cookie. A
+             * cookie for this would be a marketing cookie, which contradicts
+             * section 2c of the Privacy Policy and would drag the whole site
+             * behind a real consent gate for the sake of one hidden panel.
+             *
+             * The cost is worth stating: this is per-browser and invisible to us,
+             * so the same person is asked again on their phone. The alternative
+             * costs a consent banner.
+             */
+            const DISMISSED_KEY = 'eq.offer.dismissed';
+
+            function offerWasDismissed() {
+                try {
+                    return localStorage.getItem(DISMISSED_KEY) === '1';
+                } catch (e) {
+                    // Private mode, or storage disabled. Treat as not dismissed:
+                    // showing the offer is the recoverable failure.
+                    return false;
+                }
+            }
+
+            function dismissOffer(reason) {
+                if (!offer || offer.hidden) {
+                    return;
+                }
+
+                offer.hidden = true;
+                logEvent('{{ \App\Enums\TrackedEvent::OfferDismissed->value }}');
+
+                try {
+                    localStorage.setItem(DISMISSED_KEY, '1');
+                } catch (e) {
+                    // Nothing to do. The panel is hidden for this page view either
+                    // way, and it is not worth a failed write breaking the click.
+                }
+            }
+
+            /*
+             * Revealed only once a download has actually started, which is both
+             * the highest-intent moment and the one where the offer cannot get
+             * between someone and the thing they came for. Shown at most once a
+             * page view, so `offer_shown` counts people rather than clicks.
+             */
+            function revealOffer() {
+                if (!offer || !offer.hidden || offerWasDismissed()) {
+                    return;
+                }
+
+                offer.hidden = false;
+                logEvent('{{ \App\Enums\TrackedEvent::OfferShown->value }}');
+            }
+
+            if (offer) {
+                offerDismiss.addEventListener('click', function () {
+                    dismissOffer();
+                });
+
+                /*
+                 * Named for the copy rather than the concept, deliberately.
+                 * PublicPagesTest guards the promise that the cookie notice
+                 * offers no refuse-cookies button by asserting that word does
+                 * not appear on any public page, and this is a script comment,
+                 * so anything written here ships in the HTML and trips it too.
+                 */
+                offerNoThanks.addEventListener('click', function () {
+                    dismissOffer();
+                });
+
+                /*
+                 * Not preventDefault()'d: the link must navigate. logEvent uses
+                 * keepalive precisely so the count survives the navigation.
+                 */
+                offerCta.addEventListener('click', function () {
+                    logEvent('{{ \App\Enums\TrackedEvent::OfferClicked->value }}');
+                });
+            }
+
             /*
              * A download is a click on a data: URI, which never reaches the
              * server — so the click is the only evidence it happened. The
              * listeners are attached once, not per generation, and the format
              * tells the two buttons apart.
              */
+            function handleDownload(format) {
+                logEvent('{{ \App\Enums\TrackedEvent::QrDownloaded->value }}', { format: format });
+                revealOffer();
+            }
+
             downloadPng.addEventListener('click', function () {
-                logEvent('{{ \App\Enums\TrackedEvent::QrDownloaded->value }}', { format: 'png' });
+                handleDownload('png');
             });
 
             downloadSvg.addEventListener('click', function () {
-                logEvent('{{ \App\Enums\TrackedEvent::QrDownloaded->value }}', { format: 'svg' });
+                handleDownload('svg');
             });
 
             form.addEventListener('submit', async function (event) {
@@ -191,6 +320,10 @@
                             showError((data && (data.errors?.url?.[0] || data.message)) || 'Something went wrong. Please try again.');
                         }
                         return;
+                    }
+
+                    if (offer) {
+                        offer.hidden = true;
                     }
 
                     image.src = data.png;
