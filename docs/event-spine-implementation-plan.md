@@ -6,7 +6,7 @@ already happened in code we owned; none of it was ever written down, so question
 as basic as "how many people generate a free code and then look at the price" had
 no answer.
 
-**Status:** phases 1–5 implemented, tested and committed on `worktree-event-spine-and-offer`; phase 6 outstanding.
+**Status:** phases 1–6 implemented, tested and committed on `worktree-event-spine-and-offer`. Nothing pushed or deployed.
 **Related:** [subscription-implementation-plan.md](./subscription-implementation-plan.md) · [CONTEXT.md](../CONTEXT.md)
 
 > Written down after the fact. The plan originally lived only in a chat
@@ -148,9 +148,24 @@ value is "everyone" carries no information. `StaticOfferTest` asserts no arm
 reaches the table, so adding suppression without adding the endpoint's allowlist
 fails loudly.
 
-## Phase 6 — Reading it
+## Phase 6 — Reading it *(done)*
 
-`php artisan funnel:report {--days=30}` — one table: QRs generated → offers shown
-→ clicked → registered by source → subscribed. No new authenticated UI surface,
-nothing to leak, and it is the artefact that says whether any of this was worth
-building.
+`php artisan funnel:report {--days=30}` — two tables. The first is the anonymous
+counts: generated → downloaded → offer shown → clicked/dismissed, then checkouts
+opened/completed/abandoned. The second is registrations by `signup_source` and how
+many of each went on to pay, which is the offer-versus-quiet-link comparison from
+phase 5.
+
+A command rather than a dashboard: no authenticated surface to get wrong, nothing
+to leak, and no new page to keep in step with the Privacy Policy.
+
+The presentation carries three caveats because the data genuinely has them, and
+each is asserted by a test rather than left to a reader's goodwill:
+
+- **The stages are not a cohort.** With no identifier on the event rows these are independent totals over one window, so a rate is a ratio of two counts and can exceed one hundred per cent at low volume. That is the privacy design working, not a bug in the counter.
+- **Half the report is forgeable.** The offer figures are browser-reported up to the endpoint throttle; the registration and subscription figures come from account rows and are exact. The report says which is which.
+- **Zero over zero is an em dash, not 0%.** A genuine zero rate still prints as `0%`. Conflating the two invents a finding out of an empty window, which is the likeliest way this gets misread on its first run.
+
+Asking for a window longer than `event_retention_days` is allowed and warns,
+because the account half of the report still covers the full window while the
+event half stops wherever `events:prune` got to.
