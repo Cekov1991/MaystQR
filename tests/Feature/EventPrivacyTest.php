@@ -74,6 +74,30 @@ class EventPrivacyTest extends TestCase
     }
 
     /**
+     * The same guarantee on the public endpoint, which is the one path where a
+     * stranger causes the row to be written. The request has their address and
+     * their user agent in hand and must put neither on the row.
+     */
+    public function test_an_event_reported_by_a_browser_stores_nothing_about_the_visitor(): void
+    {
+        $ip = '198.51.100.7';
+        $agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)';
+
+        $this->withServerVariables(['REMOTE_ADDR' => $ip])
+            ->withHeaders(['User-Agent' => $agent])
+            ->postJson(route('events.log'), [
+                'event' => TrackedEvent::QrDownloaded->value,
+                'format' => 'png',
+            ])
+            ->assertNoContent();
+
+        $stored = json_encode(SiteEvent::query()->sole()->getAttributes());
+
+        $this->assertStringNotContainsString($ip, (string) $stored);
+        $this->assertStringNotContainsString($agent, (string) $stored);
+    }
+
+    /**
      * The URL a visitor typed is theirs. The homepage tells them we never store
      * their code or its link, and the count written on that same request is the
      * one thing that could quietly contradict it.

@@ -114,11 +114,49 @@
             const downloadSvg = document.getElementById('static-download-svg');
             const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
+            /**
+             * Reports one of the four events that only this page can see. Event
+             * names are rendered from the TrackedEvent enum rather than typed
+             * here, so a renamed case cannot leave the page quietly posting a
+             * value the endpoint no longer accepts.
+             *
+             * Fire and forget in both directions: the response is ignored, and a
+             * failure is swallowed. Counting a download must never be the reason
+             * a download does not happen. `keepalive` is what lets the request
+             * survive if the click does navigate away.
+             */
+            function logEvent(event, extra) {
+                fetch('{{ route('events.log') }}', {
+                    method: 'POST',
+                    keepalive: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    body: JSON.stringify(Object.assign({ event: event }, extra || {})),
+                }).catch(function () {});
+            }
+
             function showError(message) {
                 error.textContent = message;
                 error.style.display = 'block';
                 result.hidden = true;
             }
+
+            /*
+             * A download is a click on a data: URI, which never reaches the
+             * server — so the click is the only evidence it happened. The
+             * listeners are attached once, not per generation, and the format
+             * tells the two buttons apart.
+             */
+            downloadPng.addEventListener('click', function () {
+                logEvent('{{ \App\Enums\TrackedEvent::QrDownloaded->value }}', { format: 'png' });
+            });
+
+            downloadSvg.addEventListener('click', function () {
+                logEvent('{{ \App\Enums\TrackedEvent::QrDownloaded->value }}', { format: 'svg' });
+            });
 
             form.addEventListener('submit', async function (event) {
                 event.preventDefault();
