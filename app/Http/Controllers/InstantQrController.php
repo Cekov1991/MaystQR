@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\QrCode;
 use App\Rules\ValidQrUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeGenerator;
 
 class InstantQrController extends Controller
 {
@@ -25,19 +25,14 @@ class InstantQrController extends Controller
             'url' => ['required', 'string', 'max:2048', new ValidQrUrl],
         ]);
 
-        $png = QrCodeGenerator::format('png')
-            ->size(600)
-            ->errorCorrection('M')
-            ->generate($validated['url']);
+        $options = ['size' => 600, 'errorCorrection' => 'M', 'style' => QrCode::DEFAULT_STYLE];
 
-        $svg = QrCodeGenerator::format('svg')
-            ->size(600)
-            ->errorCorrection('M')
-            ->generate($validated['url']);
+        $png = QrCode::buildGenerator($options + ['format' => 'png'])->generate($validated['url']);
+        $svg = QrCode::buildGenerator($options + ['format' => 'svg'])->generate($validated['url']);
 
         return response()->json([
-            'png' => 'data:image/png;base64,' . base64_encode((string) $png),
-            'svg' => 'data:image/svg+xml;base64,' . base64_encode((string) $svg),
+            'png' => 'data:image/png;base64,'.base64_encode((string) $png),
+            'svg' => 'data:image/svg+xml;base64,'.base64_encode((string) $svg),
         ]);
     }
 }

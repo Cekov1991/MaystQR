@@ -1,0 +1,216 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Filament\Resources\QrCodeResource\Pages\CreateQrCode;
+use App\Models\QrCode;
+use App\Models\User;
+use Filament\Facades\Filament;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
+use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeGenerator;
+use Tests\TestCase;
+
+class QrCodeStyleTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private const CONTENT = 'https://easyqr.link/aB3xK9pQ';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake();
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
+    private function render(array $overrides = []): string
+    {
+        return (string) QrCode::buildGenerator(array_merge([
+            'format' => 'png',
+            'size' => 300,
+            'errorCorrection' => 'M',
+        ], $overrides))->generate(self::CONTENT);
+    }
+
+    public function test_the_classic_square_style_matches_an_unstyled_render(): void
+    {
+        $unstyled = (string) QrCodeGenerator::format('png')
+            ->size(300)
+            ->errorCorrection('M')
+            ->color(0, 0, 0)
+            ->generate(self::CONTENT);
+
+        $this->assertSame($unstyled, $this->render(['style' => 'square']));
+    }
+
+    public function test_each_style_produces_a_distinct_image(): void
+    {
+        $renders = [];
+
+        foreach (array_keys(QrCode::QR_STYLES) as $style) {
+            $renders[$style] = md5($this->render(['style' => $style]));
+        }
+
+        $this->assertCount(count(QrCode::QR_STYLES), array_unique($renders));
+    }
+
+    public function test_an_unknown_or_missing_style_falls_back_to_the_default(): void
+    {
+        $default = $this->render(['style' => QrCode::DEFAULT_STYLE]);
+
+        $this->assertSame($default, $this->render());
+        $this->assertSame($default, $this->render(['style' => 'not-a-style']));
+    }
+
+    public function test_the_rounded_style_leaves_the_eye_shape_inherited(): void
+    {
+        $inheritedEyes = (string) QrCodeGenerator::format('png')
+            ->size(300)
+            ->errorCorrection('M')
+            ->color(0, 0, 0)
+            ->style('round', 0.5)
+            ->generate(self::CONTENT);
+
+        $this->assertSame($inheritedEyes, $this->render(['style' => 'round']));
+    }
+
+    /**
+     * Dotted modules dissolve the finder patterns unless an eye style is set
+     * explicitly, which stops scanners locating the symbol at all.
+     */
+    public function test_the_dot_style_sets_an_explicit_eye_shape(): void
+    {
+        $withExplicitEye = (string) QrCodeGenerator::format('png')
+            ->size(300)
+            ->errorCorrection('M')
+            ->color(0, 0, 0)
+            ->style('dot', 0.85)
+            ->eye('circle')
+            ->generate(self::CONTENT);
+
+        $inheritedEyes = (string) QrCodeGenerator::format('png')
+            ->size(300)
+            ->errorCorrection('M')
+            ->color(0, 0, 0)
+            ->style('dot', 0.85)
+            ->generate(self::CONTENT);
+
+        $this->assertSame($withExplicitEye, $this->render(['style' => 'dot']));
+        $this->assertNotSame($inheritedEyes, $this->render(['style' => 'dot']));
+    }
+
+    public function test_every_style_renders_in_every_supported_format(): void
+    {
+        foreach (array_keys(QrCode::QR_STYLES) as $style) {
+            foreach (['png', 'svg', 'eps'] as $format) {
+                $render = $this->render(['style' => $style, 'format' => $format]);
+
+                $this->assertNotEmpty($render, "{$style} produced no output as {$format}");
+            }
+        }
+    }
+
+    public function test_a_new_code_is_stored_in_the_rounded_style_by_default(): void
+    {
+        $qrCode = QrCode::factory()->create([
+            'qr_content_data' => ['url' => self::CONTENT],
+        ]);
+
+        $stored = Storage::get($qrCode->qr_code_image);
+
+        $this->assertSame($this->render(['style' => 'round']), $stored);
+        $this->assertNotSame($this->render(['style' => 'square']), $stored);
+    }
+
+    public function test_a_chosen_style_is_persisted_and_used_for_the_stored_image(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Livewire::test(CreateQrCode::class)
+            ->fillForm([
+                'name' => 'Dotted code',
+                'type' => 'static',
+                'qr_content_type' => 'website',
+                'qr_content_data' => ['url' => self::CONTENT],
+                'options' => ['style' => 'dot', 'format' => 'png', 'size' => 300, 'errorCorrection' => 'M'],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $qrCode = $user->qrCodes()->sole();
+
+        $this->assertSame('dot', $qrCode->options['style']);
+        $this->assertSame(
+            $this->render(['style' => 'dot']),
+            Storage::get($qrCode->qr_code_image),
+        );
+    }
+
+    /**
+     * The zip of alternate formats used to drop the record's colour, so the
+     * PNG inside it did not match its SVG and EPS siblings.
+     */
+    public function test_alternate_format_renders_keep_the_chosen_colour(): void
+    {
+        $options = ['format' => 'png', 'size' => 300, 'errorCorrection' => 'M', 'color' => '#ff0000'];
+
+        $red = (string) QrCode::buildGenerator(array_merge($options, ['format' => 'svg']))->generate(self::CONTENT);
+        $black = $this->render(['format' => 'svg']);
+
+        $this->assertNotSame($black, $red);
+        $this->assertStringContainsStringIgnoringCase('ff0000', $red);
+    }
+
+    public function test_the_style_picker_renders_a_selectable_sample_for_every_style(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $page = Livewire::test(CreateQrCode::class);
+
+        $page->assertSeeHtml('eq-style-picker');
+
+        // Without a live binding the tiles would render but never change the state.
+        $page->assertSeeHtml('wire:model="data.options.style"');
+
+        foreach (QrCode::QR_STYLES as $style => $label) {
+            $page->assertSeeHtml(QrCode::styleSample($style));
+            $page->assertSeeHtml($label.' sample');
+        }
+    }
+
+    public function test_each_style_sample_is_a_distinct_inline_svg(): void
+    {
+        $samples = [];
+
+        foreach (array_keys(QrCode::QR_STYLES) as $style) {
+            $sample = QrCode::styleSample($style);
+
+            $this->assertStringStartsWith('data:image/svg+xml;base64,', $sample);
+
+            $samples[$style] = $sample;
+        }
+
+        $this->assertCount(count(QrCode::QR_STYLES), array_unique($samples));
+    }
+
+    public function test_the_instant_landing_page_code_uses_the_default_style(): void
+    {
+        $response = $this->postJson(route('qr.instant'), ['url' => self::CONTENT]);
+
+        $response->assertOk();
+
+        $expected = 'data:image/png;base64,'.base64_encode(
+            $this->render(['style' => QrCode::DEFAULT_STYLE, 'size' => 600])
+        );
+
+        $this->assertSame($expected, $response->json('png'));
+    }
+}

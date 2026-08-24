@@ -5,8 +5,10 @@ namespace App\Models;
 use Database\Factories\QrCodeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeGenerator;
+use SimpleSoftwareIO\QrCode\Generator;
 
 class QrCode extends Model
 {
@@ -25,6 +27,21 @@ class QrCode extends Model
         // 'text' => '📄 Plain Text',
         // 'location' => '📍 Location',
     ];
+
+    const QR_STYLES = [
+        'round' => 'Rounded',
+        'square' => 'Classic squares',
+        'round_circle' => 'Circle eyes',
+        'dot' => 'Dots',
+    ];
+
+    const DEFAULT_STYLE = 'round';
+
+    /**
+     * Deliberately tiny payload: fewer modules means larger ones, which is what
+     * makes the difference between the styles readable at thumbnail size.
+     */
+    const STYLE_SAMPLE_CONTENT = 'EasyQR';
 
     const PROHIBITED_DOMAINS = [
         // URL shorteners (to prevent redirect chains)
@@ -292,22 +309,67 @@ class QrCode extends Model
         return $data['url'] ?? $this->destination_url ?? '';
     }
 
+    /**
+     * Builds a generator configured from a stored options array, so every place
+     * that renders a QR code produces the same image for the same record.
+     *
+     * @param  array{format?: string, size?: int, color?: string, errorCorrection?: string, style?: string}  $options
+     */
+    public static function buildGenerator(array $options): Generator
+    {
+        [$r, $g, $b] = sscanf($options['color'] ?? '#000000', '#%02x%02x%02x') ?? [0, 0, 0];
+
+        $generator = QrCodeGenerator::format($options['format'] ?? 'png')
+            ->size($options['size'] ?? 300)
+            ->errorCorrection($options['errorCorrection'] ?? 'M')
+            ->color($r, $g, $b);
+
+        return static::applyStyle($generator, $options['style'] ?? self::DEFAULT_STYLE);
+    }
+
+    /**
+     * Applies a module and eye shape to a generator.
+     *
+     * The 'round' style deliberately leaves the eye style unset so the finder
+     * patterns inherit the rounded module shape. The 'dot' style must set an
+     * eye style explicitly, otherwise the finder patterns render as loose dots
+     * and scanners can no longer locate the symbol.
+     */
+    protected static function applyStyle(Generator $generator, string $style): Generator
+    {
+        return match ($style) {
+            'square' => $generator,
+            'round_circle' => $generator->style('round', 0.5)->eye('circle'),
+            'dot' => $generator->style('dot', 0.85)->eye('circle'),
+            default => $generator->style('round', 0.5),
+        };
+    }
+
+    /**
+     * Renders a small sample of a style as an inline SVG data URI, for the
+     * visual style picker on the create form.
+     */
+    public static function styleSample(string $style): string
+    {
+        $key = 'qr-style-sample:'.$style.':'.substr(md5(self::STYLE_SAMPLE_CONTENT), 0, 8);
+
+        return Cache::rememberForever($key, function () use ($style): string {
+            $svg = (string) static::buildGenerator([
+                'format' => 'svg',
+                'size' => 160,
+                'style' => $style,
+            ])->generate(self::STYLE_SAMPLE_CONTENT);
+
+            return 'data:image/svg+xml;base64,'.base64_encode($svg);
+        });
+    }
+
     protected function generateQrCode(): void
     {
         $options = $this->options ?? [];
         $format = $options['format'] ?? 'png';
-        $size = $options['size'] ?? 300;
-        $color = $options['color'] ?? '#000000';
-        $errorCorrection = $options['errorCorrection'] ?? 'M';
 
-        // Convert hex color to RGB
-        [$r, $g, $b] = sscanf($color, '#%02x%02x%02x');
-
-        $qrCode = QrCodeGenerator::format($format)
-            ->size($size)
-            ->errorCorrection($errorCorrection)
-            ->color($r, $g, $b)
-            ->generate($this->content);
+        $qrCode = static::buildGenerator($options)->generate($this->content);
 
         // Generate unique filename
         $filename = 'qr-codes/'.uniqid().'.'.$format;

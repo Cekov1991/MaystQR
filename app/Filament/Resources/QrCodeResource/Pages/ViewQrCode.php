@@ -4,6 +4,7 @@ namespace App\Filament\Resources\QrCodeResource\Pages;
 
 use App\Filament\Resources\QrCodeResource;
 use App\Filament\Resources\QrCodeResource\Widgets\QrCodeScanChart;
+use App\Models\QrCode;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\ImageEntry;
@@ -13,7 +14,6 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeGenerator;
 use ZipArchive;
 
 class ViewQrCode extends ViewRecord
@@ -111,9 +111,9 @@ class ViewQrCode extends ViewRecord
                             continue;
                         }
 
-                        $qrCode = QrCodeGenerator::format($format)
-                            ->size($record->options['size'] ?? 300)
-                            ->generate($record->content);
+                        $qrCode = QrCode::buildGenerator(
+                            array_merge($record->options ?? [], ['format' => $format])
+                        )->generate($record->content);
 
                         $tempPath = storage_path("app/temp/qr-{$record->name}.{$format}");
                         file_put_contents($tempPath, $qrCode);
