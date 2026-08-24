@@ -6,7 +6,7 @@ already happened in code we owned; none of it was ever written down, so question
 as basic as "how many people generate a free code and then look at the price" had
 no answer.
 
-**Status:** phases 1–3 implemented, tested and committed on `worktree-event-spine-and-offer`; phases 4–6 outstanding.
+**Status:** phases 1–5 implemented, tested and committed on `worktree-event-spine-and-offer`; phase 6 outstanding.
 **Related:** [subscription-implementation-plan.md](./subscription-implementation-plan.md) · [CONTEXT.md](../CONTEXT.md)
 
 > Written down after the fact. The plan originally lived only in a chat
@@ -39,7 +39,8 @@ precisely what the policy disclaims.
 | Trust split | `TrackedEvent::isClientLoggable()`. A new case is untrusted by default and must be named to become browser-reportable. |
 | Dismissal state | `localStorage`, not a cookie. A new marketing cookie would contradict section 2c and force a real consent gate. |
 | Offer attribution | `?ref=` on the register URL, allowlisted to known values, persisted to `users.signup_source`. Not a session flag — phase 5's arm rides in the URL so no profile is needed. |
-| Holdout | **Unresolved.** Plan says 50%; the operator leaned toward 0% (show everyone) on the grounds that with no users yet, a holdout means most early users never see the card. See phase 5. |
+| Holdout | **Declined, 0%.** Everyone sees the offer. With no users yet, holding it back from half of them means most early visitors never see it. The comparison runs through `SignupSource` instead — see phase 5. |
+| Dismissal reach | Per-browser and invisible to us, accepted. The same person is asked again on another device; the alternative is a consent banner. |
 
 ---
 
@@ -120,19 +121,32 @@ own beyond the event ones, so this is also its first real coverage.
 - The offer block is present with the trial days and price from config.
 - A registration carrying `?ref=static-offer` persists `signup_source`; an unknown ref persists null.
 
-## Phase 5 — The holdout *(decide before phase 4 ships)*
+## Phase 5 — The comparison, without a holdout *(done)*
 
-Random suppression, `OfferShown` still logged with `variant=holdout` for the
-suppressed half, and the existing quiet inline link gets `?ref=static-inline`.
-Registration rates by ref then answer whether the offer *caused* anything — with
-no identifier, because the arm travels in the URL rather than in a profile.
-Replaces the `prohibited` variant rule from phase 3 with `Rule::in` over the arm
-names.
+**The holdout was declined.** The proposal was to suppress the offer for half of
+all visitors and log `OfferShown` with `variant=holdout` for the suppressed half,
+which would have answered whether the offer *caused* registrations that would
+not otherwise have happened. With no users yet, that means most early visitors
+never see the offer at all, and the operator judged that too high a price.
 
-The unresolved question is the rate. The plan proposed 50%. The operator's
-objection is that with no users yet, a 50% holdout means most early users never
-see the card at all. The counter-argument is that it is cheap now and impossible
-later: once the offer ships to everyone the baseline is gone permanently.
+What replaced it answers a narrower question that is arguably more useful, and
+answers it today:
+
+- `SignupSource::StaticInline` — the quiet "Create a dynamic QR" line in the result panel now carries `?ref=static-inline` beside the offer's `?ref=static-offer`.
+- Both are rendered for every visitor. Comparing their registration rates asks whether a loud offer converts better than an unobtrusive line of text, with nothing suppressed for anybody.
+
+**What this cannot answer**, stated so nobody mistakes one question for the
+other: whether the offer produced registrations that would not have happened at
+all. That needs a held-back group. It also needs something the current schema
+does not have — the arm carried through to registration, since `signup_source`
+records which link was followed and not which arm the visitor was in. Reversing
+this decision therefore means building both, not just turning a percentage up.
+
+Consequently no event carries a `variant`, and `LogSiteEventRequest` keeps
+`variant` **prohibited** permanently rather than pending: a column whose only
+value is "everyone" carries no information. `StaticOfferTest` asserts no arm
+reaches the table, so adding suppression without adding the endpoint's allowlist
+fails loudly.
 
 ## Phase 6 — Reading it
 

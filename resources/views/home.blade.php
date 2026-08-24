@@ -93,7 +93,8 @@
                 @auth
                     <a href="{{ route('filament.admin.resources.qr-codes.create') }}">Create a dynamic QR</a>
                 @else
-                    <a href="{{ route('filament.admin.auth.register') }}">Create a dynamic QR</a>
+                    {{-- Tagged so its conversions can be told apart from the offer's below. --}}
+                    <a href="{{ route('filament.admin.auth.register', ['ref' => \App\Enums\SignupSource::StaticInline->value]) }}">Create a dynamic QR</a>
                 @endauth
             </p>
         </div>

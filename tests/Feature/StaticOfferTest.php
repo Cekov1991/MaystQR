@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\SignupSource;
 use App\Enums\TrackedEvent;
 use App\Filament\Pages\Auth\Register;
+use App\Models\SiteEvent;
 use App\Models\User;
 use App\Support\SubscriptionPrice;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -139,14 +140,66 @@ class StaticOfferTest extends TestCase
     }
 
     /**
-     * The quiet inline link stays where it is. Replacing it with the offer would
-     * destroy the comparison the holdout phase exists to make.
+     * The quiet inline link stays where it is, and carries its own ref. The pair
+     * is the experiment: both are shown to everyone, so comparing their
+     * registration rates asks whether the loud offer beats an unobtrusive line of
+     * text without suppressing either for anybody.
      */
-    public function test_the_quiet_inline_link_still_exists_beside_the_offer(): void
+    public function test_the_quiet_inline_link_still_exists_and_is_tagged(): void
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Create a dynamic QR');
+            ->assertSee('Create a dynamic QR')
+            ->assertSee('ref='.SignupSource::StaticInline->value, false);
+    }
+
+    /**
+     * Both arms are reachable on the same page for the same visitor. If one ever
+     * stops rendering, the comparison silently becomes a measurement of nothing.
+     */
+    public function test_both_arms_are_offered_to_the_same_visitor(): void
+    {
+        $response = $this->get('/')->assertOk();
+
+        foreach (SignupSource::cases() as $source) {
+            $response->assertSee('ref='.$source->value, false);
+        }
+    }
+
+    public function test_a_registration_from_the_quiet_link_records_its_own_source(): void
+    {
+        Livewire::withQueryParams(['ref' => SignupSource::StaticInline->value])
+            ->test(Register::class)
+            ->fillForm([
+                'name' => 'Edsger',
+                'email' => 'edsger@example.com',
+                'password' => 'password-that-is-long',
+                'passwordConfirmation' => 'password-that-is-long',
+            ])
+            ->call('register');
+
+        $this->assertSame(
+            SignupSource::StaticInline,
+            User::query()->where('email', 'edsger@example.com')->sole()->signup_source,
+        );
+    }
+
+    /**
+     * No holdout was built, so no event may carry an arm. A `variant` reaching
+     * the table would mean a suppression mechanism had been added without the
+     * endpoint's allowlist being added with it.
+     */
+    public function test_no_event_carries_an_experiment_arm(): void
+    {
+        $this->postJson(route('events.log'), [
+            'event' => TrackedEvent::OfferShown->value,
+            'variant' => 'holdout',
+        ])->assertStatus(422);
+
+        $this->postJson(route('events.log'), ['event' => TrackedEvent::OfferShown->value])
+            ->assertNoContent();
+
+        $this->assertNull(SiteEvent::query()->sole()->variant);
     }
 
     public function test_the_offer_reports_its_events_to_the_endpoint(): void

@@ -78,15 +78,22 @@ class LogSiteEventRequest extends FormRequest
             ],
 
             /*
-             * Refused rather than ignored. `variant` exists on the table for the
-             * experiment arm, but no arms exist yet — the holdout mechanism is a
-             * later phase, and it is what should introduce both the arm names and
-             * the allowlist that keeps this column low-cardinality. Until then an
-             * accepted-but-unvalidated variant would be a free-text column open
-             * to the public, which is precisely what TrackedEvent forbids.
+             * Refused rather than ignored, and now permanently rather than
+             * pending. `variant` exists on the table for an experiment arm, and
+             * the arms would have come from a holdout — showing the offer to some
+             * visitors and not others. That was considered and declined: with no
+             * users yet, holding it back from half of them means most early
+             * visitors never see it.
              *
-             * Whoever adds the arms: replace this with Rule::in over their fixed
-             * list, and delete this comment rather than the rule.
+             * So there is exactly one arm, which is no arm at all: a column whose
+             * only value is "everyone" carries no information. The experiment
+             * runs through SignupSource instead, where both the offer and the
+             * quiet link beside it are tagged and neither is suppressed.
+             *
+             * If a holdout is ever introduced, this becomes Rule::in over its arm
+             * names. Until then an accepted-but-unvalidated variant would be a
+             * free-text column open to the public, which is exactly the unbounded
+             * cardinality TrackedEvent's second rule forbids.
              */
             'variant' => ['prohibited'],
         ];

@@ -28,6 +28,19 @@ enum SignupSource: string
     case StaticOffer = 'static-offer';
 
     /**
+     * The quiet "Create a dynamic QR" line in the result panel, which sits above
+     * the offer and is shown to everyone regardless.
+     *
+     * The pair is the experiment. Both links are visible to every visitor, so
+     * comparing their registration rates asks whether a loud offer converts
+     * better than an unobtrusive line of text — and answers it without
+     * suppressing the offer for anybody. It cannot answer the harder question of
+     * whether the offer created registrations that would not have happened at
+     * all; that one needs a held-back group, which was considered and declined.
+     */
+    case StaticInline = 'static-inline';
+
+    /**
      * Resolve a `?ref=` value, or null if it is not one we published.
      *
      * Null is not a failure and is never reported as one: most registrations
