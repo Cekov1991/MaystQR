@@ -261,6 +261,15 @@ class QrCodeResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
+                                Forms\Components\Radio::make('options.style')
+                                    ->label('Style')
+                                    ->options(QrCode::QR_STYLES)
+                                    ->default(QrCode::DEFAULT_STYLE)
+                                    ->required()
+                                    ->view('filament.forms.components.qr-style-picker')
+                                    ->helperText('Shape of the dots and corner squares. All styles scan the same.')
+                                    ->columnSpanFull(),
+
                                 Forms\Components\Select::make('options.format')
                                     ->label('Image Format')
                                     ->options([
@@ -302,6 +311,9 @@ class QrCodeResource extends Resource
                         Forms\Components\Placeholder::make('qr_type_display')
                             ->label('QR Code Type')
                             ->content(fn ($record) => $record ? QrCode::QR_CONTENT_TYPES[$record->qr_content_type] ?? ucfirst($record->qr_content_type) : ''),
+                        Forms\Components\Placeholder::make('style_display')
+                            ->label('Style')
+                            ->content(fn ($record) => $record ? (QrCode::QR_STYLES[$record->options['style'] ?? QrCode::DEFAULT_STYLE] ?? 'Rounded') : ''),
                         Forms\Components\Placeholder::make('format_display')
                             ->label('Format')
                             ->content(fn ($record) => $record ? strtoupper($record->options['format'] ?? 'PNG') : ''),

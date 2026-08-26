@@ -4,6 +4,7 @@ namespace App\Filament\Resources\QrCodeResource\Pages;
 
 use App\Filament\Resources\QrCodeResource;
 use App\Filament\Resources\QrCodeResource\Widgets\QrCodeScanChart;
+use App\Models\QrCode;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\ImageEntry;
@@ -13,7 +14,6 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeGenerator;
 use ZipArchive;
 
 class ViewQrCode extends ViewRecord
@@ -95,54 +95,76 @@ class ViewQrCode extends ViewRecord
             ->icon('heroicon-o-archive-box-arrow-down')
             ->action(function () {
                 $record = $this->record;
-                $zipPath = storage_path("app/temp/{$record->name}-qr-codes.zip");
+                $baseName = 'qr-'.$this->downloadFileName($record->name);
+                $zipPath = tempnam(sys_get_temp_dir(), 'qr-codes-');
                 $zip = new ZipArchive;
 
-                if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-                    // Add original format
-                    $originalPath = Storage::path($record->qr_code_image);
-                    $originalFormat = $record->options['format'] ?? 'png';
-                    $zip->addFile($originalPath, "qr-{$record->name}.{$originalFormat}");
-
-                    // Generate and add other formats
-                    $formats = ['png', 'svg', 'eps'];
-                    foreach ($formats as $format) {
-                        if ($format === $originalFormat) {
-                            continue;
-                        }
-
-                        $qrCode = QrCodeGenerator::format($format)
-                            ->size($record->options['size'] ?? 300)
-                            ->generate($record->content);
-
-                        $tempPath = storage_path("app/temp/qr-{$record->name}.{$format}");
-                        file_put_contents($tempPath, $qrCode);
-                        $zip->addFile($tempPath, "qr-{$record->name}.{$format}");
-                    }
-
-                    $zip->close();
-
-                    // Clean up temporary files
-                    foreach ($formats as $format) {
-                        if ($format === $originalFormat) {
-                            continue;
-                        }
-                        @unlink(storage_path("app/temp/qr-{$record->name}.{$format}"));
-                    }
-
-                    return response()->download($zipPath)->deleteFileAfterSend();
+                if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+                    return null;
                 }
+
+                $originalFormat = $record->options['format'] ?? 'png';
+
+                foreach (['png', 'svg', 'eps'] as $format) {
+                    $zip->addFromString(
+                        "{$baseName}.{$format}",
+                        $format === $originalFormat
+                            ? $this->originalImageContents($record, $originalFormat)
+                            : (string) QrCode::buildGenerator(
+                                array_merge($record->options ?? [], ['format' => $format])
+                            )->generate($record->content),
+                    );
+                }
+
+                $zip->close();
+
+                return response()
+                    ->download($zipPath, "{$this->downloadFileName($record->name)}-qr-codes.zip")
+                    ->deleteFileAfterSend();
             });
 
         $actions[] = Action::make('download_original')
             ->label('Download Original')
             ->icon('heroicon-o-arrow-down-tray')
             ->action(function () {
-                return response()->download(Storage::path($this->record->qr_code_image));
+                $record = $this->record;
+                $format = $record->options['format'] ?? 'png';
+
+                return response()->streamDownload(
+                    fn () => print ($this->originalImageContents($record, $format)),
+                    'qr-'.$this->downloadFileName($record->name).".{$format}",
+                );
             });
 
         $actions[] = Action::make('edit')->url(fn () => $this->getResource()::getUrl('edit', ['record' => $this->record]));
 
         return $actions;
+    }
+
+    /**
+     * Reads the stored image through the filesystem disk rather than a local
+     * path, so downloads work on cloud disks such as S3. Regenerates the image
+     * if the stored object has gone missing.
+     */
+    protected function originalImageContents(QrCode $record, string $format): string
+    {
+        $contents = $record->qr_code_image
+            ? Storage::get($record->qr_code_image)
+            : null;
+
+        if ($contents !== null && $contents !== '') {
+            return $contents;
+        }
+
+        return (string) QrCode::buildGenerator(
+            array_merge($record->options ?? [], ['format' => $format])
+        )->generate($record->content);
+    }
+
+    protected function downloadFileName(string $name): string
+    {
+        $name = trim(str_replace(['/', '\\', "\0"], '-', $name));
+
+        return $name === '' ? 'qr-code' : $name;
     }
 }
