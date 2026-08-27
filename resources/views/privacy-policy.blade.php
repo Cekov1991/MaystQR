@@ -44,6 +44,14 @@
             <li>Name (first and/or last)</li>
             <li>Email address</li>
             <li>Password, stored only as a cryptographic hash — we cannot see or recover your actual password</li>
+            <li>
+                Which part of our site sent you to the registration form, if you arrived by following one of
+                our own links — for example the upgrade offer shown after you download a free QR code. This is
+                a single short label chosen from a fixed list we publish, such as
+                <code>static-offer</code>. It records where the link was, never anything about you, and it is
+                blank for most accounts. We use it only to understand which parts of the site people find
+                useful, and it is deleted with your account.
+            </li>
         </ul>
         <p>
             You also provide the content of the QR codes you create, which may include website addresses,
@@ -64,8 +72,19 @@
             </li>
         </ul>
         <p>
-            <strong>We run no analytics and no third-party tracking on this site.</strong> We do not build a
-            profile of the pages you visit or how long you spend on them.
+            <strong>We run no third-party tracking on this site and build no profile of you.</strong> We do
+            not record which pages you visit or how long you spend on them, and no advertising or analytics
+            company receives anything about you from us.
+        </p>
+        <p>
+            We do keep <strong>anonymous counts</strong> of how often certain things happen here — how many
+            free QR codes were generated today, for instance, or how many people opened a checkout. A count
+            records that something happened and never who it happened to: it carries no name, no account, no
+            IP address, no cookie and nothing you typed, and the address you put into a free QR code is never
+            part of it. These counts cannot be traced back to you, connected to one another, or used to
+            recognise you on a later visit. We keep them for
+            <strong>{{ config('site.event_retention_days') }} days</strong> and use them to understand
+            whether the site works, not who is using it.
         </p>
 
         <h3>c) Cookies</h3>
@@ -239,7 +258,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Account details (name, email, password hash)</td>
+                        <td>Account details (name, email, password hash, and where you signed up from)</td>
                         <td>For as long as your account exists</td>
                     </tr>
                     <tr>
@@ -252,6 +271,14 @@
                             <strong>{{ config('site.scan_retention_months') }} months</strong>, then deleted
                             automatically. Sooner if the QR code itself is deleted, which removes its scans
                             with it
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Anonymous usage counts</td>
+                        <td>
+                            <strong>{{ config('site.event_retention_days') }} days</strong>, then deleted
+                            automatically. A count records that something happened, never who it happened to,
+                            so there is nothing in one to connect to you
                         </td>
                     </tr>
                     <tr>

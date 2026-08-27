@@ -65,7 +65,8 @@
     <link href="https://fonts.bunny.net" rel="preconnect">
     <link href="https://fonts.bunny.net/css?family=manrope:500,700,800|inter:400,500,600&display=swap" rel="stylesheet">
 
-    <link href="{{ asset('css/site.css') }}" rel="stylesheet">
+    {{-- Versioned: see App\Support\Asset for why a style change otherwise reaches nobody who has already visited. --}}
+    <link href="{{ \App\Support\Asset::versioned('css/site.css') }}" rel="stylesheet">
 
     @stack('styles')
 </head>

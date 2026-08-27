@@ -52,6 +52,36 @@ class SubscriptionPrice
     }
 
     /**
+     * "$2.25" — the yearly price divided across the months it covers.
+     *
+     * A smaller number reads as a smaller commitment, which is why the offer
+     * quotes it. That also makes it the most misleading figure on the site if it
+     * ever appears alone: nobody is charged $2.25, and there is no month they
+     * could cancel after. Every caller must put the real charge beside it, and
+     * StaticOfferTest asserts the offer does.
+     *
+     * Rounded up rather than down, and to the cent. Rounding down would quote a
+     * price whose twelve instalments come to less than the amount actually taken.
+     *
+     * Returns null for any interval that is not yearly. A monthly-billed plan has
+     * no monthly equivalent to derive — the price *is* the monthly figure — and a
+     * silent division by a different period is how a plan change ends up
+     * misquoted on the homepage.
+     */
+    public static function monthlyEquivalent(): ?string
+    {
+        if (BillingInterval::configured() !== BillingInterval::Year) {
+            return null;
+        }
+
+        $amount = number_format(ceil((float) config('subscription.price') / 12 * 100) / 100, 2);
+
+        return self::currency() === 'USD'
+            ? '$'.$amount
+            : $amount.' '.self::currency();
+    }
+
+    /**
      * "$27/year", for the buttons and email actions that need the period in the
      * same breath as the amount.
      */

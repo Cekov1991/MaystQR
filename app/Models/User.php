@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountState;
+use App\Enums\SignupSource;
 use App\Observers\UserObserver;
 use App\Services\QrCodeQuota;
 use Carbon\CarbonInterface;
@@ -26,7 +27,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      * The attributes that are mass assignable.
      *
      * Entitlement columns are deliberately absent: they are billing state and
-     * must never be settable from request input.
+     * must never be settable from request input. `signup_source` is absent for
+     * the same reason: it is derived from an allowlisted query parameter, not
+     * from anything the registration form posts.
+     *
+     * Be aware that this list currently protects nothing. AppServiceProvider
+     * calls Model::unguard() in boot(), which disables mass-assignment guarding
+     * application-wide, so every column here is writable by fill() regardless of
+     * what this array says. The columns above are safe because of where they are
+     * written, not because of this list. Removing that unguard() call would make
+     * this array mean what it claims — StaticOfferTest documents the gap.
      *
      * @var array<int, string>
      */
@@ -55,6 +65,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'signup_source' => SignupSource::class,
             'password' => 'hashed',
             'trial_ends_at' => 'datetime',
             'entitled_until' => 'datetime',

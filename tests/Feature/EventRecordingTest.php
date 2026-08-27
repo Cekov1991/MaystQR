@@ -1,0 +1,163 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Enums\TrackedEvent;
+use App\Models\SiteEvent;
+use App\Models\User;
+use App\Services\AgentaOS\AgentaOsClient;
+use App\Services\AgentaOS\AgentaOsException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
+
+/**
+ * The server-side half of the funnel.
+ *
+ * These four moments already existed in the code and were simply never written
+ * down, which is why questions as basic as "how many people who generate a free
+ * code go on to open a checkout" had no answer.
+ */
+class EventRecordingTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Http::preventStrayRequests();
+    }
+
+    private function assertRecordedOnce(TrackedEvent $event): void
+    {
+        $this->assertSame(
+            1,
+            SiteEvent::query()->named($event)->count(),
+            "Expected exactly one {$event->value} row.",
+        );
+    }
+
+    public function test_generating_a_static_code_is_counted(): void
+    {
+        $this->postJson(route('qr.instant'), ['url' => 'https://example.com'])
+            ->assertOk();
+
+        $this->assertRecordedOnce(TrackedEvent::StaticQrGenerated);
+    }
+
+    /**
+     * The count is the denominator for the whole funnel, so it must follow real
+     * generations rather than mere attempts.
+     */
+    public function test_a_rejected_url_is_not_counted_as_a_generated_code(): void
+    {
+        $this->postJson(route('qr.instant'), ['url' => 'not-a-url'])
+            ->assertStatus(422);
+
+        $this->assertSame(0, SiteEvent::query()->count());
+    }
+
+    public function test_opening_a_checkout_is_counted(): void
+    {
+        config(['services.agentaos.payment_link_id' => 'link_123']);
+
+        $this->mock(AgentaOsClient::class)
+            ->shouldReceive('createCheckout')
+            ->once()
+            ->andReturn([
+                'session_id' => 'sess_123',
+                'checkoutUrl' => 'https://checkout.example/sess_123',
+                'currency' => 'USD',
+            ]);
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('billing.subscribe'))
+            ->assertRedirect('https://checkout.example/sess_123');
+
+        $this->assertRecordedOnce(TrackedEvent::CheckoutStarted);
+    }
+
+    /**
+     * A checkout that never opened is not a checkout started. Counting it would
+     * make an AgentaOS outage look like buyer abandonment.
+     */
+    public function test_a_checkout_that_could_not_be_opened_is_not_counted(): void
+    {
+        config(['services.agentaos.payment_link_id' => 'link_123']);
+
+        $this->mock(AgentaOsClient::class)
+            ->shouldReceive('createCheckout')
+            ->once()
+            ->andThrow(new AgentaOsException('Upstream is down'));
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('billing.subscribe'));
+
+        $this->assertSame(0, SiteEvent::query()->named(TrackedEvent::CheckoutStarted)->count());
+    }
+
+    public function test_an_unconfigured_payment_link_is_not_counted_as_a_checkout(): void
+    {
+        config(['services.agentaos.payment_link_id' => null]);
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('billing.subscribe'));
+
+        $this->assertSame(0, SiteEvent::query()->named(TrackedEvent::CheckoutStarted)->count());
+    }
+
+    public function test_returning_through_the_success_url_is_counted(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('billing.success'))
+            ->assertRedirect();
+
+        $this->assertRecordedOnce(TrackedEvent::CheckoutCompleted);
+    }
+
+    public function test_returning_through_the_cancel_url_is_counted(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('billing.cancel'))
+            ->assertRedirect();
+
+        $this->assertRecordedOnce(TrackedEvent::CheckoutAbandoned);
+    }
+
+    /**
+     * The enum is the vocabulary, so a case must be storable and readable back
+     * as itself — the cast is what lets the report command group by a case
+     * rather than by a magic string.
+     */
+    public function test_a_recorded_event_reads_back_as_its_enum_case(): void
+    {
+        TrackedEvent::OfferShown->record(variant: 'offer', context: ['surface' => 'homepage']);
+
+        $stored = SiteEvent::query()->sole();
+
+        $this->assertSame(TrackedEvent::OfferShown, $stored->name);
+        $this->assertSame('offer', $stored->variant);
+        $this->assertSame(['surface' => 'homepage'], $stored->context);
+        $this->assertNotNull($stored->occurred_at);
+    }
+
+    /**
+     * A new case is untrusted until it is deliberately named client-loggable, so
+     * that adding an event cannot accidentally open a public write path to it.
+     */
+    public function test_the_server_recorded_events_are_not_client_loggable(): void
+    {
+        foreach ([
+            TrackedEvent::StaticQrGenerated,
+            TrackedEvent::CheckoutStarted,
+            TrackedEvent::CheckoutCompleted,
+            TrackedEvent::CheckoutAbandoned,
+        ] as $event) {
+            $this->assertFalse(
+                $event->isClientLoggable(),
+                "{$event->value} is recorded server-side and must not be writable by a browser.",
+            );
+        }
+    }
+}

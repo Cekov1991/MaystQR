@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TrackedEvent;
 use App\Models\Subscription;
 use App\Services\AgentaOS\AgentaOsClient;
 use App\Services\AgentaOS\AgentaOsException;
@@ -60,6 +61,8 @@ class SubscriptionController extends Controller
             ],
         );
 
+        TrackedEvent::CheckoutStarted->record();
+
         return redirect()->away($checkout['checkoutUrl']);
     }
 
@@ -71,6 +74,8 @@ class SubscriptionController extends Controller
      */
     public function success(): RedirectResponse
     {
+        TrackedEvent::CheckoutCompleted->record();
+
         return redirect()
             ->route('filament.admin.pages.dashboard')
             ->with('status', 'Thanks! Your payment is being confirmed. This usually takes a few seconds.');
@@ -78,6 +83,8 @@ class SubscriptionController extends Controller
 
     public function cancel(): RedirectResponse
     {
+        TrackedEvent::CheckoutAbandoned->record();
+
         return redirect()
             ->route('filament.admin.pages.dashboard')
             ->with('status', 'Checkout cancelled. You have not been charged.');
