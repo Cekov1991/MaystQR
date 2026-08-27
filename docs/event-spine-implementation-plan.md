@@ -154,6 +154,22 @@ value is "everyone" carries no information. `StaticOfferTest` asserts no arm
 reaches the table, so adding suppression without adding the endpoint's allowlist
 fails loudly.
 
+## Out of scope, found on the way
+
+`Model::unguard()` in `AppServiceProvider::boot()` makes every `$fillable` in the
+application inert, including the User model's claim that its entitlement columns
+cannot be set from request input. Not exploitable today — every mass-assignment
+site is a literal array or gated by a Form Request — but the guard rail is off,
+and it is load-bearing: removing the call fails 84 tests, because `Subscription`
+and `QrCodeScan` declare no `$fillable` at all. Written up separately in
+[unguard-removal-handoff.md](./unguard-removal-handoff.md).
+
+A **lapsed-user variant of the offer** is also unbuilt. `@guest` hides the modal
+from every authenticated user, which includes the lapsed accounts most worth
+pitching — and `qr_code_scans.blocked` already exists as the data hook for
+exactly that. It needs different copy before it can ship: the current text
+promises a free trial to people whose trial has ended.
+
 ## Phase 6 — Reading it *(done)*
 
 `php artisan funnel:report {--days=30}` — two tables. The first is the anonymous
