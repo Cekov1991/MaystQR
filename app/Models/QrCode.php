@@ -153,6 +153,30 @@ class QrCode extends Model
             }
         });
 
+        static::deleting(function ($qrCode) {
+            $qrCode->deleteStoredFiles();
+        });
+
+    }
+
+    /**
+     * Removes everything this record owns on the filesystem. Without this the
+     * rendered image and any uploaded logo outlive the record forever.
+     */
+    protected function deleteStoredFiles(): void
+    {
+        $paths = array_filter([
+            $this->qr_code_image,
+            $this->options['logo_path'] ?? null,
+        ], fn ($path): bool => is_string($path) && $path !== '');
+
+        foreach ($paths as $path) {
+            try {
+                Storage::delete($path);
+            } catch (\Throwable) {
+                // A file that has already gone must not block the delete.
+            }
+        }
     }
 
     public function getFormatedContentAttribute(): string

@@ -103,9 +103,9 @@ class ViewQrCode extends ViewRecord
                     return null;
                 }
 
-                $originalFormat = $record->options['format'] ?? 'png';
+                $originalFormat = QrCode::effectiveFormat($record->options ?? []);
 
-                foreach (['png', 'svg', 'eps'] as $format) {
+                foreach ($this->downloadableFormats($record) as $format) {
                     $zip->addFromString(
                         "{$baseName}.{$format}",
                         $format === $originalFormat
@@ -128,7 +128,7 @@ class ViewQrCode extends ViewRecord
             ->icon('heroicon-o-arrow-down-tray')
             ->action(function () {
                 $record = $this->record;
-                $format = $record->options['format'] ?? 'png';
+                $format = QrCode::effectiveFormat($record->options ?? []);
 
                 return response()->streamDownload(
                     fn () => print ($this->originalImageContents($record, $format)),
@@ -139,6 +139,20 @@ class ViewQrCode extends ViewRecord
         $actions[] = Action::make('edit')->url(fn () => $this->getResource()::getUrl('edit', ['record' => $this->record]));
 
         return $actions;
+    }
+
+    /**
+     * The library only composites a centre logo onto a PNG, so a code with a
+     * logo bundles the PNG alone rather than shipping SVG and EPS siblings
+     * that quietly drop it.
+     *
+     * @return array<int, string>
+     */
+    protected function downloadableFormats(QrCode $record): array
+    {
+        return QrCode::hasLogo($record->options ?? [])
+            ? ['png']
+            : ['png', 'svg', 'eps'];
     }
 
     /**

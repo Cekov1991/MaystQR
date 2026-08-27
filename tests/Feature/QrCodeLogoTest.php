@@ -302,4 +302,54 @@ class QrCodeLogoTest extends TestCase
         $this->assertStringStartsWith("\x89PNG", $stored);
         $this->assertGreaterThan(0, $this->redBounds($stored)['count']);
     }
+
+    public function test_deleting_a_record_removes_its_image_and_its_logo(): void
+    {
+        $logo = $this->storeLogo('qr-logos/square.png', 200, 200);
+
+        $qrCode = QrCode::factory()->create([
+            'qr_content_data' => ['url' => self::CONTENT],
+            'options' => ['size' => self::SIZE, 'logo_path' => $logo],
+        ]);
+
+        $image = $qrCode->qr_code_image;
+
+        Storage::assertExists($image);
+        Storage::assertExists($logo);
+
+        $qrCode->delete();
+
+        Storage::assertMissing($image);
+        Storage::assertMissing($logo);
+    }
+
+    public function test_deleting_a_record_without_a_logo_removes_only_its_image(): void
+    {
+        $qrCode = QrCode::factory()->create([
+            'qr_content_data' => ['url' => self::CONTENT],
+        ]);
+
+        $image = $qrCode->qr_code_image;
+
+        $qrCode->delete();
+
+        Storage::assertMissing($image);
+        $this->assertDatabaseMissing('qr_codes', ['id' => $qrCode->id]);
+    }
+
+    public function test_deleting_a_record_whose_files_have_already_gone_does_not_error(): void
+    {
+        $logo = $this->storeLogo('qr-logos/square.png', 200, 200);
+
+        $qrCode = QrCode::factory()->create([
+            'qr_content_data' => ['url' => self::CONTENT],
+            'options' => ['size' => self::SIZE, 'logo_path' => $logo],
+        ]);
+
+        Storage::delete([$qrCode->qr_code_image, $logo]);
+
+        $qrCode->delete();
+
+        $this->assertDatabaseMissing('qr_codes', ['id' => $qrCode->id]);
+    }
 }

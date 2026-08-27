@@ -277,4 +277,49 @@ class QrCodeLogoFormTest extends TestCase
                 'options' => ['size' => 300, 'logo_path' => 'qr-logos/square.png'],
             ]);
     }
+
+    /**
+     * SVG and EPS cannot carry the overlay, so bundling them would hand back a
+     * file that silently disagrees with the PNG beside it.
+     */
+    public function test_the_zip_holds_only_the_png_when_a_logo_is_set(): void
+    {
+        $entries = $this->zipEntries($this->recordWithLogo());
+
+        $this->assertSame(['qr-Team Poster.png'], array_keys($entries));
+        $this->assertGreaterThan(0, $this->countsRedPixels($entries['qr-Team Poster.png']));
+    }
+
+    public function test_the_zip_still_holds_every_format_without_a_logo(): void
+    {
+        $record = QrCode::factory()
+            ->for(User::factory()->create(['email_verified_at' => now()]))
+            ->create(['name' => 'Team Poster', 'qr_content_data' => ['url' => self::CONTENT]]);
+
+        $entries = array_keys($this->zipEntries($record));
+        sort($entries);
+
+        $this->assertSame([
+            'qr-Team Poster.eps',
+            'qr-Team Poster.png',
+            'qr-Team Poster.svg',
+        ], $entries);
+    }
+
+    public function test_download_original_serves_the_merged_png(): void
+    {
+        $record = $this->recordWithLogo();
+
+        $component = Livewire::actingAs($record->user)
+            ->test(ViewQrCode::class, ['record' => $record->getKey()])
+            ->callAction('download_original');
+
+        $component->assertFileDownloaded();
+
+        $this->assertSame('qr-Team Poster.png', data_get($component->effects, 'download.name'));
+        $this->assertGreaterThan(
+            0,
+            $this->countsRedPixels(base64_decode((string) data_get($component->effects, 'download.content'))),
+        );
+    }
 }
