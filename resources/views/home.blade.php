@@ -178,16 +178,27 @@
              * survive if the click does navigate away.
              */
             function logEvent(event, extra) {
-                fetch('{{ route('events.log') }}', {
-                    method: 'POST',
-                    keepalive: true,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrf,
-                    },
-                    body: JSON.stringify(Object.assign({ event: event }, extra || {})),
-                }).catch(function () {});
+                /*
+                 * The try wraps the call itself, not just the promise. `fetch` is
+                 * routinely replaced by browser extensions and by injected dev
+                 * tooling, and a replacement that throws synchronously used to
+                 * take out whatever called this — which is how a failed count
+                 * once stopped a dismissal from being remembered.
+                 */
+                try {
+                    fetch('{{ route('events.log') }}', {
+                        method: 'POST',
+                        keepalive: true,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify(Object.assign({ event: event }, extra || {})),
+                    }).catch(function () {});
+                } catch (e) {
+                    // Counting must never be the reason something else fails.
+                }
             }
 
             function showError(message) {
@@ -220,7 +231,20 @@
              */
             let offerAccepted = false;
 
+            /*
+             * Belt to localStorage's braces. Private windows and blocked storage
+             * make the stored flag unavailable, and being asked again after
+             * saying no is the most irritating thing this page could do. This
+             * holds the refusal for the rest of the page view even when nothing
+             * can be written down.
+             */
+            let offerDismissedThisView = false;
+
             function offerWasDismissed() {
+                if (offerDismissedThisView) {
+                    return true;
+                }
+
                 try {
                     return localStorage.getItem(DISMISSED_KEY) === '1';
                 } catch (e) {
@@ -269,14 +293,25 @@
                         return;
                     }
 
-                    logEvent('{{ \App\Enums\TrackedEvent::OfferDismissed->value }}');
+                    /*
+                     * Remembered before it is reported, and the order is the
+                     * whole point. Not being asked again is a promise to the
+                     * person who just said no; the count is only for us. This was
+                     * the other way round once, and any throw out of the
+                     * reporting call — a patched fetch, most likely — skipped the
+                     * line below it, so the offer came back on the next
+                     * download. The promise must not depend on the telemetry.
+                     */
+                    offerDismissedThisView = true;
 
                     try {
                         localStorage.setItem(DISMISSED_KEY, '1');
                     } catch (e) {
-                        // Nothing to do. The dialog is closed for this page view
-                        // either way, and a failed write must not break the close.
+                        // Private mode or storage disabled. The in-memory flag
+                        // above still holds for the rest of this page view.
                     }
+
+                    logEvent('{{ \App\Enums\TrackedEvent::OfferDismissed->value }}');
                 });
 
                 offerDismiss.addEventListener('click', function () {

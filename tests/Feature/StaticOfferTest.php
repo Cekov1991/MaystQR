@@ -131,6 +131,81 @@ class StaticOfferTest extends TestCase
     }
 
     /**
+     * The refusal is remembered before it is reported, and the order is the
+     * bug this pins. It was the other way round: any throw out of the reporting
+     * call skipped the line that persisted the dismissal, so the modal came back
+     * on the next download and no dismissal was ever counted. `fetch` is
+     * routinely replaced by extensions and injected dev tooling, which is
+     * exactly where such a throw comes from.
+     *
+     * Not being asked again is a promise to the person who said no. The count is
+     * only for us, so it must come second.
+     */
+    public function test_the_refusal_is_remembered_before_it_is_reported(): void
+    {
+        $content = $this->get('/')->assertOk()->getContent();
+
+        $closeHandler = $this->closeHandlerSource($content);
+
+        $persistedAt = strpos($closeHandler, 'offerDismissedThisView = true');
+        $reportedAt = strpos($closeHandler, TrackedEvent::OfferDismissed->value);
+
+        $this->assertNotFalse($persistedAt, 'The dismissal is not persisted at all.');
+        $this->assertNotFalse($reportedAt, 'The dismissal is not reported at all.');
+        $this->assertLessThan(
+            $reportedAt,
+            $persistedAt,
+            'The dismissal must be remembered before it is reported, so a failure to '
+            .'report cannot cost the person their refusal.',
+        );
+    }
+
+    /**
+     * A storage write that throws must not cost the refusal either, so the
+     * in-memory flag is checked first and set unconditionally.
+     */
+    public function test_a_refusal_survives_storage_being_unavailable(): void
+    {
+        $content = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('offerDismissedThisView', $content);
+        $this->assertMatchesRegularExpression(
+            '/if \(offerDismissedThisView\)\s*\{\s*return true;/',
+            $content,
+            'The in-memory refusal must short-circuit before localStorage is consulted.',
+        );
+    }
+
+    /**
+     * Reporting an event must never throw into its caller. The try has to wrap
+     * the fetch call itself, not only the promise it returns.
+     */
+    public function test_reporting_an_event_cannot_throw_into_its_caller(): void
+    {
+        $content = $this->get('/')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/try \{\s*fetch\(/',
+            $content,
+            'fetch() must be inside a try, not merely have .catch() attached: a patched '
+            .'fetch can throw synchronously.',
+        );
+    }
+
+    /**
+     * Pulls the dialog close handler out of the page so the assertions above are
+     * about that block rather than about the order of unrelated occurrences
+     * elsewhere in the script.
+     */
+    private function closeHandlerSource(string $content): string
+    {
+        $start = strpos($content, "offer.addEventListener('close'");
+        $this->assertNotFalse($start, 'The dialog close handler is missing.');
+
+        return substr($content, $start, 1400);
+    }
+
+    /**
      * Taking the offer must not also count as refusing it. The dialog closes on
      * the way to the register page, and that close is not a dismissal.
      */
