@@ -45,7 +45,7 @@ means, which is also why re-guarding should be behaviour-neutral:
 |---|---|
 | `ProfileController::update` | `fill($request->validated())`, and `ProfileUpdateRequest` validates only `name` and `email` |
 | `Filament\Pages\Auth\Register::handleRegistration` | `make($data)` from the form schema; `signup_source` set separately from an allowlisted enum |
-| `QrCodeResource\Pages\CreateFromSession` | `$data` is a four-key literal written server-side by `Public\...\CreateQrCode`; `user_id` from `Auth::id()` |
+| `QrCodeResource\Pages\CreateFromSession` | `$data` comes from a fixed set of keys written server-side by `Public\...\CreateQrCode` out of validated form state, not from request input; `user_id` is set from `Auth::id()`. Check that list before trusting it — it has grown once already, when the centre-logo work added `options`. |
 | `SubscriptionController`, `GrantSubscriptionEntitlement`, `Billing`, `ResolveAgentaOsSubscription`, `TrackedEvent::record` | literal arrays of server-derived values |
 
 So do not treat this as a security fix to rush. Treat it as removing a footgun
