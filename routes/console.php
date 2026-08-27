@@ -42,3 +42,16 @@ Schedule::command('billing:notify')
 Schedule::command('scans:prune')
     ->weeklyOn(1, '04:00')
     ->withoutOverlapping();
+
+/*
+ * The public create form uploads a centre logo before the QR code exists, so a
+ * guest who abandons the registration leaves the file behind with nothing
+ * pointing at it. This is the only thing that collects those.
+ *
+ * Daily rather than weekly: the files are user-supplied images on the billed
+ * disk, and the grace period already gives a registration in progress two days
+ * of protection. 04:30 keeps it clear of scans:prune on Mondays.
+ */
+Schedule::command('logos:prune')
+    ->dailyAt('04:30')
+    ->withoutOverlapping();
