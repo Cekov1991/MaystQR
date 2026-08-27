@@ -59,15 +59,86 @@ class StaticOfferTest extends TestCase
     }
 
     /**
-     * The panel ships hidden. It is revealed by script only once a download has
-     * started, so shipping it visible would put the offer in front of the
-     * download button — the opposite of the intent.
+     * Opened a beat after the download rather than in the same tick. A modal
+     * thrown up instantly lands on top of the browser's own download UI, which
+     * reads as having interrupted the thing they came for.
      */
-    public function test_the_offer_ships_hidden(): void
+    public function test_the_offer_waits_for_the_download_to_start(): void
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('id="static-offer" class="eq-offer" hidden', false);
+            ->assertSee('REVEAL_DELAY_MS', false);
+    }
+
+    /**
+     * The dialog ships closed. A <dialog> without an `open` attribute is hidden
+     * by the user agent, and it is opened by script only once a download has
+     * started — shipping it open would put the offer in front of the download
+     * button, which is the opposite of the intent.
+     */
+    public function test_the_offer_ships_closed(): void
+    {
+        $response = $this->get('/')->assertOk();
+
+        $response->assertSee('<dialog id="static-offer" class="eq-offer"', false);
+        $this->assertDoesNotMatchRegularExpression(
+            '/<dialog[^>]*id="static-offer"[^>]*\sopen/',
+            $response->getContent(),
+        );
+    }
+
+    /**
+     * A real <dialog> rather than a styled div, because showModal() is what
+     * brings the focus trap, Escape-to-close, inerting of the page behind it and
+     * restoration of focus on close. It was an inline panel first and was
+     * effectively invisible: tall result panel above it on a phone, quiet card
+     * below the fold on a desktop.
+     */
+    public function test_the_offer_is_a_modal_dialog_opened_by_script(): void
+    {
+        $response = $this->get('/')->assertOk();
+
+        $response->assertSee('<dialog', false);
+        $response->assertSee('showModal', false);
+    }
+
+    /**
+     * Labelled by its own heading, so a screen reader announces what the dialog
+     * is for rather than just that one opened.
+     */
+    public function test_the_dialog_is_labelled_by_its_heading(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('aria-labelledby="static-offer-title"', false)
+            ->assertSee('id="static-offer-title"', false);
+    }
+
+    /**
+     * Every way out of a modal must be counted the same, and there is exactly one
+     * place doing the counting — the dialog's own close event, which fires for
+     * the two buttons, Escape and a backdrop click alike.
+     */
+    public function test_dismissal_is_counted_once_for_every_route_out(): void
+    {
+        $content = $this->get('/')->assertOk()->getContent();
+
+        $this->assertSame(
+            1,
+            substr_count($content, TrackedEvent::OfferDismissed->value),
+            'offer_dismissed should be logged from a single place: the close event.',
+        );
+    }
+
+    /**
+     * Taking the offer must not also count as refusing it. The dialog closes on
+     * the way to the register page, and that close is not a dismissal.
+     */
+    public function test_accepting_the_offer_is_not_also_counted_as_dismissing_it(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('offerAccepted', false);
     }
 
     /**

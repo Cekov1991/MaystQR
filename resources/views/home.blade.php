@@ -101,17 +101,27 @@
     </div>
 
     {{--
-        The offer, revealed only once a download has actually started — see the
-        script below. Hidden for anyone already signed in: they have an account and
-        the pitch would be for something they already have.
+        The offer, opened only once a download has actually started — see the
+        script below. Absent for anyone signed in: they have an account and the
+        pitch would be for something they already have.
+
+        A real <dialog> rather than a styled div. showModal() brings the focus
+        trap, Escape-to-close, inerting of the page behind it and restoration of
+        focus on close — all of which this needs to be usable by keyboard and a
+        screen reader, and all of which is easy to hand-roll subtly wrong.
+
+        This began life as an inline panel below the result. It was invisible in
+        practice: on a phone the result panel is tall enough to push it off
+        screen entirely, and on a desktop a quiet white card below the fold went
+        unnoticed too. A modal is the only version of this that is actually seen.
     --}}
     @guest
-        <div id="static-offer" class="eq-offer" hidden>
-            <button type="button" id="static-offer-dismiss" class="eq-offer-close" aria-label="Dismiss">&times;</button>
+        <dialog id="static-offer" class="eq-offer" aria-labelledby="static-offer-title">
+            <button type="button" id="static-offer-dismiss" class="eq-offer-close" aria-label="Close">&times;</button>
 
             <p class="eq-offer-kicker">Printing it?</p>
 
-            <h2 class="eq-offer-title">That code can never be changed</h2>
+            <h2 id="static-offer-title" class="eq-offer-title">That code can never be changed</h2>
 
             <p class="eq-offer-text">
                 The link is baked into the pattern. If the page moves or the offer
@@ -138,7 +148,7 @@
                    class="eq-btn eq-btn-primary eq-btn--sm">Start the free trial</a>
                 <button type="button" id="static-offer-no" class="eq-offer-quiet">No thanks</button>
             </div>
-        </div>
+        </dialog>
     @endguest
 
 @endsection
@@ -195,13 +205,20 @@
              * Dismissal is remembered in localStorage rather than a cookie. A
              * cookie for this would be a marketing cookie, which contradicts
              * section 2c of the Privacy Policy and would drag the whole site
-             * behind a real consent gate for the sake of one hidden panel.
+             * behind a real consent gate for the sake of one dialog.
              *
              * The cost is worth stating: this is per-browser and invisible to us,
              * so the same person is asked again on their phone. The alternative
              * costs a consent banner.
              */
             const DISMISSED_KEY = 'eq.offer.dismissed';
+
+            /*
+             * Set when the call to action is taken, so the dialog closing on the
+             * way to the register page is not also counted as a dismissal. One
+             * click must not land in two buckets.
+             */
+            let offerAccepted = false;
 
             function offerWasDismissed() {
                 try {
@@ -213,40 +230,57 @@
                 }
             }
 
-            function dismissOffer(reason) {
-                if (!offer || offer.hidden) {
-                    return;
-                }
-
-                offer.hidden = true;
-                logEvent('{{ \App\Enums\TrackedEvent::OfferDismissed->value }}');
-
-                try {
-                    localStorage.setItem(DISMISSED_KEY, '1');
-                } catch (e) {
-                    // Nothing to do. The panel is hidden for this page view either
-                    // way, and it is not worth a failed write breaking the click.
-                }
-            }
-
             /*
-             * Revealed only once a download has actually started, which is both
-             * the highest-intent moment and the one where the offer cannot get
-             * between someone and the thing they came for. Shown at most once a
-             * page view, so `offer_shown` counts people rather than clicks.
+             * Opened a beat after the download rather than with it. The click
+             * starts a file save, and a modal thrown up in the same tick lands on
+             * top of the browser's own download UI — which reads as the offer
+             * having interrupted the thing they came for, rather than following
+             * it.
              */
+            const REVEAL_DELAY_MS = 500;
+
             function revealOffer() {
-                if (!offer || !offer.hidden || offerWasDismissed()) {
+                if (!offer || offer.open || offerWasDismissed()) {
                     return;
                 }
 
-                offer.hidden = false;
+                if (typeof offer.showModal === 'function') {
+                    offer.showModal();
+                } else {
+                    // No native modal support. A plain open attribute still shows
+                    // the card, without the focus trap or the backdrop; better
+                    // than an offer nobody ever sees.
+                    offer.setAttribute('open', '');
+                }
+
                 logEvent('{{ \App\Enums\TrackedEvent::OfferShown->value }}');
             }
 
             if (offer) {
+                /*
+                 * Every route out of the dialog ends in close(), so dismissal is
+                 * counted in exactly one place. That includes the two buttons, the
+                 * Escape key and a click on the backdrop — routes the previous
+                 * inline version could not offer at all, and which would otherwise
+                 * each need their own logging and their own bug.
+                 */
+                offer.addEventListener('close', function () {
+                    if (offerAccepted) {
+                        return;
+                    }
+
+                    logEvent('{{ \App\Enums\TrackedEvent::OfferDismissed->value }}');
+
+                    try {
+                        localStorage.setItem(DISMISSED_KEY, '1');
+                    } catch (e) {
+                        // Nothing to do. The dialog is closed for this page view
+                        // either way, and a failed write must not break the close.
+                    }
+                });
+
                 offerDismiss.addEventListener('click', function () {
-                    dismissOffer();
+                    offer.close();
                 });
 
                 /*
@@ -257,7 +291,18 @@
                  * so anything written here ships in the HTML and trips it too.
                  */
                 offerNoThanks.addEventListener('click', function () {
-                    dismissOffer();
+                    offer.close();
+                });
+
+                /*
+                 * The dialog element fills the viewport when modal; its own box is
+                 * the card. So a click landing on the element itself, rather than
+                 * on anything inside it, is a click on the backdrop.
+                 */
+                offer.addEventListener('click', function (event) {
+                    if (event.target === offer) {
+                        offer.close();
+                    }
                 });
 
                 /*
@@ -265,6 +310,7 @@
                  * keepalive precisely so the count survives the navigation.
                  */
                 offerCta.addEventListener('click', function () {
+                    offerAccepted = true;
                     logEvent('{{ \App\Enums\TrackedEvent::OfferClicked->value }}');
                 });
             }
@@ -277,7 +323,7 @@
              */
             function handleDownload(format) {
                 logEvent('{{ \App\Enums\TrackedEvent::QrDownloaded->value }}', { format: format });
-                revealOffer();
+                window.setTimeout(revealOffer, REVEAL_DELAY_MS);
             }
 
             downloadPng.addEventListener('click', function () {
@@ -321,10 +367,6 @@
                             showError((data && (data.errors?.url?.[0] || data.message)) || 'Something went wrong. Please try again.');
                         }
                         return;
-                    }
-
-                    if (offer) {
-                        offer.hidden = true;
                     }
 
                     image.src = data.png;

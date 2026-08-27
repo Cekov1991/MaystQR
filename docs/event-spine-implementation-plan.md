@@ -107,7 +107,13 @@ plan itself:
 
 ## Phase 4 — The offer *(next)*
 
-- `resources/views/home.blade.php` — the offer block inline inside `#static-result`, revealed on download click **after** the download starts. Built from the existing `.eq-card` / `.eq-price` / `.eq-panel` / `.eq-btn` classes so `public/css/site.css` needs little or nothing new. This is `eq-*` CSS, not Tailwind: Tailwind lives only in the Filament admin.
+- `resources/views/home.blade.php` — a native `<dialog>`, opened by `showModal()` 500ms after the download click. This is `eq-*` CSS in `public/css/site.css`, not Tailwind: Tailwind lives only in the Filament admin.
+
+  **It was an inline panel first, and that was wrong.** Clicking through the running app showed it was effectively invisible: on a phone the result panel is tall enough to push anything after it off screen, and on a desktop a quiet white card below the fold went unnoticed too. Position was only half of it — a thin-bordered panel does not read as something to act on. The original 3:27pm proposal was a popup; the plan talked it into an inline panel, and the running app settled it.
+
+  A real `<dialog>` rather than a styled div: `showModal()` brings the focus trap, Escape-to-close, inerting of the page behind it, top-layer stacking and focus restoration, all of which this needs to be usable by keyboard and screen reader and all of which is easy to hand-roll subtly wrong. Every route out — both buttons, Escape, backdrop click — ends in `close()`, so `offer_dismissed` is counted in exactly one place, and an `offerAccepted` flag keeps a click on the call to action from being counted as a refusal as the dialog closes behind it.
+
+  The 500ms delay is deliberate: a modal opened in the same tick as the download lands on top of the browser's own download UI and reads as having interrupted the thing they came for.
 - It sits **alongside** the result panel's existing quiet "A static code can never be changed… Create a dynamic QR" line, which stays. Replacing it would destroy the comparison phase 5 exists to make: that link gets `?ref=static-inline` there, and the whole question is whether the loud offer converts better than the quiet link.
 - Dismissal in `localStorage`. Note the consequence: dismissal is per-browser and invisible to us, and without it `offer_dismissed` becomes noise as people dismiss the same card repeatedly.
 - All copy interpolated — `config('subscription.trial_days')`, `SubscriptionPrice::formatted()`. The monthly figure derived, never hardcoded, and never shown without the annual charge beside it: a monthly number alone misdescribes an annually-billed product, and `PublicPagesTest` guards the pricing claims AgentaOS reviews.
