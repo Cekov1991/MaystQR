@@ -136,6 +136,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Abandoned logo grace period
+    |--------------------------------------------------------------------------
+    |
+    | How many hours an uploaded centre logo may sit unreferenced before
+    | `logos:prune` deletes it.
+    |
+    | A guest on the public form uploads the logo before the QR code exists: the
+    | record is only created once they finish registering, so between those two
+    | moments the file is legitimately owned by nobody. The window has to outlast
+    | that gap — session lifetime plus however long someone takes to find the
+    | verification email — or the prune deletes a logo out from under a
+    | registration still in progress.
+    |
+    */
+
+    'orphan_logo_grace_hours' => (int) env('SITE_ORPHAN_LOGO_GRACE_HOURS', 48),
+
+    /*
+    |--------------------------------------------------------------------------
     | Link previews
     |--------------------------------------------------------------------------
     |

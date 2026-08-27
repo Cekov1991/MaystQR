@@ -3,8 +3,10 @@
 namespace App\Filament\Public\Resources\QrCodeResource\Pages;
 
 use App\Filament\Public\Resources\QrCodeResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Models\QrCode;
 use Filament\Actions\Action;
+use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Session;
 
 class CreateQrCode extends CreateRecord
@@ -45,12 +47,18 @@ class CreateQrCode extends CreateRecord
         // Get the form data
         $data = $this->form->getState();
 
-        // Store QR code data in session for after login
+        /*
+         * `options` carries every appearance choice made on this form — style,
+         * colour, size, format, error correction and the centre logo. Omitting
+         * it silently rebuilt the code with defaults after registration, so a
+         * guest who uploaded a logo got a plain code and an orphaned file.
+         */
         Session::put('pending_qr_code', [
             'name' => $data['name'],
             'qr_content_type' => $data['qr_content_type'],
             'qr_content_data' => $data['qr_content_data'] ?? [],
-            'type' => $data['type'] ?? 'static'
+            'type' => $data['type'] ?? 'static',
+            'options' => $data['options'] ?? [],
         ]);
 
         // Store a message for after login
@@ -61,9 +69,9 @@ class CreateQrCode extends CreateRecord
     }
 
     // Disable the default create record functionality
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         // This won't be called since we override the create method
-        return new \App\Models\QrCode();
+        return new QrCode;
     }
 }
