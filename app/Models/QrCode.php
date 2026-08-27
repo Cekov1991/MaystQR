@@ -38,6 +38,23 @@ class QrCode extends Model
     const DEFAULT_STYLE = 'round';
 
     /**
+     * A centre logo covers modules that would otherwise carry data. Measured
+     * against real decodes, 30% coverage stops scanning at error correction
+     * 'M', so coverage is capped here and error correction is forced to 'H'
+     * whenever a logo is present.
+     */
+    const LOGO_MAX_COVERAGE = 0.25;
+
+    const LOGO_DEFAULT_COVERAGE = 0.2;
+
+    /**
+     * The overlay is never larger than a quarter of the largest permitted
+     * symbol, so nothing is gained by squaring a source bigger than this — and
+     * squaring a 4000x100 banner unbounded would allocate a 4000x4000 canvas.
+     */
+    const LOGO_MAX_SOURCE_EDGE = 512;
+
+    /**
      * Deliberately tiny payload: fewer modules means larger ones, which is what
      * makes the difference between the styles readable at thumbnail size.
      */
@@ -313,18 +330,156 @@ class QrCode extends Model
      * Builds a generator configured from a stored options array, so every place
      * that renders a QR code produces the same image for the same record.
      *
-     * @param  array{format?: string, size?: int, color?: string, errorCorrection?: string, style?: string}  $options
+     * A logo forces PNG and error correction 'H', because the library only
+     * composites the overlay onto a PNG and a covered centre needs the extra
+     * redundancy to stay scannable.
+     *
+     * @param  array{format?: string, size?: int, color?: string, errorCorrection?: string, style?: string, logo_path?: string, logo_coverage?: float}  $options
      */
     public static function buildGenerator(array $options): Generator
     {
         [$r, $g, $b] = sscanf($options['color'] ?? '#000000', '#%02x%02x%02x') ?? [0, 0, 0];
 
-        $generator = QrCodeGenerator::format($options['format'] ?? 'png')
+        $generator = QrCodeGenerator::format(static::effectiveFormat($options))
             ->size($options['size'] ?? 300)
-            ->errorCorrection($options['errorCorrection'] ?? 'M')
+            ->errorCorrection(static::effectiveErrorCorrection($options))
             ->color($r, $g, $b);
 
-        return static::applyStyle($generator, $options['style'] ?? self::DEFAULT_STYLE);
+        $generator = static::applyStyle($generator, $options['style'] ?? self::DEFAULT_STYLE);
+
+        $logo = static::logoBytes($options);
+
+        if ($logo !== null) {
+            $generator->mergeString($logo, static::logoCoverage($options));
+        }
+
+        return $generator;
+    }
+
+    /**
+     * @param  array{logo_path?: string}  $options
+     */
+    public static function hasLogo(array $options): bool
+    {
+        $path = $options['logo_path'] ?? null;
+
+        return is_string($path) && $path !== '';
+    }
+
+    /**
+     * @param  array{format?: string, logo_path?: string}  $options
+     */
+    public static function effectiveFormat(array $options): string
+    {
+        return static::hasLogo($options) ? 'png' : ($options['format'] ?? 'png');
+    }
+
+    /**
+     * @param  array{errorCorrection?: string, logo_path?: string}  $options
+     */
+    public static function effectiveErrorCorrection(array $options): string
+    {
+        return static::hasLogo($options) ? 'H' : ($options['errorCorrection'] ?? 'M');
+    }
+
+    /**
+     * @param  array{logo_coverage?: float}  $options
+     */
+    protected static function logoCoverage(array $options): float
+    {
+        return min(
+            (float) ($options['logo_coverage'] ?? self::LOGO_DEFAULT_COVERAGE),
+            self::LOGO_MAX_COVERAGE,
+        );
+    }
+
+    /**
+     * Reads the stored logo and hands back overlay-ready bytes, or null when
+     * there is nothing usable to merge.
+     *
+     * A logo that has gone missing, or that GD cannot decode, must degrade to a
+     * plain valid QR code rather than a 500: the generator crashes on bytes it
+     * cannot parse, so every failure is caught here instead.
+     *
+     * @param  array{logo_path?: string}  $options
+     */
+    protected static function logoBytes(array $options): ?string
+    {
+        if (! static::hasLogo($options)) {
+            return null;
+        }
+
+        try {
+            if (! Storage::exists($options['logo_path'])) {
+                return null;
+            }
+
+            $bytes = Storage::get($options['logo_path']);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (! is_string($bytes) || $bytes === '') {
+            return null;
+        }
+
+        return static::squareLogo($bytes);
+    }
+
+    /**
+     * Pads a logo onto a transparent square canvas.
+     *
+     * ImageMerge takes the overlay width from the coverage percentage and then
+     * derives the height from the logo's aspect ratio, so a 100x400 logo asked
+     * for at 25% becomes a full-height stripe down the middle of the symbol.
+     * Squaring the source first makes that derivation a no-op, which is the
+     * only way to bound the overlay in both directions.
+     */
+    protected static function squareLogo(string $bytes): ?string
+    {
+        $logo = @imagecreatefromstring($bytes);
+
+        if ($logo === false) {
+            return null;
+        }
+
+        $width = imagesx($logo);
+        $height = imagesy($logo);
+        $longestEdge = max($width, $height);
+
+        $scale = min(1, self::LOGO_MAX_SOURCE_EDGE / $longestEdge);
+        $scaledWidth = max(1, (int) round($width * $scale));
+        $scaledHeight = max(1, (int) round($height * $scale));
+        $side = max($scaledWidth, $scaledHeight);
+
+        // Alpha blending stays off so the source's own transparency is copied
+        // rather than composited against the padding.
+        $canvas = imagecreatetruecolor($side, $side);
+        imagealphablending($canvas, false);
+        imagesavealpha($canvas, true);
+        imagefill($canvas, 0, 0, imagecolorallocatealpha($canvas, 0, 0, 0, 127));
+
+        imagecopyresampled(
+            $canvas,
+            $logo,
+            intdiv($side - $scaledWidth, 2),
+            intdiv($side - $scaledHeight, 2),
+            0,
+            0,
+            $scaledWidth,
+            $scaledHeight,
+            $width,
+            $height,
+        );
+
+        ob_start();
+        imagepng($canvas);
+        $square = (string) ob_get_clean();
+
+        imagedestroy($logo);
+        imagedestroy($canvas);
+
+        return $square;
     }
 
     /**
@@ -367,6 +522,16 @@ class QrCode extends Model
     protected function generateQrCode(): void
     {
         $options = $this->options ?? [];
+
+        // A logo overrides the requested format and error correction, so store
+        // what was actually rendered — everything downstream reads these back.
+        if (static::hasLogo($options)) {
+            $options['format'] = static::effectiveFormat($options);
+            $options['errorCorrection'] = static::effectiveErrorCorrection($options);
+
+            $this->options = $options;
+        }
+
         $format = $options['format'] ?? 'png';
 
         $qrCode = static::buildGenerator($options)->generate($this->content);
