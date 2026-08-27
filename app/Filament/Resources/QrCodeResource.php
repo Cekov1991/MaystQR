@@ -264,6 +264,17 @@ class QrCodeResource extends Resource
                                     ->helperText('Shape of the dots and corner squares. All styles scan the same.')
                                     ->columnSpanFull(),
 
+                                Forms\Components\FileUpload::make('options.logo_path')
+                                    ->label('Centre logo')
+                                    ->image()
+                                    ->live()
+                                    ->disk(config('filesystems.default'))
+                                    ->directory('qr-logos')
+                                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
+                                    ->maxSize(2048)
+                                    ->helperText('Optional. A logo covers part of the code, so it forces PNG output and the highest error correction.')
+                                    ->columnSpanFull(),
+
                                 Forms\Components\Select::make('options.format')
                                     ->label('Image Format')
                                     ->options([
@@ -272,7 +283,13 @@ class QrCodeResource extends Resource
                                         'eps' => 'EPS',
                                     ])
                                     ->default('png')
-                                    ->required(),
+                                    ->required()
+                                    ->disabled(fn (Forms\Get $get): bool => filled($get('options.logo_path')))
+                                    ->dehydrated()
+                                    ->dehydrateStateUsing(fn ($state, Forms\Get $get) => filled($get('options.logo_path')) ? 'png' : $state)
+                                    ->helperText(fn (Forms\Get $get): ?string => filled($get('options.logo_path'))
+                                        ? 'A centre logo can only be composited onto a PNG.'
+                                        : null),
 
                                 Forms\Components\ColorPicker::make('options.color')
                                     ->label('QR Code Color')
@@ -286,7 +303,13 @@ class QrCodeResource extends Resource
                                         'Q' => 'Quartile (25%)',
                                         'H' => 'High (30%)',
                                     ])
-                                    ->default('M'),
+                                    ->default('M')
+                                    ->disabled(fn (Forms\Get $get): bool => filled($get('options.logo_path')))
+                                    ->dehydrated()
+                                    ->dehydrateStateUsing(fn ($state, Forms\Get $get) => filled($get('options.logo_path')) ? 'H' : $state)
+                                    ->helperText(fn (Forms\Get $get): ?string => filled($get('options.logo_path'))
+                                        ? 'A covered centre needs the highest error correction to stay scannable.'
+                                        : null),
 
                                 Forms\Components\TextInput::make('options.size')
                                     ->label('Size (px)')
@@ -317,6 +340,11 @@ class QrCodeResource extends Resource
                         Forms\Components\Placeholder::make('size_display')
                             ->label('Size')
                             ->content(fn ($record) => $record ? ($record->options['size'] ?? '300').'px' : ''),
+                        Forms\Components\Placeholder::make('logo_display')
+                            ->label('Centre Logo')
+                            ->content(fn ($record) => $record && filled($record->options['logo_path'] ?? null)
+                                ? basename($record->options['logo_path'])
+                                : 'None'),
                     ])
                     ->visible(fn ($record) => $record !== null)
                     ->description(

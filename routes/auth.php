@@ -7,7 +7,6 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,17 +22,24 @@ use Illuminate\Support\Facades\Route;
 | how they arrived.
 |
 | These three now redirect into the panel. The names are kept because the
-| framework resolves route('login') and route('register') by name, and the
-| POST handlers below stay so nothing that already works breaks. Retiring the
-| scaffold outright is a job for after launch.
+| framework resolves route('login') and route('register') by name.
+|
+| The POST /register handler is gone, and its absence is load-bearing rather
+| than tidy. Registration has to record which of our own links sent someone
+| here — see App\Enums\SignupSource — and that happens in the panel's Register
+| page. A second door into User::create() silently produced accounts with no
+| source at all, which is worse than an unattributed account because it looks
+| like one. Nothing linked to it: the GET above redirects away, so the only way
+| to reach it was to post at it directly.
+|
+| POST /login below is the same kind of scaffold leftover, kept for now because
+| a sign-in has no equivalent record to get wrong.
 |
 */
 
 Route::middleware('guest')->group(function () {
     Route::get('register', fn () => redirect()->route('filament.admin.auth.register'))
         ->name('register');
-
-    Route::post('register', [RegisteredUserController::class, 'store']);
 
     Route::get('login', fn () => redirect()->route('filament.admin.auth.login'))
         ->name('login');
